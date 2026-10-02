@@ -21,9 +21,10 @@ export function errorKey(error: unknown): { key: string; arg?: string } {
     "REASON_REQUIRED",
     "NOT_READY",
     "UNKNOWN_DOCUMENT",
+    "SUBSCRIPTION_INACTIVE",
   ];
   if (known.includes(code)) return { key: code, arg };
-  if (code === "OVERPAYMENT" || code === "DUPLICATE_PASSPORT") return { key: code, arg };
+  if (code === "OVERPAYMENT" || code === "DUPLICATE_PASSPORT" || code === "PLAN_LIMIT") return { key: code, arg };
   // Zod validation errors arrive as JSON; pick the first known message inside.
   for (const k of known) if (message.includes(k)) return { key: k };
   return { key: "generic" };

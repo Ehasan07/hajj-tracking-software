@@ -119,6 +119,10 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await expect(page.getByText("Md. Abdul Karim")).toBeVisible();
   await snap(page, "07-search-en");
 
+  // The platform console does not exist for agency owners.
+  const consoleRes = await page.goto("/admin");
+  expect(consoleRes?.status()).toBe(404);
+
   // Signing out and back in lands on the same agency's dashboard, not onboarding.
   await page.goto("/en/app");
   await page.getByRole("button", { name: "Sign out" }).click();

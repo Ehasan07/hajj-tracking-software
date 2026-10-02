@@ -26,6 +26,13 @@ const UNIT_DOT: Partial<Record<BusinessUnit, string>> = {
 };
 
 interface ShellProps {
+  subscription: {
+    status: string;
+    inactive: boolean;
+    trialEndsAt: string | null;
+    planNameBn: string;
+    planNameEn: string;
+  } | null;
   agency: string;
   licence: string | null;
   enabledUnits: BusinessUnit[];
@@ -33,7 +40,7 @@ interface ShellProps {
   children: ReactNode;
 }
 
-export function AppShell({ agency, licence, enabledUnits, openInquiries, children }: ShellProps) {
+export function AppShell({ agency, licence, enabledUnits, openInquiries, subscription, children }: ShellProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const router = useRouter();
@@ -185,7 +192,23 @@ export function AppShell({ agency, licence, enabledUnits, openInquiries, childre
         </div>
       ) : null}
 
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0">
+        {subscription?.inactive ? (
+          <div role="alert" className="bg-due px-4 py-3 text-center text-[15px] font-semibold text-white sm:px-8">
+            {t("subscription.inactiveBanner")}
+          </div>
+        ) : subscription?.status === "trial" && subscription.trialEndsAt ? (
+          <div className="bg-saffron-tint px-4 py-2.5 text-center text-[14px] font-semibold text-saffron-ink sm:px-8">
+            {t("subscription.trialBanner", {
+              date: new Intl.DateTimeFormat(locale === "bn" ? "bn-BD" : "en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Dhaka" }).format(
+                new Date(subscription.trialEndsAt),
+              ),
+              plan: locale === "bn" ? subscription.planNameBn : subscription.planNameEn,
+            })}
+          </div>
+        ) : null}
+        {children}
+      </div>
     </div>
   );
 }

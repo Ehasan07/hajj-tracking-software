@@ -3,7 +3,9 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { BUSINESS_UNITS, parseRate } from "@hajj/core";
 import { withTenant } from "@hajj/db";
-import { exchangeRates, member, tenantSettings } from "@hajj/db/schema";
+import { exchangeRates, member, plans, subscriptions, tenantSettings } from "@hajj/db/schema";
+import { sql } from "drizzle-orm";
+import { subscriptionInactive } from "../trpc";
 import { protectedProcedure, router, tenantProcedure, withRoles } from "../trpc";
 
 const settingsInput = z.object({
@@ -38,12 +40,34 @@ export const tenantRouter = router({
           .onConflictDoNothing()
           .returning();
         if (!row) throw new TRPCError({ code: "CONFLICT", message: "ALREADY_INITIALIZED" });
+        // Every new agency starts on a trial; the platform owner chooses the plan and length.
+        const plan = process.env.TRIAL_PLAN ?? "premium";
+        const days = Number(process.env.TRIAL_DAYS ?? 30);
+        await tx.execute(sql`select start_trial(${plan}, ${days})`);
         return row;
       });
     }),
 
   /** The caller's role in the active agency, for showing or hiding restricted actions. */
   me: tenantProcedure.query(({ ctx }) => ({ role: ctx.role, tenantId: ctx.tenantId })),
+
+  /** The agency's plan and whether it can still make changes. */
+  subscription: tenantProcedure.query(async ({ ctx }) => {
+    const [row] = await ctx.tx
+      .select({
+        status: subscriptions.status,
+        cycle: subscriptions.cycle,
+        trialEndsAt: subscriptions.trialEndsAt,
+        currentPeriodEnd: subscriptions.currentPeriodEnd,
+        planNameBn: plans.nameBn,
+        planNameEn: plans.nameEn,
+        limits: plans.limits,
+      })
+      .from(subscriptions)
+      .innerJoin(plans, eq(plans.id, subscriptions.planId))
+      .limit(1);
+    return row ? { ...row, inactive: subscriptionInactive(row) } : null;
+  }),
 
   settings: tenantProcedure.query(async ({ ctx }) => {
     const [row] = await ctx.tx.select().from(tenantSettings).limit(1);

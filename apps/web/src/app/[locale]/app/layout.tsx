@@ -16,12 +16,15 @@ export default async function AppLayout({
   setRequestLocale(locale);
   const session = await getSession();
   if (!session) return redirect({ href: "/sign-in", locale });
-  if (!session.session.activeOrganizationId) return redirect({ href: "/onboarding", locale });
-
   const caller = await api();
+  if (!session.session.activeOrganizationId) {
+    const { isAdmin } = await caller.platform.me();
+    return redirect({ href: isAdmin ? "/admin" : "/onboarding", locale });
+  }
+
   const settings = await caller.tenant.settings();
   if (!settings) return redirect({ href: "/onboarding", locale });
-  const counts = await caller.inquiries.counts();
+  const [counts, subscription] = await Promise.all([caller.inquiries.counts(), caller.tenant.subscription()]);
 
   return (
     <AppShell
@@ -29,6 +32,17 @@ export default async function AppLayout({
       licence={settings.licenseNumber}
       enabledUnits={settings.enabledUnits}
       openInquiries={(counts.new ?? 0) + (counts.follow_up ?? 0)}
+      subscription={
+        subscription
+          ? {
+              status: subscription.status,
+              inactive: subscription.inactive,
+              trialEndsAt: subscription.trialEndsAt ? subscription.trialEndsAt.toISOString() : null,
+              planNameBn: subscription.planNameBn,
+              planNameEn: subscription.planNameEn,
+            }
+          : null
+      }
     >
       {children}
     </AppShell>

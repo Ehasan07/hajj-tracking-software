@@ -10,11 +10,13 @@ const createCaller = createCallerFactory(appRouter);
 const tenantId = randomUUID();
 const otherTenantId = randomUUID();
 const ownerId = randomUUID();
+const platformAdminId = randomUUID();
 const staffId = randomUUID();
 
 const owner = () => createCaller(createContext({ session: { userId: ownerId, activeOrganizationId: tenantId } }));
 const staff = () => createCaller(createContext({ session: { userId: staffId, activeOrganizationId: tenantId } }));
 const outsider = () => createCaller(createContext({ session: { userId: ownerId, activeOrganizationId: otherTenantId } }));
+const platform = () => createCaller(createContext({ session: { userId: platformAdminId, activeOrganizationId: null } }));
 
 let packageId: string;
 let pilgrimId: string;
@@ -23,7 +25,12 @@ beforeAll(async () => {
   await db.insert(user).values([
     { id: ownerId, name: "Owner", email: `${ownerId}@test.local` },
     { id: staffId, name: "Staff", email: `${staffId}@test.local` },
+    { id: platformAdminId, name: "Platform", email: `${platformAdminId}@test.local` },
   ]);
+  const { default: pg } = await import("postgres");
+  const ownerDb = pg(process.env.DATABASE_OWNER_URL!, { max: 1 });
+  await ownerDb`insert into platform_admins (user_id) values (${platformAdminId})`;
+  await ownerDb.end();
   await db.insert(organization).values([
     { id: tenantId, name: "Flow Agency", slug: `flow-${tenantId}`, createdAt: new Date() },
     { id: otherTenantId, name: "Other", slug: `other-${otherTenantId}`, createdAt: new Date() },
@@ -46,7 +53,8 @@ afterAll(async () => {
   const ownerDb = postgres(process.env.DATABASE_OWNER_URL!, { max: 1 });
   await ownerDb`delete from payments where tenant_id = ${tenantId}`;
   await ownerDb`delete from organization where id in (${tenantId}, ${otherTenantId})`;
-  await ownerDb`delete from "user" where id in (${ownerId}, ${staffId})`;
+  await ownerDb`delete from plans where code like 'tiny%'`;
+  await ownerDb`delete from "user" where id in (${ownerId}, ${staffId}, ${platformAdminId})`;
   await ownerDb.end();
   await rawSql.end();
 });
@@ -267,6 +275,70 @@ describe("hajj flow", () => {
     const reviews = await staff().sacred.reviews();
     expect(reviews["item:dua_talbiyah"]?.status).toBe("approved");
     expect(await outsider().sacred.reviews().catch((e: Error) => e.message)).toMatch(/FORBIDDEN/);
+  });
+
+  it("starts every new agency on a trial", async () => {
+    const sub = await staff().tenant.subscription();
+    expect(sub?.status).toBe("trial");
+    expect(sub?.inactive).toBe(false);
+  });
+
+  it("shows the platform overview only to platform admins", async () => {
+    expect((await owner().platform.me()).isAdmin).toBe(false);
+    await expect(owner().platform.overview()).rejects.toThrow(/FORBIDDEN/);
+    expect((await platform().platform.me()).isAdmin).toBe(true);
+    const overview = await platform().platform.overview();
+    expect(overview.agencies).toBeGreaterThan(0);
+    const agencies = await platform().platform.agencies();
+    const mine = agencies.find((a) => a.id === tenantId);
+    expect(mine?.name).toBe("Flow Agency Ltd");
+    expect(mine?.pilgrims).toBeGreaterThan(0);
+    expect(mine?.status).toBe("trial");
+  });
+
+  it("enforces the plan's pilgrim limit", async () => {
+    const plans = await platform().platform.plans();
+    const tiny = await platform().platform.savePlan({
+      code: `tiny${Date.now()}`.slice(0, 20),
+      nameBn: "ছোট",
+      nameEn: "Tiny",
+      priceMonthly: "100",
+      priceYearly: "1000",
+      pilgrimsPerYear: 1,
+      staffSeats: 1,
+      smsPerMonth: 0,
+      units: ["hajj"],
+      customDomain: false,
+      sortOrder: 99,
+      active: false,
+    });
+    await platform().platform.setSubscription({
+      tenantId, planId: tiny.id, status: "active", cycle: "monthly", trialEndsAt: null, currentPeriodEnd: "2030-01-01",
+    });
+    const [pkg] = await owner().packages.list({ activeOnly: true });
+    await expect(staff().pilgrims.create({ fullName: "Over Limit", phone: "01933333333", packageId: pkg!.id })).rejects.toThrow(
+      /PLAN_LIMIT:1/,
+    );
+    const premium = plans.find((p) => p.code === "premium")!;
+    await platform().platform.setSubscription({
+      tenantId, planId: premium.id, status: "active", cycle: "yearly", trialEndsAt: null, currentPeriodEnd: "2030-01-01",
+    });
+  });
+
+  it("makes a suspended agency read-only", async () => {
+    const premium = (await platform().platform.plans()).find((p) => p.code === "premium")!;
+    await platform().platform.setSubscription({
+      tenantId, planId: premium.id, status: "suspended", cycle: "monthly", trialEndsAt: null, currentPeriodEnd: null, notes: "unpaid",
+    });
+    expect((await staff().tenant.subscription())?.inactive).toBe(true);
+    await expect(staff().inquiries.create({ name: "Blocked", phone: "01944444444", interest: "hajj" })).rejects.toThrow(
+      /SUBSCRIPTION_INACTIVE/,
+    );
+    expect((await staff().pilgrims.list()).length).toBeGreaterThan(0);
+    await platform().platform.setSubscription({
+      tenantId, planId: premium.id, status: "active", cycle: "monthly", trialEndsAt: null, currentPeriodEnd: "2030-01-01",
+    });
+    await staff().inquiries.create({ name: "Allowed again", phone: "01944444444", interest: "hajj" });
   });
 
   it("keeps other agencies out", async () => {

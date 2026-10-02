@@ -331,7 +331,9 @@
     "INVALID_NID": "National ID must be 10, 13 or 17 digits",
     "REASON_REQUIRED": "Please give a reason",
     "NOT_READY": "Requirements are not met yet",
-    "UNKNOWN_DOCUMENT": "Unknown document type"
+    "UNKNOWN_DOCUMENT": "Unknown document type",
+    "SUBSCRIPTION_INACTIVE": "Your subscription is not active, so changes are paused. Please contact the platform.",
+    "PLAN_LIMIT": "Your plan's pilgrim limit for this year is reached. Contact us to upgrade."
   },
   "sacred": {
     "title": "Ayat, duas and the rites of Hajj",
@@ -523,5 +525,112 @@
     "mahramName": "Mahram's name",
     "mahramRelation": "Relationship",
     "mahramHint": "Who travels with a woman pilgrim"
+  },
+  "admin": {
+    "title": "Platform admin",
+    "badge": "Platform",
+    "nav": {
+      "overview": "Overview",
+      "agencies": "Agencies",
+      "plans": "Plans & pricing",
+      "backToApp": "Go to agency app"
+    },
+    "overview": {
+      "title": "Your SaaS at a glance",
+      "agencies": "Agencies",
+      "active": "Active (paid)",
+      "trial": "On trial",
+      "suspended": "Suspended",
+      "mrr": "Monthly recurring revenue",
+      "mrrHint": "From active subscriptions; yearly plans divided by 12",
+      "collections": "Collected by all agencies this month",
+      "pilgrims": "Pilgrims",
+      "pilgrimsYear": "Registered this year: {n}",
+      "new30": "New agencies, last 30 days",
+      "trialsSoon": "Trials ending within 7 days",
+      "trialsExpired": "Trial over, payment due",
+      "signups": "New agencies per month",
+      "statusMix": "Subscription status",
+      "recent": "Latest agencies",
+      "attention": "Needs attention",
+      "noAttention": "No agency needs attention right now"
+    },
+    "status": {
+      "trial": "Trial",
+      "active": "Active",
+      "past_due": "Payment due",
+      "suspended": "Suspended",
+      "cancelled": "Cancelled",
+      "none": "No plan",
+      "expired": "Trial over"
+    },
+    "agencies": {
+      "title": "Agencies",
+      "search": "Name, slug or owner email",
+      "name": "Agency",
+      "owner": "Owner",
+      "plan": "Plan",
+      "status": "Status",
+      "trialEnds": "Trial ends",
+      "pilgrims": "Pilgrims",
+      "staff": "Staff",
+      "collections": "Collected this month",
+      "lastActivity": "Last activity",
+      "joined": "Joined",
+      "empty": "No agencies yet"
+    },
+    "agency": {
+      "subscription": "Subscription",
+      "plan": "Plan",
+      "status": "Status",
+      "cycle": "Billing",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "trialEnds": "Trial ends on",
+      "periodEnd": "Paid until",
+      "notes": "Notes (only you see these)",
+      "save": "Save",
+      "saved": "Saved",
+      "units": "Businesses enabled",
+      "unitsHint": "You can enable add-ons beyond what the plan includes",
+      "saveUnits": "Save businesses",
+      "website": "Website",
+      "publicHost": "Public address",
+      "noHost": "No domain set yet",
+      "facts": "Facts",
+      "readOnlyNote": "When suspended, cancelled, unpaid, or past the trial, the agency can still read everything but can't change anything."
+    },
+    "plans": {
+      "title": "Plans & pricing",
+      "subtitle": "What you sell to agencies. Price changes apply to the next bill.",
+      "new": "New plan",
+      "code": "Code",
+      "nameBn": "Name (Bangla)",
+      "nameEn": "Name (English)",
+      "taglineBn": "One-line description (Bangla)",
+      "taglineEn": "One-line description (English)",
+      "monthly": "Monthly price (Taka)",
+      "yearly": "Yearly price (Taka)",
+      "perMonth": "/month",
+      "perYear": "/year",
+      "pilgrims": "Pilgrims a year",
+      "staff": "Staff",
+      "sms": "SMS a month",
+      "unlimited": "Unlimited",
+      "unlimitedHint": "Leave empty for unlimited",
+      "units": "Businesses included",
+      "customDomain": "Own domain",
+      "active": "On sale",
+      "inactive": "Off sale",
+      "sort": "Order",
+      "save": "Save plan",
+      "edit": "Edit",
+      "agencies": "{n} agencies",
+      "placeholder": "Sample price: set your real price"
+    }
+  },
+  "subscription": {
+    "trialBanner": "Trial until {date}, {plan} plan",
+    "inactiveBanner": "Your subscription is not active. You can view everything, but changes are paused."
   }
 }

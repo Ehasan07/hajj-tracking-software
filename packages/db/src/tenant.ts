@@ -25,3 +25,15 @@ export async function withTenant<T>(
     return work(tx);
   });
 }
+
+/**
+ * A transaction that knows who is acting but belongs to no agency. Used for
+ * platform-admin work, which goes only through SECURITY DEFINER functions
+ * that check is_platform_admin() themselves.
+ */
+export async function withActor<T>(db: Database, userId: string, work: (tx: Transaction) => Promise<T>): Promise<T> {
+  return db.transaction(async (tx) => {
+    await tx.execute(sql`select set_config('app.user_id', ${userId}, true)`);
+    return work(tx);
+  });
+}

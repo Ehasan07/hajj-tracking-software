@@ -9,3 +9,5 @@ export const PILGRIM_STATUS_TONE = {
 } as const;
 
 export const PILGRIM_STATUSES = Object.keys(PILGRIM_STATUS_TONE) as (keyof typeof PILGRIM_STATUS_TONE)[];
+
+export const SUBSCRIPTION_TONE = { active: "paid", trial: "pending", past_due: "due", suspended: "due", cancelled: "neutral" } as const;

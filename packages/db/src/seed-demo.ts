@@ -132,9 +132,28 @@ if (existing.length > 0) {
   console.info(`Demo activity added: ${inquiries.length} inquiries, ${people.length} pilgrims.`);
 }
 
-// 3. Starter guide articles (drafts), skipped if already there.
+// 3. A platform admin login for the SaaS console at /admin.
+const ADMIN_EMAIL = "admin@platform.test";
+const ADMIN_PASSWORD = "Admin-Hajj-2026";
+{
+  const saved = cookie;
+  cookie = "";
+  const signedIn = await call("/api/auth/sign-in/email", { method: "POST", body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }) });
+  if (!signedIn.ok) {
+    const res = await call("/api/auth/sign-up/email", {
+      method: "POST",
+      body: JSON.stringify({ name: "Platform Owner", email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+    });
+    if (!res.ok) throw new Error(`admin sign-up failed: ${res.status}`);
+  }
+  await sql`insert into platform_admins (user_id) select id from "user" where email = ${ADMIN_EMAIL} on conflict do nothing`;
+  cookie = saved;
+}
+
+// 4. Starter guide articles (drafts), skipped if already there.
 const { added } = await trpc<{ added: number }>("articles.addStarter", undefined);
 if (added) console.info(`Added ${added} starter guide articles.`);
 
 await sql.end();
 console.info(`Demo login: ${DEMO_EMAIL} / ${DEMO_PASSWORD}  →  ${BASE}/sign-in`);
+console.info(`Platform admin: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}  →  ${BASE}/admin`);

@@ -14,6 +14,7 @@ export function useErrorText() {
     const { key, arg } = errorKey(error);
     if (key === "OVERPAYMENT") return tp("payment.overpay", { due: money(Number(arg ?? 0), locale) });
     if (key === "DUPLICATE_PASSPORT") return tp("pilgrims.duplicate", { ref: arg ?? "" });
+    if (key === "PLAN_LIMIT") return t("PLAN_LIMIT");
     return t(key as "generic");
   };
 }

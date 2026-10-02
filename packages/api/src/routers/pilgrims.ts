@@ -10,7 +10,7 @@ import {
   parseReference,
 } from "@hajj/core";
 import type { Transaction } from "@hajj/db";
-import { inquiries, payments, pilgrimDocuments, pilgrims, travelPackages } from "@hajj/db/schema";
+import { inquiries, payments, pilgrimDocuments, pilgrims, plans, subscriptions, travelPackages } from "@hajj/db/schema";
 import { pilgrimReadiness } from "../services/pilgrim";
 import { blindIndex, decryptField, encryptField } from "../crypto";
 import { getSettings, nextReference } from "../services/tenant";
@@ -221,6 +221,21 @@ export const pilgrimsRouter = router({
       const { packageId, discount, passportNumber, allowDuplicatePassport, inquiryId, nidNumber, ...profile } = input;
       const [pkg] = await ctx.tx.select().from(travelPackages).where(eq(travelPackages.id, packageId));
       if (!pkg || !pkg.active) throw new TRPCError({ code: "BAD_REQUEST", message: "PACKAGE_UNAVAILABLE" });
+
+      // Plan limit: pilgrims registered this calendar year.
+      const [plan] = await ctx.tx
+        .select({ limits: plans.limits })
+        .from(subscriptions)
+        .innerJoin(plans, eq(plans.id, subscriptions.planId))
+        .limit(1);
+      const cap = plan?.limits.pilgrimsPerYear;
+      if (cap) {
+        const [{ n } = { n: 0 }] = await ctx.tx
+          .select({ n: sql<number>`count(*)::int` })
+          .from(pilgrims)
+          .where(sql`${pilgrims.createdAt} >= date_trunc('year', now())`);
+        if (n >= cap) throw new TRPCError({ code: "FORBIDDEN", message: `PLAN_LIMIT:${cap}` });
+      }
 
       const discountMinor = discount ? parseAmount(discount) : 0;
       if (discountMinor < 0 || discountMinor > pkg.price) {
