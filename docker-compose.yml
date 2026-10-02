@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hajj_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hajj_owner_dev}
+      POSTGRES_DB: hajj
+    ports:
+      - "127.0.0.1:5440:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./packages/db/docker/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hajj_owner -d hajj"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6390:6379"
+    volumes:
+      - redisdata:/data
+
+  storage:
+    # S3-compatible object storage (passport scans, receipts, exports)
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-hajj_storage}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-hajj_storage_dev_secret}
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "127.0.0.1:9020:9000"
+      - "127.0.0.1:9021:9001"
+    volumes:
+      - storagedata:/data
+
+volumes:
+  pgdata:
+  redisdata:
+  storagedata:

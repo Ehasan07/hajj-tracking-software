@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: hajj_owner
+          POSTGRES_PASSWORD: hajj_owner_ci
+          POSTGRES_DB: hajj
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U hajj_owner -d hajj"
+          --health-interval 5s --health-retries 10
+    env:
+      DATABASE_OWNER_URL: postgres://hajj_owner:hajj_owner_ci@localhost:5432/hajj
+      DATABASE_URL: postgres://hajj_app:hajj_app_dev@localhost:5432/hajj
+      BETTER_AUTH_SECRET: ci-only-secret-0000000000000000000000000
+      BETTER_AUTH_URL: http://localhost:3100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm install --frozen-lockfile
+      - name: Prepare database
+        run: |
+          PGPASSWORD=hajj_owner_ci psql -h localhost -U hajj_owner -d hajj -f packages/db/docker/init.sql
+          pnpm --filter @hajj/db exec tsx src/migrate.ts
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm --filter @hajj/web build

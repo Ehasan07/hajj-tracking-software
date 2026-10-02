@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "title": "Hajj & Umrah Management",
+    "description": "Pilgrims, payments, receipts, hotels and every business ledger in one place."
+  },
+  "common": {
+    "language": "Language",
+    "switchTo": "বাংলা",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "signUp": "Create account",
+    "continue": "Continue",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "required": "This field is required"
+  },
+  "auth": {
+    "signInTitle": "Sign in to your account",
+    "signUpTitle": "New agency account",
+    "name": "Your name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 10 characters",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already have an account?",
+    "invalid": "Email or password is incorrect",
+    "tooMany": "Too many attempts. Try again in a minute."
+  },
+  "onboarding": {
+    "title": "About your agency",
+    "agencyName": "Agency name",
+    "legalName": "Registered name",
+    "licenseNumber": "Hajj licence number",
+    "prefix": "ID prefix",
+    "prefixHint": "2–5 capital letters, e.g. HJ. Pilgrim IDs will look like HJ-26-000001",
+    "units": "Which businesses do you run",
+    "done": "Get started"
+  },
+  "units": {
+    "hajj": "Hajj & Umrah",
+    "medicine": "Medicine shop",
+    "zamzam": "Zamzam water",
+    "coffee": "Naba Coffee Shop",
+    "supernova": "Supernova",
+    "office": "Office expenses"
+  },
+  "dashboard": {
+    "greeting": "Assalamu alaikum, {name}",
+    "todayCollection": "Today's collection",
+    "search": "Enter ID, mobile or passport number"
+  }
+}
