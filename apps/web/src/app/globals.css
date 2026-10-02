@@ -1,33 +1,93 @@
 @import "tailwindcss";
 
-/* Kiswa & Marble — tokens from the approved design direction */
+/* Noor & Mihrab — tokens from the approved design direction (v2) */
 @theme {
-  --color-ink: #15171c;
-  --color-ink-2: #3c4049;
-  --color-ink-3: #6b6f78;
-  --color-marble: #f7f6f2;
+  --color-ink: #12302e;
+  --color-ink-2: #44605d;
+  --color-ink-3: #5e7471;
+  --color-ground: #f4f6f5;
   --color-paper: #ffffff;
-  --color-line: #e4e1d8;
-  --color-line-strong: #cfcabd;
-  --color-gold: #a57a22;
-  --color-gold-deep: #7d5b14;
-  --color-gold-light: #c9a24a;
-  --color-zamzam: #1d5c68;
-  --color-zamzam-deep: #123e46;
-  --color-zamzam-tint: #e3eeef;
-  --color-paid: #2d6b45;
-  --color-paid-tint: #e5efe8;
-  --color-due: #a64b17;
-  --color-due-tint: #f6e9df;
-  --color-date: #6e4a2f;
+  --color-field: #f9fbfa;
+  --color-line: #e1e9e7;
+  --color-line-strong: #c9d6d3;
+
+  --color-haram: #0b7a6f;
+  --color-haram-deep: #075e55;
+  --color-haram-night: #0b4f4a;
+  --color-haram-tint: #ddf1ee;
+  --color-saffron: #f2b33d;
+  --color-saffron-deep: #d4952a;
+  --color-saffron-ink: #8a5a00;
+  --color-saffron-tint: #fff3d6;
+
+  --color-paid: #1e7b4a;
+  --color-paid-tint: #dff3e7;
+  --color-due: #b4410f;
+  --color-due-tint: #fde7da;
+
+  /* One colour per business unit: strong for text and icons, tint for backgrounds */
+  --color-unit-hajj: #0b7a6f;
+  --color-unit-hajj-tint: #ddf1ee;
+  --color-unit-medicine: #c9472d;
+  --color-unit-medicine-tint: #fbe5df;
+  --color-unit-zamzam: #2466b8;
+  --color-unit-zamzam-tint: #e0ecfa;
+  --color-unit-coffee: #8f5427;
+  --color-unit-coffee-tint: #f4e6d8;
+  --color-unit-supernova: #8a3f8f;
+  --color-unit-supernova-tint: #f3e3f2;
+  --color-unit-hotel: #a66a12;
+  --color-unit-hotel-tint: #f8edd6;
+  --color-unit-office: #4a5a73;
+  --color-unit-office-tint: #e4e8ef;
 
   --font-sans: var(--font-anek), "Noto Sans Bengali", system-ui, sans-serif;
   --font-display: var(--font-tiro), "Noto Serif Bengali", serif;
+  --font-hand: var(--font-galada), cursive;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 
-  --radius-sm: 3px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-arch: 999px 999px 20px 20px;
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-stamp: cubic-bezier(0.3, 1.4, 0.5, 1);
+
+  --animate-rise: rise 0.6s var(--ease-out-soft) both;
+  --animate-grow: grow 0.9s var(--ease-out-soft) both;
+  --animate-turn: turn 90s linear infinite;
+  --animate-stamp: stamp 0.8s var(--ease-stamp) both;
+  --animate-flash: flash 2.4s ease-out both;
+  --animate-ripple: ripple 1.8s ease-out infinite;
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes grow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes turn {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes stamp {
+    0% { opacity: 0; transform: rotate(-12deg) scale(1.8); }
+    55% { opacity: 1; transform: rotate(-12deg) scale(0.92); }
+    100% { opacity: 1; transform: rotate(-12deg) scale(1); }
+  }
+  @keyframes flash {
+    from { background-color: var(--color-saffron-tint); }
+    to { background-color: transparent; }
+  }
+  @keyframes ripple {
+    0% { box-shadow: 0 0 0 0 rgb(11 122 111 / 0.45); }
+    100% { box-shadow: 0 0 0 12px rgb(11 122 111 / 0); }
+  }
+  @keyframes draw {
+    to { stroke-dashoffset: 0; }
+  }
 }
 
 @layer base {
@@ -36,16 +96,23 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    background: var(--color-marble);
+    background: var(--color-ground);
     color: var(--color-ink);
     font-family: var(--font-sans);
   }
   :focus-visible {
-    outline: 2px solid var(--color-zamzam);
+    outline: 2px solid var(--color-haram);
     outline-offset: 2px;
   }
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+  .lift {
+    transition: transform 0.25s var(--ease-out-soft), box-shadow 0.25s;
+  }
+  .lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px -16px rgb(18 48 46 / 0.45);
   }
 }
 
@@ -55,5 +122,33 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Printing: only the document itself, edge to edge on its own page size. */
+@media print {
+  @page {
+    size: A5 landscape;
+    margin: 0;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 210mm;
+    height: 148mm;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .print-area * {
+    animation: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

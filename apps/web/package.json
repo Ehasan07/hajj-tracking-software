@@ -11,6 +11,7 @@
     "auth:generate": "auth generate --config src/server/auth.ts --output ../../packages/db/src/schema/auth.ts -y"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1145.0",
     "@hajj/api": "workspace:*",
     "@hajj/core": "workspace:*",
     "@hajj/db": "workspace:*",
@@ -20,9 +21,11 @@
     "@trpc/server": "^11.19.0",
     "@trpc/tanstack-react-query": "^11.19.0",
     "better-auth": "^1.7.7",
+    "drizzle-orm": "^0.45.3",
     "motion": "^13.5.0",
     "next": "^16.3.8",
     "next-intl": "^4.14.8",
+    "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "server-only": "^0.0.1",
@@ -32,6 +35,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^22.20.5",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "auth": "^1.7.7",

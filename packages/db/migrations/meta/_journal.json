@@ -15,6 +15,27 @@
       "when": 1790930088760,
       "tag": "0001_security",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790932876792,
+      "tag": "0002_hajj_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790932877942,
+      "tag": "0003_hajj_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790933011137,
+      "tag": "0004_access_log",
+      "breakpoints": true
     }
   ]
 }

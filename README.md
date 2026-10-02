@@ -12,6 +12,17 @@ Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and Engli
 | `packages/api` | tRPC routers shared by the web app and the mobile apps |
 | `packages/i18n` | Bangla and English messages |
 
+## Features so far
+
+- Agencies sign up, choose an ID prefix and the businesses they run
+- Inquiry log for people who visit or call, with follow-ups and one-click registration
+- Pilgrim register with auto IDs (`AM-26-000001`), search by ID, mobile, passport or name
+- Passport details read from the MRZ lines; numbers encrypted, scans stored encrypted
+- Payments with gap-free receipt numbers, due tracking and overpayment guard
+- Printable A5 money receipt in Bangla and English with a QR code anyone can verify
+- Receipt voiding with a reason and a reversing ledger entry
+- Packages and a bilingual Hajj & Umrah guide
+
 ## Ground rules
 
 - Money is stored as integers in minor units (paisa / halala). No floats anywhere near a balance.
@@ -36,8 +47,9 @@ pnpm dev                      # http://localhost:3100
 
 ```bash
 pnpm typecheck
-pnpm test                     # core, i18n and database (RLS) tests
+pnpm test                     # core, i18n, database (RLS) and API flow tests
 pnpm --filter @hajj/web build
+npx playwright test           # browser test of a full office day
 ```
 
 ## Deploy

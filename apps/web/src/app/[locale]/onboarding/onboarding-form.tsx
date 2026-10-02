@@ -18,7 +18,7 @@ function slugify(name: string) {
   return `${base || "agency"}-${crypto.randomUUID().slice(0, 6)}`;
 }
 
-export function OnboardingForm() {
+export function OnboardingForm({ existingOrgId }: { existingOrgId?: string }) {
   const t = useTranslations();
   const locale = useLocale() as "bn" | "en";
   const router = useRouter();
@@ -34,11 +34,15 @@ export function OnboardingForm() {
     setPending(true);
     setError(undefined);
     try {
-      const { data: org, error: orgError } = await authClient.organization.create({ name, slug: slugify(name) });
-      if (orgError || !org) throw new Error(orgError?.message ?? "ORG_CREATE_FAILED");
-      await authClient.organization.setActive({ organizationId: org.id });
+      let orgId = existingOrgId;
+      if (!orgId) {
+        const { data: org, error: orgError } = await authClient.organization.create({ name, slug: slugify(name) });
+        if (orgError || !org) throw new Error(orgError?.message ?? "ORG_CREATE_FAILED");
+        orgId = org.id;
+      }
+      await authClient.organization.setActive({ organizationId: orgId });
       await initialize.mutateAsync({
-        organizationId: org.id,
+        organizationId: orgId,
         legalName: String(form.get("legalName") || name).trim(),
         licenseNumber: String(form.get("licenseNumber") || "").trim() || undefined,
         referencePrefix: String(form.get("prefix")).trim().toUpperCase(),
@@ -82,7 +86,7 @@ export function OnboardingForm() {
                 name="units"
                 value={unit}
                 defaultChecked={unit === "hajj" || unit === "office"}
-                className="h-4 w-4 accent-[var(--color-zamzam)]"
+                className="h-4 w-4 accent-[var(--color-haram)]"
               />
               <span className="text-[15px]">{t(`units.${unit}`)}</span>
             </label>

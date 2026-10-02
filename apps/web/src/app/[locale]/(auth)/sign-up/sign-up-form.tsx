@@ -50,7 +50,7 @@ export function SignUpForm() {
       </Button>
       <p className="text-[15px] text-ink-2">
         {t("auth.haveAccount")}{" "}
-        <Link href="/sign-in" className="font-semibold text-zamzam underline underline-offset-4">
+        <Link href="/sign-in" className="font-semibold text-haram underline underline-offset-4">
           {t("common.signIn")}
         </Link>
       </p>

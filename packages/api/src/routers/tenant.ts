@@ -41,6 +41,9 @@ export const tenantRouter = router({
       });
     }),
 
+  /** The caller's role in the active agency, for showing or hiding restricted actions. */
+  me: tenantProcedure.query(({ ctx }) => ({ role: ctx.role, tenantId: ctx.tenantId })),
+
   settings: tenantProcedure.query(async ({ ctx }) => {
     const [row] = await ctx.tx.select().from(tenantSettings).limit(1);
     return row ?? null;

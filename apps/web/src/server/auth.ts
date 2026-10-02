@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { organization, phoneNumber, twoFactor } from "better-auth/plugins";
+import { asc, eq } from "drizzle-orm";
 import { db, schema } from "@hajj/db";
 import { sendSms } from "./sms";
 
@@ -14,6 +15,23 @@ export const auth = betterAuth({
     database: { generateId: () => crypto.randomUUID() },
     cookiePrefix: "hajj",
     useSecureCookies: process.env.NODE_ENV === "production",
+  },
+  databaseHooks: {
+    session: {
+      create: {
+        // Open every new session in the user's agency, so signing in lands on
+        // their dashboard instead of onboarding.
+        before: async (session) => {
+          const [first] = await db
+            .select({ organizationId: schema.member.organizationId })
+            .from(schema.member)
+            .where(eq(schema.member.userId, session.userId))
+            .orderBy(asc(schema.member.createdAt))
+            .limit(1);
+          return { data: { ...session, activeOrganizationId: first?.organizationId ?? null } };
+        },
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,
