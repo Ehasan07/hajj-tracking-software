@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getItem } from "@hajj/sacred";
-import { LabbaikOrnament, QuranAttribution, StarDivider, Verses } from "@/components/sacred";
+import { DraftChip, LabbaikOrnament, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
 import { buttonClass, Khatam } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/lib/format";
@@ -33,7 +33,7 @@ export default async function Home({
   }
 
   const t = await getTranslations();
-  // This page belongs to no agency, so no scholar has approved a meaning here: Arabic and its citation only.
+  // This page belongs to no agency, so no scholar has approved the meaning here: it is shown as a draft.
   const house = getItem("ayah_first_house");
 
   return (
@@ -63,6 +63,16 @@ export default async function Home({
         <div className="flex flex-col gap-5 rounded-[160px_160px_24px_24px] bg-paper px-6 pt-14 pb-8 shadow-[0_30px_60px_-40px_rgb(18_48_46/0.45)] sm:px-14">
           <StarDivider />
           <Verses item={house} className="text-center text-[26px] sm:text-[32px]" />
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 rounded-[24px_24px_14px_14px] bg-ground px-6 py-5">
+            <DraftChip label={t("site.draftChip")} />
+            <ReadingLines
+              item={house}
+              pronunciation={house.pronunciation ?? null}
+              meanings={house.verses.map((v) => v.meaning[locale])}
+              locale={locale}
+              labels={{ pronunciation: t("site.pronunciation"), meaning: t("site.meaning") }}
+            />
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-ink-3">
             <span>{house.citation[locale]}</span>
             <span aria-hidden="true">·</span>

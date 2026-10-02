@@ -9,7 +9,7 @@ import {
   ReceiptIcon,
   StatementIcon,
 } from "@/components/icons";
-import { LabbaikOrnament, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
+import { DraftChip, LabbaikOrnament, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
 import { buttonClass, Khatam } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { digits, money, phoneText, type Locale } from "@/lib/format";
@@ -34,19 +34,6 @@ function reading(site: Site, item: ResolvedItem, locale: Locale) {
     meanings: item.verses.map((v, i) => (rewritten.length ? rewritten[i]! : v.meaning[locale])),
     pronunciation: r?.pronunciation ?? item.pronunciation ?? null,
   };
-}
-
-function DraftChip({ label, tone = "light" }: { label: string; tone?: "light" | "dark" }) {
-  return (
-    <span
-      className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold ${
-        tone === "dark" ? "bg-[#14635d] text-saffron" : "bg-saffron-tint text-saffron-ink"
-      }`}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-saffron" />
-      {label}
-    </span>
-  );
 }
 
 export async function AgencySite({

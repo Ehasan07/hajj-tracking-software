@@ -20,8 +20,11 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
     caller.payments.receipt({ id }),
     caller.sacred.reviews(),
   ]);
+  const tSite = await getTranslations("site");
   const blessing = receiptItem();
   const blessingShown = presented(blessing, reviews[`item:${blessing.id}`] as Review | undefined, locale);
+  // Printed under the ayah once approved, or as a marked draft when the agency allows drafts.
+  const blessingReading = blessingShown.approved || agency.showDraftMeanings ? blessingShown : null;
 
   const origin = process.env.BETTER_AUTH_URL ?? "";
   const verifyUrl = `${origin}/verify/${payment.verifyToken}`;
@@ -50,10 +53,10 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
           <span className="h-2.5 w-2.5 rounded-full bg-saffron" />
         </div>
 
-        <div className="relative flex min-w-0 flex-col gap-4 px-4 py-5 sm:gap-[2.2%] sm:px-[4.5%] sm:py-[3.5%]">
+        <div className="relative flex min-w-0 flex-col gap-4 px-4 py-5 sm:gap-[1.8%] sm:px-[4.5%] sm:py-[3%] print:gap-[1.2%] print:py-[2.4%]">
           <Khatam className="absolute -right-24 -bottom-28 h-80 w-80 text-[#eef3f2]" strokeWidth={1.2} />
 
-          <p lang="ar" dir="rtl" aria-label="Bismillah" className="relative -mb-2 text-center font-quran text-[26px] leading-none text-haram-deep sm:-mt-1">
+          <p lang="ar" dir="rtl" aria-label="Bismillah" className="relative -mb-2 text-center font-quran text-[26px] leading-none text-haram-deep sm:-mt-1 print:-mt-1 print:text-[22px]">
             {BASMALAH_GLYPH}
           </p>
 
@@ -78,14 +81,14 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
               [t("receipt.date"), dateText(payment.receivedAt, locale, true), false],
               [t("receipt.pilgrimId"), pilgrim.ref, true],
             ].map(([label, value, mono]) => (
-              <div key={String(label)} className="flex flex-col gap-0.5 rounded-xl bg-ground px-3 py-2">
+              <div key={String(label)} className="flex flex-col gap-0.5 rounded-xl bg-ground px-3 py-2 print:py-1">
                 <span className="text-[11px] text-ink-3">{label}</span>
                 <span className={mono ? "font-mono text-sm font-medium" : "text-sm font-semibold"}>{value}</span>
               </div>
             ))}
           </div>
 
-          <dl className="relative grid grid-cols-[92px_minmax(0,1fr)] gap-y-2 text-[15px] sm:grid-cols-[130px_minmax(0,1fr)]">
+          <dl className="relative grid grid-cols-[92px_minmax(0,1fr)] gap-y-2 text-[15px] sm:grid-cols-[130px_minmax(0,1fr)] print:gap-y-1 print:text-[13.5px]">
             <dt className="text-ink-3">{t("receipt.from")}</dt>
             <dd className="border-b border-dotted border-line-strong pb-0.5 font-semibold">
               {pilgrim.fullName} · {phoneText(pilgrim.phone, locale)}
@@ -103,11 +106,17 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
             </dd>
           </dl>
 
-          <div className="relative flex max-w-[64%] flex-col gap-0.5 self-start max-sm:max-w-full">
-            <Verses item={blessing} className="text-[17px] leading-[2] text-haram-deep" />
+          <div className="relative flex max-w-[64%] flex-col gap-1.5 self-start max-sm:max-w-full">
+            <Verses item={blessing} className="text-[17px] leading-[2] text-haram-deep print:text-[14.5px] print:leading-[1.8]" />
+            {blessingReading ? (
+              <span className="flex flex-col gap-0.5 text-[10.5px] leading-snug text-ink-2 print:text-[9px]">
+                {locale === "bn" && blessingReading.pronunciation ? <span className="italic">{blessingReading.pronunciation}</span> : null}
+                <span>{blessingReading.meanings[0]}</span>
+              </span>
+            ) : null}
             <span className="text-[10px] text-ink-3">
-              {blessingShown.approved ? `${blessingShown.meanings[0]} · ` : ""}
               {blessing.citation[locale]}
+              {blessingReading && !blessingReading.approved ? ` · ${tSite("draftChip")}` : ""}
             </span>
           </div>
 
@@ -124,9 +133,9 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
 
           <footer className="relative mt-auto flex flex-wrap items-end justify-between gap-5">
             <div className="flex flex-wrap items-stretch gap-4">
-              <div className="flex flex-col justify-center rounded-2xl bg-haram-night px-5 py-2.5 text-white">
+              <div className="flex flex-col justify-center rounded-2xl bg-haram-night px-5 py-2.5 text-white print:py-1.5">
                 <span className="text-xs text-[#a9cfc9]">{t("receipt.received")}</span>
-                <span className="tabular text-3xl leading-tight font-bold">{money(payment.amount, locale, payment.currency, false)}</span>
+                <span className="tabular text-3xl leading-tight font-bold print:text-2xl">{money(payment.amount, locale, payment.currency, false)}</span>
               </div>
               <div className="flex flex-col justify-center gap-0.5 text-[13px]">
                 <span>
@@ -147,7 +156,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
             </div>
             <div className="flex items-end gap-5">
               <div className="flex flex-col items-center gap-1">
-                <div className="h-[78px] w-[78px] rounded-xl border-[1.5px] border-line-strong p-1.5 [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: qr }} />
+                <div className="h-[78px] w-[78px] rounded-xl border-[1.5px] border-line-strong p-1.5 print:h-[64px] print:w-[64px] [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: qr }} />
                 <span className="text-[10px] text-ink-3">{t("receipt.verify")}</span>
               </div>
               <div className="flex w-36 flex-col items-center gap-1">

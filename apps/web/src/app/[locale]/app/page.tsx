@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { BusinessUnit } from "@hajj/core";
 import { itemOfTheDay } from "@hajj/sacred";
 import { CountUp } from "@/components/count-up";
-import { QuranAttribution, StarDivider, Verses } from "@/components/sacred";
+import { DraftChip, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
 import {
   DallahIcon,
   KaabaIcon,
@@ -185,16 +185,26 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
           </div>
           <StarDivider />
           <Verses item={daily} className="text-center text-[26px] sm:text-[30px]" />
-          {dailyShown.approved ? (
-            <p className="mx-auto max-w-3xl text-center text-[16px] leading-relaxed text-ink-2">{dailyShown.meanings.join(" ")}</p>
-          ) : (
-            <p className="text-center text-sm text-ink-3">
-              {t("sacred.meaningPending")} ·{" "}
-              <Link href={`/app/sacred?tab=${daily.kind === "dua" ? "duas" : daily.kind === "hadith" ? "hadith" : "ayat"}#${daily.id}`} className="font-semibold text-haram underline underline-offset-4">
-                {t("sacred.reviewLink")}
-              </Link>
-            </p>
-          )}
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 rounded-[24px_24px_14px_14px] bg-ground px-6 py-5">
+            {!dailyShown.approved ? (
+              <span className="flex flex-wrap items-center gap-2">
+                <DraftChip label={t("site.draftChip")} />
+                <Link
+                  href={`/app/sacred?tab=${daily.kind === "dua" ? "duas" : daily.kind === "hadith" ? "hadith" : "ayat"}#${daily.id}`}
+                  className="text-[13px] font-semibold text-haram underline underline-offset-4"
+                >
+                  {t("sacred.reviewLink")}
+                </Link>
+              </span>
+            ) : null}
+            <ReadingLines
+              item={daily}
+              pronunciation={dailyShown.pronunciation}
+              meanings={dailyShown.meanings}
+              locale={locale}
+              labels={{ pronunciation: t("site.pronunciation"), meaning: t("site.meaning") }}
+            />
+          </div>
           {daily.verses[0]!.surah > 0 ? (
             <div className="flex justify-center">
               <QuranAttribution locale={locale} />

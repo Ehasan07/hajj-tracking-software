@@ -1,9 +1,14 @@
 import type { ReactNode } from "react";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getItem } from "@hajj/sacred";
-import { LabbaikOrnament, StarDivider } from "./sacred";
+import type { Locale } from "@/lib/format";
+import { DraftChip, LabbaikOrnament, StarDivider } from "./sacred";
 import { Khatam } from "./ui";
 
-export function AuthShell({ title, children }: { title: string; children: ReactNode }) {
+export async function AuthShell({ title, children }: { title: string; children: ReactNode }) {
+  const locale = (await getLocale()) as Locale;
+  const t = await getTranslations("site");
+  const talbiyah = getItem("dua_talbiyah");
   return (
     <main className="grid min-h-dvh lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <aside className="relative hidden overflow-hidden bg-haram-night p-12 text-ground lg:flex lg:flex-col lg:justify-between">
@@ -17,10 +22,14 @@ export function AuthShell({ title, children }: { title: string; children: ReactN
         <LabbaikOrnament className="pointer-events-none absolute top-24 -left-6 text-[200px] text-[#14635d]" />
         <div className="relative flex flex-col gap-5">
           <p lang="ar" dir="rtl" className="font-naskh text-[34px] leading-[1.9] text-ground">
-            {getItem("dua_talbiyah").verses[0]!.arabic}
+            {talbiyah.verses[0]!.arabic}
           </p>
           <StarDivider className="text-saffron" />
-          <p className="max-w-sm font-display text-3xl leading-tight text-[#c7ddd9]">লাব্বাইক আল্লাহুম্মা লাব্বাইক</p>
+          <DraftChip label={t("draftChip")} tone="dark" />
+          {locale === "bn" && talbiyah.pronunciation ? (
+            <p className="text-[17px] leading-relaxed text-[#c7ddd9] italic">{talbiyah.pronunciation}</p>
+          ) : null}
+          <p className="text-[16px] leading-relaxed text-ground">{talbiyah.verses[0]!.meaning[locale]}</p>
           <svg viewBox="0 0 200 18" className="h-4 w-56" aria-hidden="true">
             <path
               d="M3 12 C 50 3, 100 16, 197 7"

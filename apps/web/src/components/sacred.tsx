@@ -128,3 +128,16 @@ export function ReadingLines({
     </div>
   );
 }
+
+export function DraftChip({ label, tone = "light", className = "" }: { label: string; tone?: "light" | "dark"; className?: string }) {
+  return (
+    <span
+      className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold ${
+        tone === "dark" ? "bg-[#14635d] text-saffron" : "bg-saffron-tint text-saffron-ink"
+      } ${className}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-saffron" />
+      {label}
+    </span>
+  );
+}

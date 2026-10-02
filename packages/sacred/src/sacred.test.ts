@@ -33,6 +33,10 @@ describe("sacred content", () => {
     }
   });
 
+  it("gives every item a Bangla pronunciation", () => {
+    for (const item of ITEMS) expect(item.pronunciation?.trim(), item.id).toBeTruthy();
+  });
+
   it("gives Quran pronunciation one line per ayah", () => {
     for (const item of ITEMS) {
       if (item.arabic.type !== "quran" || !item.pronunciation) continue;

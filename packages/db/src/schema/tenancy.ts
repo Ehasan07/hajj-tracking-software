@@ -26,10 +26,11 @@ export const tenantSettings = pgTable(
     enabledUnits: businessUnitEnum().array().notNull().default(sql`'{hajj,office}'::business_unit[]`),
     branding: jsonb().$type<{ logoKey?: string; accent?: string }>().notNull().default({}),
     /**
-     * Show draft meanings and pronunciation on the public website before the
-     * scholar approves them, clearly labelled as drafts. Off unless the owner turns it on.
+     * Show draft meanings and pronunciation on the public website and receipts
+     * before the scholar approves them, clearly labelled as drafts. On by
+     * default; the owner can turn it off to show approved text only.
      */
-    showDraftMeanings: boolean().notNull().default(false),
+    showDraftMeanings: boolean().notNull().default(true),
     /** Host name the agency's public website is served on, e.g. "almadina.example.com". */
     publicHost: text().unique(),
     ...timestamps,
