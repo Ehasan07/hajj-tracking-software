@@ -632,5 +632,12 @@
   "subscription": {
     "trialBanner": "Trial until {date}, {plan} plan",
     "inactiveBanner": "Your subscription is not active. You can view everything, but changes are paused."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The address may be wrong, or your account doesn't have access to this page.",
+    "home": "Go to the home page",
+    "switch": "Sign in with another account",
+    "signedInAs": "Signed in as {email}"
   }
 }
