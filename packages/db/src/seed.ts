@@ -19,15 +19,16 @@ await sql.begin(async (tx) => {
     on conflict (id) do update set name = excluded.name, slug = excluded.slug`;
 
   await tx`
-    insert into tenant_settings (tenant_id, legal_name, reference_prefix, license_number, address, phone, email, enabled_units)
+    insert into tenant_settings (tenant_id, legal_name, reference_prefix, license_number, address, phone, email, enabled_units, show_draft_meanings)
     values (
       ${DEMO_ID}, 'বায়তুল্লাহ ট্রাভেলস (ডেমো)', 'BT', 'RL-0000',
       'বাড়ি ১২, রোড ৫, মিরপুর ১০, ঢাকা ১২১৬', '+8801700000000', 'info@example.com',
-      '{hajj,zamzam,coffee,office}'::business_unit[]
+      '{hajj,zamzam,coffee,office}'::business_unit[], true
     )
     on conflict (tenant_id) do update set
       legal_name = excluded.legal_name, license_number = excluded.license_number,
-      address = excluded.address, phone = excluded.phone, email = excluded.email`;
+      address = excluded.address, phone = excluded.phone, email = excluded.email,
+      show_draft_meanings = excluded.show_draft_meanings`;
 
   await tx`delete from travel_packages where tenant_id = ${DEMO_ID}
     and not exists (select 1 from pilgrims p where p.package_id = travel_packages.id)`;

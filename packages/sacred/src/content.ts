@@ -23,7 +23,10 @@ export interface SacredItem {
   arabic: ArabicSource;
   /** One entry per ayah for Quran sources; one entry for hadith. */
   meaning: { bn: string[]; en: string[] };
-  /** Bangla pronunciation, for duas people say aloud. */
+  /**
+   * Bangla pronunciation. For Quran items, one line per ayah separated by "\n",
+   * in the same order as the refs.
+   */
   pronunciation?: string;
   when?: Text;
   /** Extra context for the scholar or reader (grading, madhhab notes). */
@@ -55,6 +58,7 @@ export const ITEMS: SacredItem[] = [
     kind: "surah",
     title: { bn: "সূরা আল-ফাতিহা", en: "Surah Al-Fatihah" },
     arabic: { type: "quran", refs: ["1:1", "1:2", "1:3", "1:4", "1:5", "1:6", "1:7"] },
+    pronunciation: "বিসমিল্লাহির রহমানির রহীম।\nআলহামদু লিল্লাহি রব্বিল 'আলামীন।\nআর-রহমানির রহীম।\nমালিকি ইয়াওমিদ দীন।\nইয়্যাকা না'বুদু ওয়া ইয়্যাকা নাস্তা'ঈন।\nইহদিনাস সিরাতাল মুস্তাকীম।\nসিরাতাল্লাযীনা আন'আমতা 'আলাইহিম, গাইরিল মাগদূবি 'আলাইহিম ওয়ালাদ দোয়াল্লীন।",
     meaning: {
       bn: [
         "পরম করুণাময়, পরম দয়ালু আল্লাহর নামে।",
@@ -82,6 +86,7 @@ export const ITEMS: SacredItem[] = [
     kind: "surah",
     title: { bn: "সূরা আল-কাফিরুন", en: "Surah Al-Kafirun" },
     arabic: { type: "quran", refs: ["109:1", "109:2", "109:3", "109:4", "109:5", "109:6"] },
+    pronunciation: "কুল ইয়া আইয়্যুহাল কাফিরূন।\nলা আ'বুদু মা তা'বুদূন।\nওয়ালা আনতুম 'আবিদূনা মা আ'বুদ।\nওয়ালা আনা 'আবিদুম মা 'আবাদতুম।\nওয়ালা আনতুম 'আবিদূনা মা আ'বুদ।\nলাকুম দীনুকুম ওয়ালিয়া দীন।",
     meaning: {
       bn: [
         "বলো: হে অবিশ্বাসীরা,",
@@ -111,6 +116,7 @@ export const ITEMS: SacredItem[] = [
     kind: "surah",
     title: { bn: "সূরা আল-ইখলাস", en: "Surah Al-Ikhlas" },
     arabic: { type: "quran", refs: ["112:1", "112:2", "112:3", "112:4"] },
+    pronunciation: "কুল হুওয়াল্লাহু আহাদ।\nআল্লাহুস সামাদ।\nলাম ইয়ালিদ ওয়া লাম ইউলাদ।\nওয়া লাম ইয়াকুল্লাহূ কুফুওয়ান আহাদ।",
     meaning: {
       bn: [
         "বলো: তিনি আল্লাহ, এক ও অদ্বিতীয়।",
@@ -138,6 +144,7 @@ export const ITEMS: SacredItem[] = [
     kind: "ayah",
     title: { bn: "প্রথম ঘর, বরকতময় মক্কা", en: "The first House, blessed Makkah" },
     arabic: { type: "quran", refs: ["3:96", "3:97"] },
+    pronunciation: "ইন্না আওয়ালা বাইতিওঁ উদি'আ লিন্নাসি লাল্লাযী বিবাক্কাতা মুবারাকাওঁ ওয়া হুদাল লিল 'আলামীন।\nফীহি আয়াতুম বাইয়্যিনাতুম মাকামু ইবরাহীম, ওয়া মান দাখালাহূ কানা আমিনা, ওয়া লিল্লাহি 'আলান নাসি হিজ্জুল বাইতি মানিস্তাত্বা'আ ইলাইহি সাবীলা, ওয়া মান কাফারা ফাইন্নাল্লাহা গানিয়্যুন 'আনিল 'আলামীন।",
     meaning: {
       bn: [
         "নিশ্চয়ই মানুষের (ইবাদতের) জন্য প্রথম যে ঘর স্থাপন করা হয়েছিল, তা বাক্কায় (মক্কায়), বরকতময় এবং সকল জগতের জন্য পথনির্দেশ।",
@@ -238,6 +245,7 @@ export const ITEMS: SacredItem[] = [
     kind: "ayah",
     title: { bn: "সাফা ও মারওয়া", en: "Safa and Marwah" },
     arabic: { type: "quran", refs: ["2:158"] },
+    pronunciation: "ইন্নাস সাফা ওয়াল মারওয়াতা মিন শা'আইরিল্লাহ, ফামান হাজ্জাল বাইতা আওয়ি'তামারা ফালা জুনাহা 'আলাইহি আইঁ ইয়াত্তাওয়াফা বিহিমা, ওয়া মান তাতাওয়া'আ খাইরান ফাইন্নাল্লাহা শাকিরুন 'আলীম।",
     meaning: {
       bn: [
         "নিশ্চয়ই সাফা ও মারওয়া আল্লাহর নিদর্শনগুলোর অন্তর্ভুক্ত। তাই যে ব্যক্তি এই ঘরের হজ বা ওমরা করে, তার জন্য এ দুটির মাঝে যাতায়াত (সাঈ) করায় কোনো দোষ নেই। আর যে স্বেচ্ছায় কোনো ভালো কাজ করে, আল্লাহ তার কদর করেন, তিনি সব জানেন।",
@@ -257,6 +265,7 @@ export const ITEMS: SacredItem[] = [
     kind: "ayah",
     title: { bn: "ইবরাহিম ও ইসমাইলের দোয়া", en: "The prayer of Ibrahim and Ismail" },
     arabic: { type: "quran", refs: ["2:127"] },
+    pronunciation: "ওয়া ইয ইয়ারফা'উ ইবরাহীমুল কাওয়া'ইদা মিনাল বাইতি ওয়া ইসমা'ঈল, রব্বানা তাকাব্বাল মিন্না, ইন্নাকা আনতাস সামী'উল 'আলীম।",
     meaning: {
       bn: [
         "আর স্মরণ করো, যখন ইবরাহিম ও ইসমাইল এই ঘরের ভিত্তি উঁচু করছিলেন (আর দোয়া করছিলেন): হে আমাদের প্রতিপালক, আমাদের পক্ষ থেকে এটি কবুল করো; নিশ্চয়ই তুমি সব শোনো, সব জানো।",
@@ -287,6 +296,7 @@ export const ITEMS: SacredItem[] = [
     kind: "ayah",
     title: { bn: "আল্লাহর নিদর্শনের সম্মান", en: "Honouring the symbols of Allah" },
     arabic: { type: "quran", refs: ["22:32"] },
+    pronunciation: "যালিকা ওয়া মাইঁ ইউ'আয্যিম শা'আইরাল্লাহি ফাইন্নাহা মিন তাকওয়াল কুলূব।",
     meaning: {
       bn: ["এটাই (আল্লাহর বিধান)। আর যে আল্লাহর নিদর্শনগুলোকে সম্মান করে, নিশ্চয়ই তা অন্তরের তাকওয়া থেকেই আসে।"],
       en: ["That is so. Whoever honours the symbols of Allah, that comes from the God-consciousness of hearts."],

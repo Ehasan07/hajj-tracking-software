@@ -1,0 +1,1 @@
+ALTER TABLE "tenant_settings" ADD COLUMN "show_draft_meanings" boolean DEFAULT false NOT NULL;

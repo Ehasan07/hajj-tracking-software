@@ -15,6 +15,7 @@ const settingsInput = z.object({
   email: z.email().optional(),
   defaultLocale: z.enum(["bn", "en"]),
   enabledUnits: z.array(z.enum(BUSINESS_UNITS)).min(1),
+  showDraftMeanings: z.boolean().optional(),
 });
 
 export const tenantRouter = router({

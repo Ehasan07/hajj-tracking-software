@@ -33,6 +33,13 @@ describe("sacred content", () => {
     }
   });
 
+  it("gives Quran pronunciation one line per ayah", () => {
+    for (const item of ITEMS) {
+      if (item.arabic.type !== "quran" || !item.pronunciation) continue;
+      expect(item.pronunciation.split("\n"), item.id).toHaveLength(item.arabic.refs.length);
+    }
+  });
+
   it("links steps only to items and practices that exist", () => {
     const ids = new Set(ITEMS.map((i) => i.id));
     const practices = new Set(SUNNAH.map((s) => s.id));

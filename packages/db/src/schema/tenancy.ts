@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, date, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, index } from "drizzle-orm/pg-core";
+import { bigint, boolean, check, date, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, index } from "drizzle-orm/pg-core";
 import { BUSINESS_UNITS, CURRENCIES } from "@hajj/core";
 import { organization } from "./auth";
 import { tenantId, tenantIsolation, timestamps } from "./_shared";
@@ -25,6 +25,11 @@ export const tenantSettings = pgTable(
     timeZone: text().notNull().default("Asia/Dhaka"),
     enabledUnits: businessUnitEnum().array().notNull().default(sql`'{hajj,office}'::business_unit[]`),
     branding: jsonb().$type<{ logoKey?: string; accent?: string }>().notNull().default({}),
+    /**
+     * Show draft meanings and pronunciation on the public website before the
+     * scholar approves them, clearly labelled as drafts. Off unless the owner turns it on.
+     */
+    showDraftMeanings: boolean().notNull().default(false),
     /** Host name the agency's public website is served on, e.g. "almadina.example.com". */
     publicHost: text().unique(),
     ...timestamps,

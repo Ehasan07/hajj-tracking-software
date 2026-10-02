@@ -77,3 +77,54 @@ export function QuranAttribution({ locale }: { locale: Locale }) {
     </a>
   );
 }
+
+/** Pronunciation and meaning, one line per ayah when there are several. */
+export function ReadingLines({
+  item,
+  pronunciation,
+  meanings,
+  locale,
+  tone = "light",
+  labels,
+}: {
+  item: ResolvedItem;
+  pronunciation: string | null;
+  meanings: string[];
+  locale: Locale;
+  tone?: "light" | "dark";
+  labels: { pronunciation: string; meaning: string };
+}) {
+  const multi = item.verses.length > 1;
+  const number = (i: number) => {
+    const n = item.verses[i]!.ayah || i + 1;
+    return locale === "bn" ? String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]!) : String(n);
+  };
+  const lines = pronunciation ? pronunciation.split("\n") : [];
+  const muted = tone === "dark" ? "text-[#a9cfc9]" : "text-ink-3";
+  const body = tone === "dark" ? "text-[#dfeeeb]" : "text-ink-2";
+  const accent = tone === "dark" ? "text-saffron" : "text-haram";
+  return (
+    <div className="flex flex-col gap-4 text-left">
+      {lines.length > 0 && locale === "bn" ? (
+        <div className="flex flex-col gap-1.5">
+          <span className={`text-xs font-semibold tracking-wide ${muted}`}>{labels.pronunciation}</span>
+          {lines.map((line, i) => (
+            <p key={i} className={`text-[16px] leading-relaxed italic ${body}`}>
+              {multi && lines.length === item.verses.length ? <span className={`mr-1.5 not-italic font-semibold ${accent}`}>{number(i)}.</span> : null}
+              {line}
+            </p>
+          ))}
+        </div>
+      ) : null}
+      <div className="flex flex-col gap-1.5">
+        <span className={`text-xs font-semibold tracking-wide ${muted}`}>{labels.meaning}</span>
+        {meanings.map((m, i) => (
+          <p key={i} className={`text-[16px] leading-relaxed ${tone === "dark" ? "text-ground" : "text-ink"}`}>
+            {multi ? <span className={`mr-1.5 font-semibold ${accent}`}>{number(i)}.</span> : null}
+            {m}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}

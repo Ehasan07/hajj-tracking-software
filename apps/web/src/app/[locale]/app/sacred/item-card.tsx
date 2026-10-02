@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import type { ResolvedItem } from "@hajj/sacred";
-import { QuranAttribution, Verses } from "@/components/sacred";
+import { QuranAttribution, ReadingLines, Verses } from "@/components/sacred";
 import { Badge } from "@/components/ui";
-import { digits, type Locale } from "@/lib/format";
+import type { Locale } from "@/lib/format";
 import { presented, type Review } from "@/lib/sacred";
 import { ReviewControls } from "./review-controls";
 
@@ -47,23 +47,14 @@ export async function ItemCard({
         <Verses item={item} className={compact ? "text-[22px]" : "text-[28px] sm:text-[32px]"} />
       </div>
 
-      {shown.pronunciation ? (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-semibold text-ink-3">{t("pronunciation")}</span>
-          <p className="text-[16px] leading-relaxed text-ink-2 italic">{shown.pronunciation}</p>
-        </div>
-      ) : null}
-
-      <div className={`flex flex-col gap-1.5 ${draftOrApproved}`}>
-        <span className="text-xs font-semibold text-ink-3">{t("meaning")}</span>
-        {shown.meanings.map((m, i) => (
-          <p key={i} className="text-[16px] leading-relaxed">
-            {quran && shown.meanings.length > 1 ? (
-              <span className="mr-1.5 font-semibold text-haram">{digits(item.verses[i]!.ayah, locale)}.</span>
-            ) : null}
-            {m}
-          </p>
-        ))}
+      <div className={draftOrApproved}>
+        <ReadingLines
+          item={item}
+          pronunciation={shown.pronunciation}
+          meanings={shown.meanings}
+          locale={locale}
+          labels={{ pronunciation: t("pronunciation"), meaning: t("meaning") }}
+        />
       </div>
 
       {item.when && !compact ? (

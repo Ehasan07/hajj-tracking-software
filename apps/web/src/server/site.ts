@@ -34,6 +34,7 @@ export const loadSite = cache(async (tenantId: string) =>
         address: tenantSettings.address,
         phone: tenantSettings.phone,
         email: tenantSettings.email,
+        showDraftMeanings: tenantSettings.showDraftMeanings,
       })
       .from(tenantSettings)
       .limit(1);

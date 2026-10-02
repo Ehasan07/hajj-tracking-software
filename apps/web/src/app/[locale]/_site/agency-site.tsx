@@ -9,7 +9,7 @@ import {
   ReceiptIcon,
   StatementIcon,
 } from "@/components/icons";
-import { LabbaikOrnament, QuranAttribution, StarDivider, Verses } from "@/components/sacred";
+import { LabbaikOrnament, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
 import { buttonClass, Khatam } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { digits, money, phoneText, type Locale } from "@/lib/format";
@@ -21,14 +21,32 @@ type Site = Awaited<ReturnType<typeof loadSite>>;
 
 const SITE_DUAS = ["dua_talbiyah", "dua_travel", "dua_rukn_yamani", "dua_arafah"];
 
-function approvedMeaning(site: Site, item: ResolvedItem, locale: Locale) {
+/**
+ * What to show under the Arabic: the scholar's approved wording, or, when the
+ * agency allows it, the draft, flagged as such. Otherwise nothing.
+ */
+function reading(site: Site, item: ResolvedItem, locale: Locale) {
   const r = site.approved.get(`item:${item.id}`);
-  if (!r) return null;
-  const rewritten = locale === "bn" ? r.meaningBn : r.meaningEn;
+  if (!r && !site.settings?.showDraftMeanings) return null;
+  const rewritten = r ? (locale === "bn" ? r.meaningBn : r.meaningEn) : [];
   return {
+    draft: !r,
     meanings: item.verses.map((v, i) => (rewritten.length ? rewritten[i]! : v.meaning[locale])),
-    pronunciation: r.pronunciation ?? item.pronunciation ?? null,
+    pronunciation: r?.pronunciation ?? item.pronunciation ?? null,
   };
+}
+
+function DraftChip({ label, tone = "light" }: { label: string; tone?: "light" | "dark" }) {
+  return (
+    <span
+      className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold ${
+        tone === "dark" ? "bg-[#14635d] text-saffron" : "bg-saffron-tint text-saffron-ink"
+      }`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-saffron" />
+      {label}
+    </span>
+  );
 }
 
 export async function AgencySite({
@@ -45,7 +63,8 @@ export async function AgencySite({
   const ti = await getTranslations("interest");
   const agency = site.settings!;
   const house = getItem("ayah_first_house");
-  const houseMeaning = approvedMeaning(site, house, locale);
+  const houseReading = reading(site, house, locale);
+  const labels = { pronunciation: t("pronunciation"), meaning: t("meaning") };
   const duas = SITE_DUAS.map(getItem);
   const featuredIndex = site.packages.length >= 3 ? 1 : -1;
 
@@ -227,8 +246,11 @@ export async function AgencySite({
           <span className="font-hand text-2xl text-saffron-deep">{t("ayah.eyebrow")}</span>
           <StarDivider className="w-full max-w-md text-saffron" />
           <Verses item={house} className="text-center text-[28px] sm:text-[36px]" />
-          {houseMeaning ? (
-            <p className="max-w-3xl text-lg leading-relaxed text-ink-2">{houseMeaning.meanings.join(" ")}</p>
+          {houseReading ? (
+            <div className="flex w-full max-w-3xl flex-col gap-4 rounded-[28px_28px_16px_16px] bg-ground px-6 py-6 sm:px-8">
+              {houseReading.draft ? <DraftChip label={t("draftChip")} /> : null}
+              <ReadingLines item={house} pronunciation={houseReading.pronunciation} meanings={houseReading.meanings} locale={locale} labels={labels} />
+            </div>
           ) : null}
           <span className="flex flex-wrap items-center justify-center gap-2 text-sm text-ink-3">
             {house.citation[locale]} · <QuranAttribution locale={locale} />
@@ -246,10 +268,19 @@ export async function AgencySite({
           {(["umrah", "hajj"] as const).map((phase) => (
             <div key={phase} className="flex flex-col gap-5 rounded-[60px_60px_24px_24px] bg-paper px-6 pt-10 pb-8 sm:px-10">
               <h3 className="text-center font-display text-3xl text-haram">{t(`steps.${phase}`)}</h3>
+              {agency.showDraftMeanings && STEPS.some((st) => st.phase === phase && !site.approved.has(`step:${st.id}`)) ? (
+                <div className="flex justify-center">
+                  <DraftChip label={t("draftChip")} />
+                </div>
+              ) : null}
               <ol className="flex flex-col">
                 {STEPS.filter((s) => s.phase === phase).map((step, i, list) => {
                   const r = site.approved.get(`step:${step.id}`);
-                  const body = r ? (locale === "bn" ? r.meaningBn[0] : r.meaningEn[0]) || step.body[locale] : null;
+                  const body = r
+                    ? (locale === "bn" ? r.meaningBn[0] : r.meaningEn[0]) || step.body[locale]
+                    : agency.showDraftMeanings
+                      ? step.body[locale]
+                      : null;
                   return (
                     <li key={step.id} className="relative flex gap-4 pb-6">
                       {i < list.length - 1 ? <span className="absolute top-11 bottom-0 left-[21px] w-0.5 bg-line" aria-hidden="true" /> : null}
@@ -281,18 +312,23 @@ export async function AgencySite({
           </div>
           <div className="relative grid gap-6 md:grid-cols-2">
             {duas.map((dua) => {
-              const shown = approvedMeaning(site, dua, locale);
+              const shown = reading(site, dua, locale);
               return (
                 <article key={dua.id} className="flex flex-col gap-4 rounded-[40px_40px_20px_20px] bg-[#0e5a54] p-7">
-                  <div className="flex items-baseline justify-between gap-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-3">
                     <h3 className="text-lg font-bold">{dua.title[locale]}</h3>
                     <span className="text-[13px] text-[#a9cfc9]">{dua.citation[locale]}</span>
                   </div>
                   <p lang="ar" dir="rtl" className="font-naskh text-[26px] leading-[2] text-ground">
                     {dua.verses[0]!.arabic}
                   </p>
-                  {shown?.pronunciation ? <p className="text-[15px] text-[#c7ddd9] italic">{shown.pronunciation}</p> : null}
-                  {shown ? <p className="border-t border-[#2a6a64] pt-3 text-[15px] leading-relaxed">{shown.meanings[0]}</p> : null}
+                  {shown ? (
+                    <div className="flex flex-col gap-3 border-t border-[#2a6a64] pt-4">
+                      {shown.draft ? <DraftChip label={t("draftChip")} tone="dark" /> : null}
+                      <ReadingLines item={dua} pronunciation={shown.pronunciation} meanings={shown.meanings} locale={locale} tone="dark" labels={labels} />
+                      {dua.when ? <p className="text-[14px] leading-relaxed text-[#a9cfc9]">{dua.when[locale]}</p> : null}
+                    </div>
+                  ) : null}
                 </article>
               );
             })}

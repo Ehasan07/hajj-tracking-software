@@ -359,7 +359,9 @@
     "attribution": "Quran Arabic text: Tanzil Project (tanzil.net)",
     "related": "Ayat and duas for this step",
     "practices": "Sunnah",
-    "progress": "{done}/{total} approved"
+    "progress": "{done}/{total} approved",
+    "showDrafts": "Show draft meanings on the website",
+    "showDraftsHint": "When on, pronunciation and meanings appear on the website before approval, marked as drafts. When off, only approved meanings appear."
   },
   "site": {
     "nav": {
@@ -413,7 +415,7 @@
     },
     "duas": {
       "eyebrow": "Learn by heart",
-      "title": "Duas for the journey"
+      "title": "Duas for Hajj and the journey"
     },
     "inquiry": {
       "eyebrow": "Any questions?",
@@ -444,6 +446,10 @@
     "footer": {
       "rights": "All rights reserved",
       "verify": "To verify a receipt, scan the QR code printed on it"
-    }
+    },
+    "pronunciation": "Pronunciation",
+    "meaning": "Meaning",
+    "draftChip": "Draft translation · awaiting scholar review",
+    "draftNote": "The meanings and pronunciation on this page are awaiting scholar review. The Arabic is from verified sources."
   }
 }

@@ -8,6 +8,7 @@ import { digits, type Locale } from "@/lib/format";
 import type { Review } from "@/lib/sacred";
 import { api } from "@/trpc/server";
 import { ItemCard, ReviewBadge } from "./item-card";
+import { DraftToggle } from "./draft-toggle";
 import { ReviewControls } from "./review-controls";
 
 const TABS = ["steps", "ayat", "duas", "hadith", "sunnah"] as const;
@@ -28,7 +29,7 @@ export default async function SacredPage({
   const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "steps";
   const t = await getTranslations("sacred");
   const caller = await api();
-  const [reviews, me] = await Promise.all([caller.sacred.reviews(), caller.tenant.me()]);
+  const [reviews, me, settings] = await Promise.all([caller.sacred.reviews(), caller.tenant.me(), caller.tenant.settings()]);
   const canReview = ["owner", "admin", "alim"].includes(me.role);
   const review = (id: string) => reviews[id] as Review | undefined;
 
@@ -48,6 +49,8 @@ export default async function SacredPage({
           <span className="text-sm font-semibold">{t("progress", { done: digits(done, locale), total: digits(total, locale) })}</span>
         </div>
       </section>
+
+      {me.role === "owner" || me.role === "admin" ? <DraftToggle initial={settings?.showDraftMeanings ?? false} /> : null}
 
       <nav className="flex flex-wrap gap-2" aria-label={t("title")}>
         {TABS.map((key) => (
