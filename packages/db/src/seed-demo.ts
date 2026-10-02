@@ -132,5 +132,9 @@ if (existing.length > 0) {
   console.info(`Demo activity added: ${inquiries.length} inquiries, ${people.length} pilgrims.`);
 }
 
+// 3. Starter guide articles (drafts), skipped if already there.
+const { added } = await trpc<{ added: number }>("articles.addStarter", undefined);
+if (added) console.info(`Added ${added} starter guide articles.`);
+
 await sql.end();
 console.info(`Demo login: ${DEMO_EMAIL} / ${DEMO_PASSWORD}  →  ${BASE}/sign-in`);

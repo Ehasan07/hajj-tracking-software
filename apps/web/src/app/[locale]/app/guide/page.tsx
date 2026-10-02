@@ -5,7 +5,9 @@ import { Badge, buttonClass, Card, EmptyState } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/lib/format";
 import { api } from "@/trpc/server";
+import { articlePreview } from "@/components/article-body";
 import { ArticleEditor } from "./article-editor";
+import { StarterButton } from "./starter-button";
 
 export default async function GuidePage({
   params,
@@ -46,14 +48,14 @@ export default async function GuidePage({
 
       {list.length === 0 && !showEditor ? (
         <Card>
-          <EmptyState title={t("guide.empty")} body={t("guide.emptyBody")} />
+          <EmptyState title={t("guide.empty")} body={t("guide.emptyBody")} action={<StarterButton />} />
         </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((a, i) => (
             <Link
               key={a.id}
-              href={`/app/guide?edit=${a.id}`}
+              href={`/app/guide/${a.id}`}
               className="lift flex animate-rise flex-col gap-3 rounded-[60px_60px_18px_18px] bg-paper px-6 pt-7 pb-5"
               style={{ animationDelay: `${i * 40}ms` }}
             >
@@ -65,7 +67,7 @@ export default async function GuidePage({
               </span>
               <span className="text-[13px] font-semibold text-ink-3">{t(`articleCategory.${a.category}`)}</span>
               <b className="text-lg leading-snug">{locale === "bn" ? a.titleBn : a.titleEn}</b>
-              <p className="line-clamp-3 text-[15px] text-ink-2">{locale === "bn" ? a.bodyBn : a.bodyEn}</p>
+              <p className="line-clamp-3 text-[15px] text-ink-2">{articlePreview(locale === "bn" ? a.bodyBn : a.bodyEn)}</p>
             </Link>
           ))}
         </div>

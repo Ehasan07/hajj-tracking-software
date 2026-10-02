@@ -285,7 +285,12 @@
     "publish": "Publish",
     "save": "Save",
     "empty": "No articles yet",
-    "emptyBody": "Start with what pilgrims ask most: documents, costs, vaccinations."
+    "emptyBody": "Start with what pilgrims ask most: documents, costs, vaccinations.",
+    "addStarter": "Add sample articles",
+    "addStarterHint": "Adds 7 ready-made articles as drafts: documents, Umrah steps, the five days of Hajj, packing, health, payments and common questions. Edit them, then publish.",
+    "edit": "Edit",
+    "back": "All articles",
+    "draftNote": "This is a draft. Check it against your own practice and current government rules before publishing."
   },
   "articleCategory": {
     "hajj": "Hajj",

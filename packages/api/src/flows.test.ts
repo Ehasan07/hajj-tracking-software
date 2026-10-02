@@ -247,6 +247,14 @@ describe("hajj flow", () => {
     expect(logs).toHaveLength(1);
   });
 
+  it("adds the starter guide once, as drafts", async () => {
+    expect((await staff().articles.addStarter()).added).toBe(7);
+    expect((await staff().articles.addStarter()).added).toBe(0);
+    const list = await staff().articles.list();
+    expect(list).toHaveLength(7);
+    expect(list.every((a) => !a.published)).toBe(true);
+  });
+
   it("lets only admins and scholars approve religious content", async () => {
     await expect(
       staff().sacred.review({ contentId: "item:dua_talbiyah", status: "approved" }),

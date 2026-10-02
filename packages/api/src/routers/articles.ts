@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, asc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { articles } from "@hajj/db/schema";
+import { STARTER_ARTICLES } from "../content/starter-articles";
 import { router, tenantProcedure, withRoles } from "../trpc";
 
 const categories = ["hajj", "umrah", "documents", "costs", "health", "faq"] as const;
@@ -42,6 +43,16 @@ export const articlesRouter = router({
     const [row] = await ctx.tx.select().from(articles).where(eq(articles.id, input.id));
     if (!row) throw new TRPCError({ code: "NOT_FOUND" });
     return row;
+  }),
+
+  /** Add the starter guide as drafts. Articles whose web address already exists are left alone. */
+  addStarter: withRoles("admin", "staff").mutation(async ({ ctx }) => {
+    const rows = await ctx.tx
+      .insert(articles)
+      .values(STARTER_ARTICLES.map((a) => ({ ...a, published: false })))
+      .onConflictDoNothing({ target: [articles.tenantId, articles.slug] })
+      .returning({ id: articles.id });
+    return { added: rows.length };
   }),
 
   save: withRoles("admin", "staff")
