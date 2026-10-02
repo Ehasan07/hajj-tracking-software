@@ -10,13 +10,15 @@ import {
   parseReference,
 } from "@hajj/core";
 import type { Transaction } from "@hajj/db";
-import { inquiries, payments, pilgrims, travelPackages } from "@hajj/db/schema";
+import { inquiries, payments, pilgrimDocuments, pilgrims, travelPackages } from "@hajj/db/schema";
+import { pilgrimReadiness } from "../services/pilgrim";
 import { blindIndex, decryptField, encryptField } from "../crypto";
 import { getSettings, nextReference } from "../services/tenant";
 import { router, tenantProcedure, withRoles } from "../trpc";
 import { optionalText, phoneInput } from "./shared";
 
 const pilgrimStatuses = ["registered", "documents", "visa", "ready", "travelled", "completed", "cancelled"] as const;
+const FINAL_STATUSES = new Set<string>(["ready", "travelled", "completed"]);
 
 const passportNumberInput = z
   .string()
@@ -26,17 +28,39 @@ const passportNumberInput = z
 const profileInput = z.object({
   fullName: z.string().trim().min(2).max(120),
   fatherName: optionalText(120),
+  motherName: optionalText(120),
+  spouseName: optionalText(120),
+  occupation: optionalText(80),
+  bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]).optional(),
   phone: phoneInput,
   altPhone: z.union([phoneInput, z.literal("").transform(() => undefined)]).optional(),
   email: z.union([z.email(), z.literal("").transform(() => undefined)]).optional(),
   gender: z.enum(["male", "female"]).optional(),
   dateOfBirth: z.iso.date().optional(),
   address: optionalText(500),
+  permanentAddress: optionalText(500),
   district: optionalText(60),
+  prpNumber: optionalText(40),
+  hajjRegNumber: optionalText(40),
+  visaNumber: optionalText(40),
+  mahramName: optionalText(120),
+  mahramRelation: optionalText(60),
+  /** Bangladeshi NID: 10, 13 or 17 digits; Bangla digits accepted. */
+  nidNumber: z
+    .string()
+    .transform((v) => v.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/\D/g, ""))
+    .pipe(z.string().regex(/^(\d{10}|\d{13}|\d{17})$/, "INVALID_NID"))
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   emergencyName: optionalText(120),
   emergencyPhone: z.union([phoneInput, z.literal("").transform(() => undefined)]).optional(),
   notes: optionalText(2000),
 });
+
+function nidColumns(tenantId: string, nid: string | undefined) {
+  if (!nid) return {};
+  return { nidEnc: encryptField(nid), nidIndex: blindIndex(tenantId, `nid:${nid}`), nidLast4: nid.slice(-4) };
+}
 
 function passportColumns(tenantId: string, number: string | undefined) {
   if (!number) return {};
@@ -87,6 +111,10 @@ export const pilgrimsRouter = router({
       // Any 6–12 character code with at least one digit may be a passport number (formats differ by country).
       if (/^[A-Z0-9]{6,12}$/.test(passport) && /\d/.test(passport) && !phone) {
         conditions.push(eq(pilgrims.passportIndex, blindIndex(ctx.tenantId, passport)));
+      }
+      const digitsOnly = q.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/[\s-]/g, "");
+      if (/^(\d{10}|\d{13}|\d{17})$/.test(digitsOnly)) {
+        conditions.push(eq(pilgrims.nidIndex, blindIndex(ctx.tenantId, `nid:${digitsOnly}`)));
       }
       if (!ref && q.length >= 2) conditions.push(ilike(pilgrims.fullName, `%${q}%`));
       if (conditions.length === 0) return [];
@@ -143,14 +171,36 @@ export const pilgrimsRouter = router({
       [row.pilgrim.discount],
     );
 
-    const { passportNumberEnc, passportIndex: _index, ...pilgrim } = row.pilgrim;
+    const { passportNumberEnc, passportIndex: _index, nidEnc, nidIndex: _nid, ...pilgrim } = row.pilgrim;
     const masked = passportNumberEnc ? maskPassportNumber(decryptField(passportNumberEnc)) : null;
+    const documents = await ctx.tx
+      .select({
+        id: pilgrimDocuments.id,
+        type: pilgrimDocuments.type,
+        contentType: pilgrimDocuments.contentType,
+        sizeBytes: pilgrimDocuments.sizeBytes,
+        status: pilgrimDocuments.status,
+        note: pilgrimDocuments.note,
+        expiresOn: pilgrimDocuments.expiresOn,
+        uploadedAt: pilgrimDocuments.uploadedAt,
+        reviewedAt: pilgrimDocuments.reviewedAt,
+      })
+      .from(pilgrimDocuments)
+      .where(eq(pilgrimDocuments.pilgrimId, input.id))
+      .orderBy(desc(pilgrimDocuments.uploadedAt));
     return {
-      pilgrim: { ...pilgrim, passportMasked: masked, hasPassportScan: Boolean(pilgrim.passportScanKey) },
+      pilgrim: {
+        ...pilgrim,
+        passportMasked: masked,
+        nidMasked: nidEnc ? `••••••${pilgrim.nidLast4 ?? ""}` : null,
+        hasPhoto: documents.some((d) => d.type === "photo" && d.status !== "rejected"),
+      },
       packageName: row.packageName,
       packageKind: row.packageKind,
       payments: history.map(({ verifyToken: _t, ...p }) => p),
       totals,
+      documents,
+      readiness: await pilgrimReadiness(ctx.tx, input.id),
     };
   }),
 
@@ -168,7 +218,7 @@ export const pilgrimsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { packageId, discount, passportNumber, allowDuplicatePassport, inquiryId, ...profile } = input;
+      const { packageId, discount, passportNumber, allowDuplicatePassport, inquiryId, nidNumber, ...profile } = input;
       const [pkg] = await ctx.tx.select().from(travelPackages).where(eq(travelPackages.id, packageId));
       if (!pkg || !pkg.active) throw new TRPCError({ code: "BAD_REQUEST", message: "PACKAGE_UNAVAILABLE" });
 
@@ -192,6 +242,7 @@ export const pilgrimsRouter = router({
         .values({
           ...profile,
           ...passport,
+          ...nidColumns(ctx.tenantId, nidNumber),
           ref,
           packageId,
           packagePrice: pkg.price,
@@ -214,8 +265,12 @@ export const pilgrimsRouter = router({
   update: tenantProcedure
     .input(profileInput.partial().extend({ id: z.uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const { id, ...patch } = input;
-      const [row] = await ctx.tx.update(pilgrims).set(patch).where(eq(pilgrims.id, id)).returning({ id: pilgrims.id });
+      const { id, nidNumber, ...patch } = input;
+      const [row] = await ctx.tx
+        .update(pilgrims)
+        .set({ ...patch, ...nidColumns(ctx.tenantId, nidNumber) })
+        .where(eq(pilgrims.id, id))
+        .returning({ id: pilgrims.id });
       if (!row) throw new TRPCError({ code: "NOT_FOUND" });
       return row;
     }),
@@ -261,9 +316,32 @@ export const pilgrimsRouter = router({
       return { passportNumber: decryptField(row.enc) };
     }),
 
+  /**
+   * Moving a pilgrim to "ready", "travelled" or "completed" requires every
+   * readiness check to pass. An owner or admin may override with a reason,
+   * which goes to the audit trail.
+   */
   setStatus: tenantProcedure
-    .input(z.object({ id: z.uuid(), status: z.enum(pilgrimStatuses) }))
+    .input(
+      z.object({
+        id: z.uuid(),
+        status: z.enum(pilgrimStatuses),
+        overrideReason: z.string().trim().min(4).max(300).optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
+      if (FINAL_STATUSES.has(input.status)) {
+        const check = await pilgrimReadiness(ctx.tx, input.id);
+        if (!check.ready) {
+          if (!input.overrideReason) {
+            throw new TRPCError({ code: "PRECONDITION_FAILED", message: `NOT_READY:${check.issues.length}` });
+          }
+          if (ctx.role !== "owner" && ctx.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+          await ctx.tx.execute(
+            sql`select record_access('pilgrims', ${input.id}, ${`OVERRIDE_READY: ${input.overrideReason}`})`,
+          );
+        }
+      }
       const [row] = await ctx.tx
         .update(pilgrims)
         .set({ status: input.status })

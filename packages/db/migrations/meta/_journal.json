@@ -78,6 +78,20 @@
       "when": 1790950979362,
       "tag": "0010_draft_meanings_default",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790959629655,
+      "tag": "0011_pilgrim_documents",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790959631007,
+      "tag": "0012_pilgrim_documents_security",
+      "breakpoints": true
     }
   ]
 }

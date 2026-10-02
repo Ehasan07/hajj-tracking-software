@@ -122,7 +122,12 @@ if (existing.length > 0) {
         purpose: undefined,
       });
     }
-    await trpc("pilgrims.setStatus", { id: created.id, status: p.status });
+    // Demo pilgrims have no papers uploaded, so final statuses go through the owner's override.
+    await trpc("pilgrims.setStatus", {
+      id: created.id,
+      status: p.status,
+      overrideReason: p.status === "ready" ? "ডেমো ডেটা: কাগজপত্র আপলোড করা হয়নি" : undefined,
+    });
   }
   console.info(`Demo activity added: ${inquiries.length} inquiries, ${people.length} pilgrims.`);
 }

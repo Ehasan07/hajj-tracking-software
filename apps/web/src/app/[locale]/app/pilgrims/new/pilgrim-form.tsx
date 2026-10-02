@@ -77,6 +77,12 @@ export function PilgrimForm({
     const input = {
       fullName,
       fatherName: text("fatherName"),
+      motherName: text("motherName"),
+      spouseName: text("spouseName"),
+      nidNumber: text("nidNumber") ?? "",
+      permanentAddress: text("permanentAddress"),
+      bloodGroup: text("bloodGroup") as "A+" | undefined,
+      prpNumber: text("prpNumber"),
       phone: String(f.get("phone") ?? ""),
       altPhone: text("altPhone") ?? "",
       email: text("email") ?? "",
@@ -105,6 +111,9 @@ export function PilgrimForm({
         <Field id="fullName" required minLength={2} value={fullName} onChange={(e) => setFullName(e.target.value)} label={t("pilgrims.fullName")} />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="fatherName" name="fatherName" label={t("pilgrims.fatherName")} />
+          <Field id="motherName" name="motherName" label={t("profile.motherName")} />
+          <Field id="spouseName" name="spouseName" label={t("profile.spouseName")} />
+          <Field id="nidNumber" name="nidNumber" inputMode="numeric" label={t("profile.nid")} hint={t("profile.nidHint")} className="font-mono" />
           <Field id="phone" name="phone" required inputMode="tel" defaultValue={prefill.phone} placeholder="01XXX-XXXXXX" label={t("pilgrims.phone")} />
           <Field id="altPhone" name="altPhone" inputMode="tel" label={t("pilgrims.altPhone")} />
           <Field id="email" name="email" type="email" label={t("pilgrims.email")} />
@@ -115,9 +124,19 @@ export function PilgrimForm({
           </SelectField>
           <Field id="dob" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} label={t("pilgrims.dob")} />
         </div>
-        <TextAreaField id="address" name="address" label={t("pilgrims.address")} className="min-h-20" />
+        <TextAreaField id="address" name="address" label={t("profile.presentAddress")} className="min-h-20" />
+        <TextAreaField id="permanentAddress" name="permanentAddress" label={t("profile.permanentAddress")} className="min-h-20" />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="district" name="district" label={t("pilgrims.district")} />
+          <SelectField id="bloodGroup" name="bloodGroup" defaultValue="" label={t("profile.bloodGroup")}>
+            <option value="">—</option>
+            {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </SelectField>
+          <Field id="prpNumber" name="prpNumber" label={t("profile.prp")} className="font-mono" />
         </div>
         <h3 className="pt-2 text-base font-bold">{t("pilgrims.emergency")}</h3>
         <div className="grid gap-4 sm:grid-cols-2">

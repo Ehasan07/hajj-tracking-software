@@ -1,5 +1,6 @@
 import { publicProcedure, router } from "./trpc";
 import { articlesRouter } from "./routers/articles";
+import { documentsRouter } from "./routers/documents";
 import { inquiriesRouter } from "./routers/inquiries";
 import { packagesRouter } from "./routers/packages";
 import { paymentsRouter } from "./routers/payments";
@@ -13,6 +14,7 @@ export const appRouter = router({
   packages: packagesRouter,
   inquiries: inquiriesRouter,
   pilgrims: pilgrimsRouter,
+  documents: documentsRouter,
   payments: paymentsRouter,
   articles: articlesRouter,
   sacred: sacredRouter,

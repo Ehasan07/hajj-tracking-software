@@ -185,6 +185,68 @@ describe("hajj flow", () => {
     expect(none).toHaveLength(0);
   });
 
+  it("collects papers and will not finalise a pilgrim until they are complete", async () => {
+    // A fully paid Umrah pilgrim with a valid passport, missing papers.
+    const umrah = await owner().packages.create({ kind: "umrah", name: "Umrah", season: "1448", price: "1,00,000" });
+    const p = await staff().pilgrims.create({
+      fullName: "Doc Test",
+      phone: "01911111111",
+      packageId: umrah.id,
+      passportNumber: "B12345678",
+      passportExpiry: "2032-01-01",
+      dateOfBirth: "1980-02-02",
+      gender: "male",
+      nidNumber: "১২৩৪৫৬৭৮৯০",
+    });
+    await staff().payments.receive({ pilgrimId: p.id, amount: "100000", method: "cash" });
+
+    const [byNid] = await staff().pilgrims.search({ q: "1234567890" });
+    expect(byNid?.id).toBe(p.id);
+
+    let detail = await staff().pilgrims.get({ id: p.id });
+    expect(detail.pilgrim.nidMasked).toBe("••••••7890");
+    expect(detail.readiness.issues.map((i) => ("code" in i ? i.code : i.kind))).toEqual([
+      "photo",
+      "passport",
+      "nid",
+      "vaccination",
+    ]);
+    await expect(staff().pilgrims.setStatus({ id: p.id, status: "ready" })).rejects.toThrow(/NOT_READY:4/);
+
+    const key = (n: string) => `tenants/${tenantId}/pilgrims/${p.id}/${n}.enc`;
+    await expect(
+      staff().documents.attach({ pilgrimId: p.id, type: "photo", key: key("x"), contentType: "application/pdf", sizeBytes: 10 }),
+    ).rejects.toThrow(/UNSUPPORTED_TYPE/);
+    await expect(
+      staff().documents.attach({ pilgrimId: p.id, type: "photo", key: "tenants/other/x.enc", contentType: "image/png", sizeBytes: 10 }),
+    ).rejects.toThrow();
+    for (const type of ["photo", "passport", "nid", "vaccination"]) {
+      const doc = await staff().documents.attach({ pilgrimId: p.id, type, key: key(type), contentType: "image/jpeg", sizeBytes: 1000 });
+      await staff().documents.review({ id: doc.id, status: "verified", expiresOn: type === "vaccination" ? "2029-01-01" : undefined });
+    }
+    await expect(staff().documents.review({ id: (await staff().pilgrims.get({ id: p.id })).documents[0]!.id, status: "rejected" })).rejects.toThrow(
+      /REASON_REQUIRED/,
+    );
+
+    detail = await staff().pilgrims.get({ id: p.id });
+    expect(detail.readiness).toEqual({ ready: true, issues: [] });
+    expect(detail.pilgrim.hasPhoto).toBe(true);
+    await staff().pilgrims.setStatus({ id: p.id, status: "ready" });
+  });
+
+  it("lets only owners and admins override readiness, with a logged reason", async () => {
+    const [pkg] = await owner().packages.list({ activeOnly: true });
+    const p = await staff().pilgrims.create({ fullName: "Override Test", phone: "01922222222", packageId: pkg!.id });
+    await expect(staff().pilgrims.setStatus({ id: p.id, status: "ready", overrideReason: "urgent group" })).rejects.toThrow(
+      /FORBIDDEN/,
+    );
+    await owner().pilgrims.setStatus({ id: p.id, status: "ready", overrideReason: "papers held by the ministry" });
+    const logs = await withTenant(db, { tenantId, userId: ownerId }, (tx) =>
+      tx.execute(sql`select 1 from audit_log where row_id = ${p.id} and action like 'OVERRIDE_READY:%'`),
+    );
+    expect(logs).toHaveLength(1);
+  });
+
   it("lets only admins and scholars approve religious content", async () => {
     await expect(
       staff().sacred.review({ contentId: "item:dua_talbiyah", status: "approved" }),

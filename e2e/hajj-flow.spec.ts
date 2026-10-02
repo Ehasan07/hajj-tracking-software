@@ -75,6 +75,19 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await expect(page.getByText("৳৩,৯০,০০০").first()).toBeVisible();
   await snap(page, "04-pilgrim");
 
+  // Papers: upload a photo, verify it, and see that the pilgrim still can't be finalised without the rest.
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+    "base64",
+  );
+  await expect(page.getByText("চূড়ান্ত করার প্রস্তুতি")).toBeVisible();
+  await page.getByLabel("সাম্প্রতিক ছবি: আপলোড").setInputFiles({ name: "photo.png", mimeType: "image/png", buffer: png });
+  await expect(page.getByText("জমা হয়েছে, যাচাই বাকি").first()).toBeVisible();
+  await page.getByRole("button", { name: "যাচাই ঠিক আছে" }).first().click();
+  await expect(page.locator("img[alt='Md. Abdul Karim']")).toBeVisible();
+  await page.locator("#status").selectOption("ready");
+  await expect(page.getByText("সব শর্ত পূরণ না হওয়ায়")).toBeVisible();
+
   await page.getByRole("link", { name: "রসিদ দেখুন" }).click();
   await page.waitForURL(/receipts\//);
   await expect(page.getByText("পঞ্চাশ হাজার টাকা মাত্র")).toBeVisible();

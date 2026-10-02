@@ -152,25 +152,78 @@ export function VoidPayment({ id }: { id: string }) {
   );
 }
 
-export function StatusSelect({ id, status }: { id: string; status: (typeof PILGRIM_STATUSES)[number] }) {
+export function StatusSelect({
+  id,
+  status,
+  canOverride,
+}: {
+  id: string;
+  status: (typeof PILGRIM_STATUSES)[number];
+  canOverride: boolean;
+}) {
   const t = useTranslations();
   const trpc = useTRPC();
   const router = useRouter();
-  const set = useMutation(trpc.pilgrims.setStatus.mutationOptions({ onSuccess: () => router.refresh() }));
+  const [target, setTarget] = useState<(typeof PILGRIM_STATUSES)[number] | null>(null);
+  const [reason, setReason] = useState("");
+  const set = useMutation(
+    trpc.pilgrims.setStatus.mutationOptions({
+      onSuccess: () => {
+        setTarget(null);
+        setReason("");
+        router.refresh();
+      },
+      onError: (_e, vars) => setTarget(vars.status),
+    }),
+  );
+  const blocked = set.error && errorKey(set.error).key === "NOT_READY";
+
   return (
-    <SelectField
-      id="status"
-      label={t("pilgrim.changeStatus")}
-      value={status}
-      disabled={set.isPending}
-      onChange={(e) => set.mutate({ id, status: e.target.value as typeof status })}
-    >
-      {PILGRIM_STATUSES.map((s) => (
-        <option key={s} value={s}>
-          {t(`pilgrimStatus.${s}`)}
-        </option>
-      ))}
-    </SelectField>
+    <div className="flex flex-col gap-3">
+      <SelectField
+        id="status"
+        label={t("pilgrim.changeStatus")}
+        value={target ?? status}
+        disabled={set.isPending}
+        onChange={(e) => {
+          set.reset();
+          set.mutate({ id, status: e.target.value as typeof status });
+        }}
+      >
+        {PILGRIM_STATUSES.map((s) => (
+          <option key={s} value={s}>
+            {t(`pilgrimStatus.${s}`)}
+          </option>
+        ))}
+      </SelectField>
+      {blocked ? (
+        <div className="flex flex-col gap-3 rounded-md bg-due-tint p-4">
+          <p className="text-[14px] font-semibold text-due">{t("ready.blocked")}</p>
+          {canOverride && target ? (
+            <>
+              <TextAreaField
+                id="override-reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                label={t("ready.overrideReason")}
+                className="min-h-16 bg-paper"
+              />
+              <Button
+                type="button"
+                variant="danger"
+                className="h-10 self-start px-4 text-sm"
+                disabled={reason.trim().length < 4 || set.isPending}
+                onClick={() => set.mutate({ id, status: target, overrideReason: reason })}
+              >
+                {t("ready.confirmOverride")}
+              </Button>
+            </>
+          ) : null}
+        </div>
+      ) : (
+        <FormError error={set.error} />
+      )}
+    </div>
   );
 }
 
@@ -189,60 +242,6 @@ export function RevealPassport({ id }: { id: string }) {
       </button>
       {reveal.error ? <span className="text-[13px] text-due">{errorText(reveal.error)}</span> : null}
     </span>
-  );
-}
-
-export function PassportScan({ id, hasScan }: { id: string; hasScan: boolean }) {
-  const t = useTranslations();
-  const router = useRouter();
-  const [state, setState] = useState<"idle" | "uploading" | "done">("idle");
-  const [error, setError] = useState<string>();
-  const errorText = useErrorText();
-
-  async function upload(file: File) {
-    setState("uploading");
-    setError(undefined);
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch(`/api/files/passport/${id}`, { method: "POST", body });
-    if (!res.ok) {
-      const { error: code } = (await res.json().catch(() => ({ error: "generic" }))) as { error: string };
-      setError(errorText(new Error(code)));
-      setState("idle");
-      return;
-    }
-    setState("done");
-    router.refresh();
-  }
-
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
-        <label className={buttonClass("outline", "h-11 cursor-pointer")}>
-          {state === "uploading" ? <Spinner label={t("common.loading")} className="h-5 w-5" /> : <UploadIcon size={20} accent="var(--color-haram)" />}
-          {hasScan ? t("pilgrim.replaceScan") : t("pilgrim.uploadScan")}
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            capture="environment"
-            className="sr-only"
-            disabled={state === "uploading"}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) void upload(file);
-              e.target.value = "";
-            }}
-          />
-        </label>
-        {hasScan ? (
-          <a href={`/api/files/passport/${id}`} target="_blank" rel="noopener" className={buttonClass("quiet", "h-11 px-2")}>
-            {t("pilgrim.viewScan")}
-          </a>
-        ) : null}
-      </div>
-      <p className="text-[13px] text-ink-3">{state === "done" ? t("pilgrim.scanUploaded") : t("pilgrim.scanHint")}</p>
-      {error ? <p role="alert" className="text-[13px] font-semibold text-due">{error}</p> : null}
-    </div>
   );
 }
 

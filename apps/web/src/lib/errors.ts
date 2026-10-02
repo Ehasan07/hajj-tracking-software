@@ -17,6 +17,10 @@ export function errorKey(error: unknown): { key: string; arg?: string } {
     "TOO_LARGE",
     "UNSUPPORTED_TYPE",
     "INVALID_SLUG",
+    "INVALID_NID",
+    "REASON_REQUIRED",
+    "NOT_READY",
+    "UNKNOWN_DOCUMENT",
   ];
   if (known.includes(code)) return { key: code, arg };
   if (code === "OVERPAYMENT" || code === "DUPLICATE_PASSPORT") return { key: code, arg };

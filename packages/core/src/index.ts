@@ -4,3 +4,4 @@ export * from "./ids";
 export * from "./salary";
 export * from "./statement";
 export * from "./mrz";
+export * from "./documents";

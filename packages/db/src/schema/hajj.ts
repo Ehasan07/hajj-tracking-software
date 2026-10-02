@@ -29,6 +29,8 @@ export const pilgrimStatusEnum = pgEnum("pilgrim_status", [
   "cancelled",
 ]);
 export const paymentMethodEnum = pgEnum("payment_method", ["cash", "bkash", "nagad", "rocket", "bank", "card", "other"]);
+export const documentStatusEnum = pgEnum("document_status", ["received", "verified", "rejected"]);
+export const bloodGroupEnum = pgEnum("blood_group", ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]);
 export const articleCategoryEnum = pgEnum("article_category", ["hajj", "umrah", "documents", "costs", "health", "faq"]);
 
 /** What the agency sells this season. Price is copied onto each pilgrim at registration. */
@@ -95,13 +97,30 @@ export const pilgrims = pgTable(
     ref: text().notNull(),
     fullName: text().notNull(),
     fatherName: text(),
+    motherName: text(),
+    spouseName: text(),
+    occupation: text(),
+    bloodGroup: bloodGroupEnum(),
     phone: text().notNull(),
     altPhone: text(),
     email: text(),
     gender: genderEnum(),
     dateOfBirth: date(),
+    /** Present address. */
     address: text(),
+    permanentAddress: text(),
     district: text(),
+    /** National ID: encrypted like the passport number, with a blind index for search. */
+    nidEnc: text(),
+    nidIndex: text(),
+    nidLast4: text(),
+    /** Government Hajj portal pre-registration tracking number, and the final registration number. */
+    prpNumber: text(),
+    hajjRegNumber: text(),
+    visaNumber: text(),
+    mahramName: text(),
+    mahramRelation: text(),
+    mahramPilgrimId: uuid(),
     passportNumberEnc: text(),
     passportIndex: text(),
     passportLast2: text(),
@@ -127,6 +146,7 @@ export const pilgrims = pgTable(
     index("pilgrims_phone_idx").on(t.tenantId, t.phone),
     index("pilgrims_name_trgm_idx").using("gin", sql`${t.fullName} gin_trgm_ops`),
     index("pilgrims_package_idx").on(t.tenantId, t.packageId),
+    index("pilgrims_nid_idx").on(t.tenantId, t.nidIndex),
     check("pilgrims_amounts", sql`${t.packagePrice} >= 0 and ${t.discount} >= 0 and ${t.discount} <= ${t.packagePrice}`),
     tenantIsolation("pilgrims"),
   ],
@@ -176,6 +196,38 @@ export const payments = pgTable(
   ],
 ).enableRLS();
 
+/**
+ * Papers a pilgrim hands in (photo, passport, NID, vaccination...). Files are
+ * encrypted before they reach object storage. Rows are never deleted: a wrong
+ * upload is marked rejected and a new one added; the newest per type counts.
+ */
+export const pilgrimDocuments = pgTable(
+  "pilgrim_documents",
+  {
+    id: id(),
+    tenantId: tenantId(),
+    pilgrimId: uuid()
+      .notNull()
+      .references(() => pilgrims.id, { onDelete: "cascade" }),
+    type: text().notNull(),
+    fileKey: text().notNull(),
+    contentType: text().notNull(),
+    sizeBytes: integer().notNull(),
+    status: documentStatusEnum().notNull().default("received"),
+    note: text(),
+    expiresOn: date(),
+    uploadedBy: text().notNull().default(sql`current_setting('app.user_id', true)`),
+    uploadedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    reviewedBy: text(),
+    reviewedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    index("pilgrim_documents_pilgrim_idx").on(t.tenantId, t.pilgrimId, t.type, t.uploadedAt),
+    check("pilgrim_documents_size", sql`${t.sizeBytes} > 0`),
+    tenantIsolation("pilgrim_documents"),
+  ],
+).enableRLS();
+
 /** Hajj and Umrah guidance shown on the public site and in the pilgrim app, in both languages. */
 export const articles = pgTable(
   "articles",
@@ -204,3 +256,4 @@ export type Inquiry = typeof inquiries.$inferSelect;
 export type Pilgrim = typeof pilgrims.$inferSelect;
 export type Payment = typeof payments.$inferSelect;
 export type Article = typeof articles.$inferSelect;
+export type PilgrimDocument = typeof pilgrimDocuments.$inferSelect;

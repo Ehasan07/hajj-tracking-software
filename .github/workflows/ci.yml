@@ -24,12 +24,23 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U hajj_owner -d hajj"
           --health-interval 5s --health-retries 10
+      storage:
+        image: rustfs/rustfs:latest
+        env:
+          RUSTFS_ACCESS_KEY: ci_storage
+          RUSTFS_SECRET_KEY: ci_storage_secret
+        ports: ["9020:9000"]
     env:
       DATABASE_OWNER_URL: postgres://hajj_owner:hajj_owner_ci@localhost:5432/hajj
       DATABASE_URL: postgres://hajj_app:hajj_app_dev@localhost:5432/hajj
       BETTER_AUTH_SECRET: ci-only-secret-0000000000000000000000000
       BETTER_AUTH_URL: http://localhost:3100
       PUBLIC_TENANT_SLUG: demo
+      S3_ENDPOINT: http://localhost:9020
+      S3_REGION: us-east-1
+      S3_BUCKET: hajj-private
+      S3_ACCESS_KEY: ci_storage
+      S3_SECRET_KEY: ci_storage_secret
       # Test-only keys; production keys live in the server's environment.
       FIELD_ENCRYPTION_KEY: h2etwd3JOTbv6xpkRh7zzZS1vz7SHIRwxOIapL7tKSs=
       BLIND_INDEX_KEY: 4ah07ta7KFjb8igsjSW3OWcNMZ0wMZNS+NGFmFGv46g=
