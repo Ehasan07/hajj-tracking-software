@@ -360,5 +360,90 @@
     "related": "Ayat and duas for this step",
     "practices": "Sunnah",
     "progress": "{done}/{total} approved"
+  },
+  "site": {
+    "nav": {
+      "packages": "Packages",
+      "steps": "How to perform Hajj",
+      "duas": "Duas",
+      "contact": "Contact",
+      "pilgrimLogin": "Pilgrim login",
+      "staff": "Office login"
+    },
+    "badge": "Hajj 1448 · Registration open",
+    "hero": {
+      "title1": "From the first labbaik to the flight home,",
+      "title2": "with you at",
+      "title3": "every",
+      "title4": "step.",
+      "body": "From your first question at our office to the flight back, every payment, document and hotel night is kept in one clear record.",
+      "packages": "See packages",
+      "call": "Talk to the office",
+      "toast": "Receipt verified",
+      "toastBody": "Scan the QR to check any receipt",
+      "art": "The Kaabah with pilgrims performing tawaf"
+    },
+    "features": {
+      "licence": "Government licensed Hajj agency",
+      "licenceBody": "Licence number {number}",
+      "receipt": "A receipt for every taka",
+      "receiptBody": "Anyone can verify it by scanning its QR code",
+      "guide": "Hajj guidance in Bangla",
+      "guideBody": "Ayat, duas and each day's rites, reviewed by a scholar",
+      "ledger": "Clear accounts",
+      "ledgerBody": "What you paid and what is due, all in one place"
+    },
+    "packages": {
+      "eyebrow": "Chosen for you",
+      "title": "Hajj and Umrah packages",
+      "days": "{days} days",
+      "popular": "Most chosen",
+      "interested": "I'm interested",
+      "empty": "No packages are open right now. Please contact the office."
+    },
+    "ayah": {
+      "eyebrow": "Allah says"
+    },
+    "steps": {
+      "eyebrow": "Step by step",
+      "title": "How to perform Umrah and Hajj",
+      "umrah": "Umrah",
+      "hajj": "Hajj",
+      "more": "Our scholar will explain every step"
+    },
+    "duas": {
+      "eyebrow": "Learn by heart",
+      "title": "Duas for the journey"
+    },
+    "inquiry": {
+      "eyebrow": "Any questions?",
+      "title": "We'll call you",
+      "body": "Leave your name and mobile number. A representative will call within one working day.",
+      "name": "Your name",
+      "phone": "Mobile number",
+      "interest": "Interested in",
+      "package": "Package",
+      "anyPackage": "Not decided yet",
+      "people": "How many people",
+      "notes": "Anything you'd like to ask",
+      "submit": "Send",
+      "sending": "Sending…",
+      "ok": "Thank you! Your inquiry number is {ref}. We'll call you soon.",
+      "INVALID_PHONE": "Enter a valid mobile number, e.g. 01712-345678",
+      "INVALID_NAME": "Please enter your name",
+      "TOO_MANY": "Too many attempts. Please try again later.",
+      "UNAVAILABLE": "Can't send right now. Please call the office.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "contact": {
+      "title": "Office",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email"
+    },
+    "footer": {
+      "rights": "All rights reserved",
+      "verify": "To verify a receipt, scan the QR code printed on it"
+    }
   }
 }

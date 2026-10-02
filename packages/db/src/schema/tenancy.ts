@@ -25,6 +25,8 @@ export const tenantSettings = pgTable(
     timeZone: text().notNull().default("Asia/Dhaka"),
     enabledUnits: businessUnitEnum().array().notNull().default(sql`'{hajj,office}'::business_unit[]`),
     branding: jsonb().$type<{ logoKey?: string; accent?: string }>().notNull().default({}),
+    /** Host name the agency's public website is served on, e.g. "almadina.example.com". */
+    publicHost: text().unique(),
     ...timestamps,
   },
   (t) => [

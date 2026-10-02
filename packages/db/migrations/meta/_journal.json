@@ -50,6 +50,20 @@
       "when": 1790937480719,
       "tag": "0006_sacred_audit",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790938619141,
+      "tag": "0007_public_host",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790938620272,
+      "tag": "0008_public_site",
+      "breakpoints": true
     }
   ]
 }

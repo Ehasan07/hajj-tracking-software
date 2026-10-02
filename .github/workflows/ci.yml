@@ -29,6 +29,7 @@ jobs:
       DATABASE_URL: postgres://hajj_app:hajj_app_dev@localhost:5432/hajj
       BETTER_AUTH_SECRET: ci-only-secret-0000000000000000000000000
       BETTER_AUTH_URL: http://localhost:3100
+      PUBLIC_TENANT_SLUG: demo
       # Test-only keys; production keys live in the server's environment.
       FIELD_ENCRYPTION_KEY: h2etwd3JOTbv6xpkRh7zzZS1vz7SHIRwxOIapL7tKSs=
       BLIND_INDEX_KEY: 4ah07ta7KFjb8igsjSW3OWcNMZ0wMZNS+NGFmFGv46g=
@@ -48,6 +49,7 @@ jobs:
         run: |
           PGPASSWORD=hajj_owner_ci psql -h localhost -U hajj_owner -d hajj -f packages/db/docker/init.sql
           pnpm --filter @hajj/db exec tsx src/migrate.ts
+          pnpm --filter @hajj/db exec tsx src/seed.ts
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm --filter @hajj/web build

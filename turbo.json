@@ -43,6 +43,7 @@
     "S3_*",
     "FIELD_ENCRYPTION_KEY",
     "BLIND_INDEX_KEY",
-    "SMS_PROVIDER"
+    "SMS_PROVIDER",
+    "PUBLIC_TENANT_SLUG"
   ]
 }

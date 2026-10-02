@@ -4,10 +4,34 @@ import { LabbaikOrnament, QuranAttribution, StarDivider, Verses } from "@/compon
 import { buttonClass, Khatam } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/lib/format";
+import { loadSite, resolvePublicTenant } from "@/server/site";
+import { AgencySite } from "./_site/agency-site";
 
-export default async function Home({ params }: { params: Promise<{ locale: Locale }> }) {
+export async function generateMetadata() {
+  const tenantId = await resolvePublicTenant();
+  const site = tenantId ? await loadSite(tenantId) : null;
+  return site?.settings ? { title: { absolute: site.settings.legalName } } : {};
+}
+
+export default async function Home({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ package?: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // An agency's own website when this host (or the configured default) belongs to one.
+  const tenantId = await resolvePublicTenant();
+  const site = tenantId ? await loadSite(tenantId) : null;
+  if (site?.settings) {
+    const { package: selected } = await searchParams;
+    const valid = site.packages.some((p) => p.id === selected) ? selected : undefined;
+    return <AgencySite site={site} locale={locale} selectedPackage={valid} />;
+  }
+
   const t = await getTranslations();
   // This page belongs to no agency, so no scholar has approved a meaning here: Arabic and its citation only.
   const house = getItem("ayah_first_house");
