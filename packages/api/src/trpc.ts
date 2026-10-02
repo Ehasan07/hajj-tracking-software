@@ -5,7 +5,8 @@ import { ZodError } from "zod";
 import { db, withTenant, type Database, type Transaction } from "@hajj/db";
 import { member } from "@hajj/db/schema";
 
-export const ROLES = ["owner", "admin", "accountant", "staff", "shop_operator"] as const;
+/** "alim" is the agency's scholar, who approves religious content. */
+export const ROLES = ["owner", "admin", "accountant", "staff", "shop_operator", "alim"] as const;
 export type Role = (typeof ROLES)[number];
 
 export interface SessionInfo {

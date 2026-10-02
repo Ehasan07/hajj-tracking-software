@@ -4,6 +4,7 @@ import { inquiriesRouter } from "./routers/inquiries";
 import { packagesRouter } from "./routers/packages";
 import { paymentsRouter } from "./routers/payments";
 import { pilgrimsRouter } from "./routers/pilgrims";
+import { sacredRouter } from "./routers/sacred";
 import { tenantRouter } from "./routers/tenant";
 
 export const appRouter = router({
@@ -14,6 +15,7 @@ export const appRouter = router({
   pilgrims: pilgrimsRouter,
   payments: paymentsRouter,
   articles: articlesRouter,
+  sacred: sacredRouter,
 });
 
 export type AppRouter = typeof appRouter;

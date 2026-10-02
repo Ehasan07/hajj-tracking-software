@@ -185,6 +185,20 @@ describe("hajj flow", () => {
     expect(none).toHaveLength(0);
   });
 
+  it("lets only admins and scholars approve religious content", async () => {
+    await expect(
+      staff().sacred.review({ contentId: "item:dua_talbiyah", status: "approved" }),
+    ).rejects.toThrow(/FORBIDDEN/);
+    await expect(owner().sacred.review({ contentId: "item:nope", status: "approved" })).rejects.toThrow(/NOT_FOUND/);
+    await expect(
+      owner().sacred.review({ contentId: "item:surah_ikhlas", status: "approved", meaningBn: ["one line only"] }),
+    ).rejects.toThrow(/MEANING_COUNT/);
+    await owner().sacred.review({ contentId: "item:dua_talbiyah", status: "approved", reviewerNote: "checked" });
+    const reviews = await staff().sacred.reviews();
+    expect(reviews["item:dua_talbiyah"]?.status).toBe("approved");
+    expect(await outsider().sacred.reviews().catch((e: Error) => e.message)).toMatch(/FORBIDDEN/);
+  });
+
   it("keeps other agencies out", async () => {
     await expect(outsider().pilgrims.get({ id: pilgrimId })).rejects.toThrow(/FORBIDDEN/);
   });

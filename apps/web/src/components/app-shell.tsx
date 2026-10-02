@@ -14,6 +14,7 @@ import {
   PilgrimIcon,
   StatementIcon,
   KaabaIcon,
+  QuranIcon,
 } from "./icons";
 import { Khatam } from "./ui";
 
@@ -50,6 +51,7 @@ export function AppShell({ agency, licence, enabledUnits, openInquiries, childre
       badge: openInquiries > 0 ? openInquiries : undefined,
     },
     { href: "/app/packages", label: t("nav.packages"), icon: KaabaIcon, tint: "var(--color-haram-tint)" },
+    { href: "/app/sacred", label: t("nav.sacred"), icon: QuranIcon, tint: "var(--color-saffron-tint)" },
     { href: "/app/guide", label: t("nav.guide"), icon: BookIcon, tint: "var(--color-unit-supernova-tint)" },
   ];
   const later = [

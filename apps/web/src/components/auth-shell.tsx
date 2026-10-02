@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { getItem } from "@hajj/sacred";
+import { LabbaikOrnament, StarDivider } from "./sacred";
 import { Khatam } from "./ui";
 
 export function AuthShell({ title, children }: { title: string; children: ReactNode }) {
@@ -12,8 +14,13 @@ export function AuthShell({ title, children }: { title: string; children: ReactN
           className="absolute -right-32 -bottom-32 h-[520px] w-[520px] animate-turn text-[#14635d]"
           strokeWidth={0.8}
         />
-        <div className="relative flex flex-col gap-4">
-          <p className="max-w-sm font-display text-5xl leading-tight">লাব্বাইক আল্লাহুম্মা লাব্বাইক</p>
+        <LabbaikOrnament className="pointer-events-none absolute top-24 -left-6 text-[200px] text-[#14635d]" />
+        <div className="relative flex flex-col gap-5">
+          <p lang="ar" dir="rtl" className="font-naskh text-[34px] leading-[1.9] text-ground">
+            {getItem("dua_talbiyah").verses[0]!.arabic}
+          </p>
+          <StarDivider className="text-saffron" />
+          <p className="max-w-sm font-display text-3xl leading-tight text-[#c7ddd9]">লাব্বাইক আল্লাহুম্মা লাব্বাইক</p>
           <svg viewBox="0 0 200 18" className="h-4 w-56" aria-hidden="true">
             <path
               d="M3 12 C 50 3, 100 16, 197 7"

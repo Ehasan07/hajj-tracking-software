@@ -1,6 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import QRCode from "qrcode";
 import { amountInWords } from "@hajj/core";
+import { BASMALAH_GLYPH, receiptItem } from "@hajj/sacred";
+import { Verses } from "@/components/sacred";
+import { presented, type Review } from "@/lib/sacred";
 import { PageBody } from "@/components/page-header";
 import { PrintButton } from "@/components/print-button";
 import { buttonClass, Khatam } from "@/components/ui";
@@ -13,7 +16,12 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
   setRequestLocale(locale);
   const t = await getTranslations();
   const caller = await api();
-  const { payment, pilgrim, packageName, agency, totals } = await caller.payments.receipt({ id });
+  const [{ payment, pilgrim, packageName, agency, totals }, reviews] = await Promise.all([
+    caller.payments.receipt({ id }),
+    caller.sacred.reviews(),
+  ]);
+  const blessing = receiptItem();
+  const blessingShown = presented(blessing, reviews[`item:${blessing.id}`] as Review | undefined, locale);
 
   const origin = process.env.BETTER_AUTH_URL ?? "";
   const verifyUrl = `${origin}/verify/${payment.verifyToken}`;
@@ -44,6 +52,10 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
 
         <div className="relative flex min-w-0 flex-col gap-4 px-4 py-5 sm:gap-[2.2%] sm:px-[4.5%] sm:py-[3.5%]">
           <Khatam className="absolute -right-24 -bottom-28 h-80 w-80 text-[#eef3f2]" strokeWidth={1.2} />
+
+          <p lang="ar" dir="rtl" aria-label="Bismillah" className="relative -mb-2 text-center font-quran text-[26px] leading-none text-haram-deep sm:-mt-1">
+            {BASMALAH_GLYPH}
+          </p>
 
           <header className="relative flex flex-wrap items-start justify-between gap-4">
             <div className="flex min-w-0 flex-col">
@@ -91,8 +103,16 @@ export default async function ReceiptPage({ params }: { params: Promise<{ locale
             </dd>
           </dl>
 
+          <div className="relative flex max-w-[64%] flex-col gap-0.5 self-start max-sm:max-w-full">
+            <Verses item={blessing} className="text-[17px] leading-[2] text-haram-deep" />
+            <span className="text-[10px] text-ink-3">
+              {blessingShown.approved ? `${blessingShown.meanings[0]} · ` : ""}
+              {blessing.citation[locale]}
+            </span>
+          </div>
+
           <div
-            className={`relative mr-4 flex animate-stamp self-end sm:absolute sm:top-[52%] sm:right-[30%] sm:mr-0 flex-col items-center rounded-xl border-[3px] border-double px-5 py-2 [animation-delay:400ms] ${
+            className={`relative mr-4 flex animate-stamp self-end sm:absolute sm:top-[56%] sm:right-[5%] sm:mr-0 flex-col items-center rounded-xl border-[3px] border-double px-5 py-2 [animation-delay:400ms] ${
               voided ? "border-due text-due" : "border-paid text-paid"
             }`}
           >

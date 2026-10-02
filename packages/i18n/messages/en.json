@@ -89,7 +89,8 @@
     "statements": "Statements",
     "myBusiness": "My businesses",
     "signOut": "Sign out",
-    "menu": "Menu"
+    "menu": "Menu",
+    "sacred": "Ayat & duas"
   },
   "methods": {
     "cash": "Cash",
@@ -246,7 +247,8 @@
     "stampVoid": "Void",
     "licence": "Hajj licence",
     "defaultPurpose": "Instalment for {package}",
-    "discount": "Discount"
+    "discount": "Discount",
+    "blessing": "Receipt blessing"
   },
   "packages": {
     "title": "Packages",
@@ -321,5 +323,42 @@
     "INVALID_SLUG": "Only lowercase letters, numbers and dashes",
     "mrz_FORMAT": "Each of the two lines must be 44 characters",
     "mrz_CHECK": "Something in the passport lines is wrong. Please scan again."
+  },
+  "sacred": {
+    "title": "Ayat, duas and the rites of Hajj",
+    "subtitle": "Arabic from verified sources. Bangla meanings appear on the website, app and receipts only after your scholar approves them.",
+    "tabs": {
+      "steps": "Hajj & Umrah steps",
+      "ayat": "Ayat & surahs",
+      "duas": "Duas",
+      "hadith": "Hadith",
+      "sunnah": "Sunnah practices"
+    },
+    "umrah": "Umrah",
+    "hajj": "Hajj",
+    "when": "When to recite",
+    "pronunciation": "Pronunciation",
+    "meaning": "Meaning",
+    "note": "Note",
+    "draft": "Draft · awaiting scholar review",
+    "approved": "Approved by scholar",
+    "changes": "Changes requested",
+    "approve": "Approve as is",
+    "edit": "Edit meaning",
+    "saveApprove": "Save and approve",
+    "requestChanges": "Request changes",
+    "reviewerNote": "Scholar's note",
+    "cancel": "Cancel",
+    "correction": "One printing error in the source was corrected; please check:",
+    "dayVerse": "Ayah of the day",
+    "dayDua": "Dua of the day",
+    "dayHadith": "Hadith of the day",
+    "meaningPending": "Meaning awaiting scholar review",
+    "reviewLink": "Review",
+    "sunnahNote": "Whether a practice is fard, wajib or sunnah can differ between madhhabs. Ask your scholar for the details.",
+    "attribution": "Quran Arabic text: Tanzil Project (tanzil.net)",
+    "related": "Ayat and duas for this step",
+    "practices": "Sunnah",
+    "progress": "{done}/{total} approved"
   }
 }

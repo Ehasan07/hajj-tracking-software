@@ -39,7 +39,7 @@ const config: NextConfig = {
   poweredByHeader: false,
   output: "standalone",
   outputFileTracingRoot: fileURLToPath(new URL("../../", import.meta.url)),
-  transpilePackages: ["@hajj/api", "@hajj/core", "@hajj/db", "@hajj/i18n"],
+  transpilePackages: ["@hajj/api", "@hajj/core", "@hajj/db", "@hajj/i18n", "@hajj/sacred"],
   // Loaded by Node at runtime so every package shares one drizzle instance;
   // bundling it twice breaks parameter mapping between copies.
   serverExternalPackages: ["postgres", "drizzle-orm"],

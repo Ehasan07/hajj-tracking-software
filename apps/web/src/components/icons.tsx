@@ -260,3 +260,15 @@ export function UploadIcon(props: IconProps) {
     </svg>
   );
 }
+
+/** An open mushaf resting on a rehal (folding stand). */
+export function QuranIcon(props: IconProps) {
+  const { svg, tint, accent } = base({ accent: "var(--color-saffron-deep)", ...props });
+  return (
+    <svg {...svg}>
+      <path d="M3.5 6.5c2.9-1.1 5.8-.8 8.5 1.2 2.7-2 5.6-2.3 8.5-1.2v7c-2.9-1.1-5.8-.8-8.5 1.2-2.7-2-5.6-2.3-8.5-1.2z" fill={tint} />
+      <path d="M12 7.7v7" />
+      <path d="M7 20.5l10-5.3M17 20.5 7 15.2" stroke={accent} />
+    </svg>
+  );
+}

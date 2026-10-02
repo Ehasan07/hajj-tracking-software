@@ -36,6 +36,20 @@
       "when": 1790933011137,
       "tag": "0004_access_log",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790937479477,
+      "tag": "0005_sacred_reviews",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790937480719,
+      "tag": "0006_sacred_audit",
+      "breakpoints": true
     }
   ]
 }

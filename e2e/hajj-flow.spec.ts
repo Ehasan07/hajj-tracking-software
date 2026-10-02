@@ -90,6 +90,16 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await expect(page.getByText("৳২,৫০,০০০").first()).toBeVisible();
   await snap(page, "06-dashboard");
 
+  // Religious content: Arabic is shown, the meaning is a draft until the agency approves it.
+  await page.goto("/app/sacred?tab=duas");
+  const talbiyah = page.locator("#dua_talbiyah");
+  await expect(talbiyah.locator('[lang="ar"]')).toBeVisible();
+  await expect(talbiyah.getByText("খসড়া · আলেমের যাচাই বাকি")).toBeVisible();
+  await talbiyah.getByRole("button", { name: "যেমন আছে অনুমোদন" }).click();
+  await expect(talbiyah.getByText("আলেম অনুমোদিত")).toBeVisible();
+  await page.goto("/app/sacred");
+  await expect(page.getByRole("heading", { name: "মিকাত থেকে ইহরাম" })).toBeVisible();
+
   await page.goto("/app/pilgrims?q=01712345678");
   await expect(page.getByText("AM-26-000001")).toBeVisible();
   await page.goto("/en/app/pilgrims?q=L898902C3");
@@ -97,6 +107,7 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await snap(page, "07-search-en");
 
   // Signing out and back in lands on the same agency's dashboard, not onboarding.
+  await page.goto("/en/app");
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.waitForURL(/sign-in/);
   await page.locator("#email").fill(email);

@@ -1,6 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { BusinessUnit } from "@hajj/core";
+import { itemOfTheDay } from "@hajj/sacred";
 import { CountUp } from "@/components/count-up";
+import { QuranAttribution, StarDivider, Verses } from "@/components/sacred";
 import {
   DallahIcon,
   KaabaIcon,
@@ -14,6 +16,7 @@ import { PageBody } from "@/components/page-header";
 import { buttonClass, Khatam } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { digits, initials, money, timeText, todayLine, type Locale } from "@/lib/format";
+import { presented, type Review } from "@/lib/sacred";
 import { getSession } from "@/server/session";
 import { api } from "@/trpc/server";
 
@@ -40,13 +43,22 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
   const t = await getTranslations();
   const session = await getSession();
   const caller = await api();
-  const [settings, today, recent, statusCounts, inquiryCounts] = await Promise.all([
+  const [settings, today, recent, statusCounts, inquiryCounts, reviews] = await Promise.all([
     caller.tenant.settings(),
     caller.payments.today(),
     caller.payments.recent({ limit: 6 }),
     caller.pilgrims.statusCounts(),
     caller.inquiries.counts(),
+    caller.sacred.reviews(),
   ]);
+  // Prefer content the agency's scholar has approved; until then show the Arabic with the meaning held back.
+  const approvedIds = new Set(
+    Object.entries(reviews)
+      .filter(([id, r]) => id.startsWith("item:") && r.status === "approved")
+      .map(([id]) => id.slice(5)),
+  );
+  const daily = itemOfTheDay(today.day, approvedIds.size > 0 ? approvedIds : undefined);
+  const dailyShown = daily ? presented(daily, reviews[`item:${daily.id}`] as Review | undefined, locale) : null;
   const totalPilgrims = statusCounts.reduce((a, s) => a + s.n, 0);
   const openInquiries = (inquiryCounts.new ?? 0) + (inquiryCounts.follow_up ?? 0);
   const methods = Object.entries(today.byMethod).filter(([, v]) => (v ?? 0) > 0) as [string, number][];
@@ -160,6 +172,36 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
           ))}
         </section>
       </div>
+
+      {daily && dailyShown ? (
+        <section className="relative flex animate-rise flex-col gap-4 overflow-hidden rounded-[120px_120px_22px_22px] bg-paper px-6 pt-10 pb-6 [animation-delay:280ms] sm:px-12">
+          <div className="flex flex-col items-center gap-1 text-center">
+            <span className="font-hand text-xl text-saffron-deep">
+              {daily.kind === "dua" ? t("sacred.dayDua") : daily.kind === "hadith" ? t("sacred.dayHadith") : t("sacred.dayVerse")}
+            </span>
+            <span className="text-sm text-ink-3">
+              {daily.title[locale]} · {daily.citation[locale]}
+            </span>
+          </div>
+          <StarDivider />
+          <Verses item={daily} className="text-center text-[26px] sm:text-[30px]" />
+          {dailyShown.approved ? (
+            <p className="mx-auto max-w-3xl text-center text-[16px] leading-relaxed text-ink-2">{dailyShown.meanings.join(" ")}</p>
+          ) : (
+            <p className="text-center text-sm text-ink-3">
+              {t("sacred.meaningPending")} ·{" "}
+              <Link href={`/app/sacred?tab=${daily.kind === "dua" ? "duas" : daily.kind === "hadith" ? "hadith" : "ayat"}#${daily.id}`} className="font-semibold text-haram underline underline-offset-4">
+                {t("sacred.reviewLink")}
+              </Link>
+            </p>
+          )}
+          {daily.verses[0]!.surah > 0 ? (
+            <div className="flex justify-center">
+              <QuranAttribution locale={locale} />
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="animate-rise overflow-hidden rounded-lg bg-paper [animation-delay:300ms]">
         <div className="flex items-center justify-between px-6 py-5">
