@@ -40,7 +40,9 @@ cp .env.example .env          # then fill the secrets (openssl rand -base64 32)
 pnpm install
 pnpm db:up                    # postgres :5440, redis :6390, storage :9020
 pnpm db:migrate
+pnpm db:seed                  # demo agency for the public website
 pnpm dev                      # http://localhost:3100
+pnpm --filter @hajj/db seed:demo   # demo office login with sample pilgrims (app must be running)
 ```
 
 ## Checks
