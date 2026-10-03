@@ -22,6 +22,15 @@ Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and Engli
 - Printable A5 money receipt in Bangla and English with a QR code anyone can verify
 - Receipt voiding with a reason and a reversing ledger entry
 - Packages and a bilingual Hajj & Umrah guide
+- Daily, monthly and yearly statements per business, straight from the ledger, printable on A4
+- Office expenses in BDT or SAR, cancellable with a reversing entry
+- Staff, advances and monthly salary sheets: draft, lock, pay (one ledger entry per person)
+- Hotel bookings in Makkah and Madinah: room blocks priced per room per night, pilgrims placed in rooms, no double booking, payments to the hotel, nightly occupancy
+- One shop engine for the side businesses, each with its own sale numbers:
+  - Medicine shop: batches with expiry dates, earliest expiry sold first, expiry warnings
+  - Zamzam water: seven routes for the seven days, shops on each route, a route-day sheet for deliveries and dues, and a report of which shop got how much
+  - Naba Coffee and Supernova: menu or product list, quick sales, daily statement
+- Separate logins per colleague; a shop login sees only the shops it is given
 
 ## Ground rules
 
@@ -42,7 +51,7 @@ pnpm db:up                    # postgres :5440, redis :6390, storage :9020
 pnpm db:migrate
 pnpm db:seed                  # demo agency for the public website
 pnpm dev                      # http://localhost:3100
-pnpm --filter @hajj/db seed:demo   # demo office login with sample pilgrims (app must be running)
+pnpm --filter @hajj/db seed:demo   # demo login with pilgrims, shops, salaries and hotels (app must be running)
 ```
 
 ## Checks
@@ -51,7 +60,7 @@ pnpm --filter @hajj/db seed:demo   # demo office login with sample pilgrims (app
 pnpm typecheck
 pnpm test                     # core, i18n, database (RLS) and API flow tests
 pnpm --filter @hajj/web build
-npx playwright test           # browser test of a full office day
+npx playwright test           # browser tests: an office day, the public site, the side businesses
 ```
 
 ## Deploy

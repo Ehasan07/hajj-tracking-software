@@ -1,7 +1,18 @@
 import { assertMinor, type Currency } from "./money";
 
-export const BUSINESS_UNITS = ["hajj", "medicine", "zamzam", "coffee", "supernova", "office"] as const;
+export const BUSINESS_UNITS = [
+  "hajj",
+  "medicine",
+  "zamzam",
+  "coffee",
+  "supernova",
+  "office",
+] as const;
 export type BusinessUnit = (typeof BUSINESS_UNITS)[number];
+
+/** Side businesses that run on the shop engine (products, stock, point of sale). */
+export const SHOP_UNITS = ["medicine", "zamzam", "coffee", "supernova"] as const;
+export type ShopUnit = (typeof SHOP_UNITS)[number];
 
 export type Direction = "in" | "out";
 export type Period = "day" | "month" | "year";
@@ -35,7 +46,12 @@ const formatterCache = new Map<string, Intl.DateTimeFormat>();
 function partsIn(date: Date, timeZone: string) {
   let fmt = formatterCache.get(timeZone);
   if (!fmt) {
-    fmt = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
+    fmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
     formatterCache.set(timeZone, fmt);
   }
   const parts = Object.fromEntries(fmt.formatToParts(date).map((p) => [p.type, p.value]));
@@ -90,7 +106,10 @@ export function buildStatement(
 }
 
 /** Running balance per row, starting from an opening balance. */
-export function withRunningBalance(rows: readonly StatementRow[], opening: Partial<Record<Currency, number>> = {}) {
+export function withRunningBalance(
+  rows: readonly StatementRow[],
+  opening: Partial<Record<Currency, number>> = {},
+) {
   const balance: Partial<Record<Currency, number>> = { ...opening };
   return rows.map((row) => {
     const openingBalance = balance[row.currency] ?? 0;
@@ -101,7 +120,11 @@ export function withRunningBalance(rows: readonly StatementRow[], opening: Parti
 }
 
 /** What a pilgrim still owes: package price minus everything received, never below zero for display. */
-export function outstanding(packagePrice: number, payments: readonly number[], discounts: readonly number[] = []) {
+export function outstanding(
+  packagePrice: number,
+  payments: readonly number[],
+  discounts: readonly number[] = [],
+) {
   const paid = payments.reduce((a, b) => a + assertMinor(b), 0);
   const discount = discounts.reduce((a, b) => a + assertMinor(b), 0);
   const due = assertMinor(packagePrice) - discount - paid;

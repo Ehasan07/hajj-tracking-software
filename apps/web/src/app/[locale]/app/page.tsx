@@ -1,8 +1,14 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import type { BusinessUnit } from "@hajj/core";
+import type { BusinessUnit, ShopUnit } from "@hajj/core";
 import { itemOfTheDay } from "@hajj/sacred";
 import { CountUp } from "@/components/count-up";
-import { DraftChip, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
+import {
+  DraftChip,
+  QuranAttribution,
+  ReadingLines,
+  StarDivider,
+  Verses,
+} from "@/components/sacred";
 import {
   DallahIcon,
   KaabaIcon,
@@ -14,7 +20,7 @@ import {
 } from "@/components/icons";
 import { PageBody } from "@/components/page-header";
 import { buttonClass, Khatam } from "@/components/ui";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { digits, initials, money, timeText, todayLine, type Locale } from "@/lib/format";
 import { presented, type Review } from "@/lib/sacred";
 import { getSession } from "@/server/session";
@@ -31,10 +37,30 @@ const METHOD_COLOR: Record<string, string> = {
 };
 
 const UNIT_TILES: { unit: BusinessUnit; icon: typeof KaabaIcon; color: string; tint: string }[] = [
-  { unit: "zamzam", icon: ZamzamIcon, color: "var(--color-unit-zamzam)", tint: "var(--color-unit-zamzam-tint)" },
-  { unit: "medicine", icon: MedicineIcon, color: "var(--color-unit-medicine)", tint: "var(--color-unit-medicine-tint)" },
-  { unit: "coffee", icon: DallahIcon, color: "var(--color-unit-coffee)", tint: "var(--color-unit-coffee-tint)" },
-  { unit: "supernova", icon: SupernovaIcon, color: "var(--color-unit-supernova)", tint: "var(--color-unit-supernova-tint)" },
+  {
+    unit: "zamzam",
+    icon: ZamzamIcon,
+    color: "var(--color-unit-zamzam)",
+    tint: "var(--color-unit-zamzam-tint)",
+  },
+  {
+    unit: "medicine",
+    icon: MedicineIcon,
+    color: "var(--color-unit-medicine)",
+    tint: "var(--color-unit-medicine-tint)",
+  },
+  {
+    unit: "coffee",
+    icon: DallahIcon,
+    color: "var(--color-unit-coffee)",
+    tint: "var(--color-unit-coffee-tint)",
+  },
+  {
+    unit: "supernova",
+    icon: SupernovaIcon,
+    color: "var(--color-unit-supernova)",
+    tint: "var(--color-unit-supernova-tint)",
+  },
 ];
 
 export default async function Dashboard({ params }: { params: Promise<{ locale: Locale }> }) {
@@ -43,6 +69,11 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
   const t = await getTranslations();
   const session = await getSession();
   const caller = await api();
+  const me = await caller.tenant.me();
+  // A shop-only login has no office dashboard; it opens its shop.
+  if (me.role === "shop_operator") {
+    return redirect({ href: me.shops[0] ? `/app/shop/${me.shops[0]}` : "/app/team", locale });
+  }
   const [settings, today, recent, statusCounts, inquiryCounts, reviews] = await Promise.all([
     caller.tenant.settings(),
     caller.payments.today(),
@@ -58,19 +89,35 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
       .map(([id]) => id.slice(5)),
   );
   const daily = itemOfTheDay(today.day, approvedIds.size > 0 ? approvedIds : undefined);
-  const dailyShown = daily ? presented(daily, reviews[`item:${daily.id}`] as Review | undefined, locale) : null;
+  const dailyShown = daily
+    ? presented(daily, reviews[`item:${daily.id}`] as Review | undefined, locale)
+    : null;
   const totalPilgrims = statusCounts.reduce((a, s) => a + s.n, 0);
   const openInquiries = (inquiryCounts.new ?? 0) + (inquiryCounts.follow_up ?? 0);
-  const methods = Object.entries(today.byMethod).filter(([, v]) => (v ?? 0) > 0) as [string, number][];
+  const methods = Object.entries(today.byMethod).filter(([, v]) => (v ?? 0) > 0) as [
+    string,
+    number,
+  ][];
   const firstName = session?.user.name.split(" ")[0] ?? "";
-  const units = UNIT_TILES.filter((u) => settings?.enabledUnits.includes(u.unit));
+  const units = UNIT_TILES.filter((u) => me.shops.includes(u.unit as ShopUnit));
+  const shopToday = await Promise.all(
+    units.map((u) => caller.shop.overview({ unit: u.unit as ShopUnit })),
+  );
+  const books = ["owner", "admin", "accountant"].includes(me.role);
+  const allToday = books
+    ? (await caller.statements.summary({ key: today.day })).currencies.find(
+        (c) => c.currency === "BDT",
+      )
+    : null;
 
   return (
     <PageBody>
       <div className="flex animate-rise flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-[15px] text-ink-3">{todayLine(locale)}</p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t("dashboard.greeting", { name: firstName })}</h1>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            {t("dashboard.greeting", { name: firstName })}
+          </h1>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link href="/app/inquiries" className={buttonClass("outline")}>
@@ -83,7 +130,10 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
         </div>
       </div>
 
-      <form action={`/${locale === "bn" ? "" : "en/"}app/pilgrims`.replace("//", "/")} className="animate-rise [animation-delay:50ms]">
+      <form
+        action={`/${locale === "bn" ? "" : "en/"}app/pilgrims`.replace("//", "/")}
+        className="animate-rise [animation-delay:50ms]"
+      >
         <label className="flex h-[62px] items-center gap-3.5 rounded-lg border-[1.5px] border-line-strong bg-paper px-5 focus-within:border-haram focus-within:shadow-[0_0_0_4px_var(--color-haram-tint)]">
           <SearchIcon size={24} className="text-haram" />
           <input
@@ -97,14 +147,31 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
 
       <div className="grid gap-5 lg:grid-cols-12">
         <section className="relative flex animate-rise flex-col gap-4 overflow-hidden rounded-[120px_120px_22px_22px] bg-haram-night px-8 pt-16 pb-7 text-ground [animation-delay:100ms] lg:col-span-5">
-          <Khatam className="absolute top-[-120px] left-1/2 h-[300px] w-[300px] -translate-x-1/2 animate-turn text-[#14635d]" strokeWidth={0.8} />
-          <p className="relative text-center text-[15px] text-[#a9cfc9]">{t("dashboard.todayCollection")}</p>
+          <Khatam
+            className="absolute top-[-120px] left-1/2 h-[300px] w-[300px] -translate-x-1/2 animate-turn text-[#14635d]"
+            strokeWidth={0.8}
+          />
+          <p className="relative text-center text-[15px] text-[#a9cfc9]">
+            {t("dashboard.todayCollection")}
+          </p>
           <p className="relative text-center text-5xl leading-none font-bold tracking-tight sm:text-[56px]">
             <CountUp value={today.total} locale={locale} />
           </p>
           <p className="relative text-center text-sm text-[#a9cfc9]">
             {t("dashboard.receiptsToday", { count: digits(today.count, locale) })}
           </p>
+          {allToday ? (
+            <Link
+              href="/app/statements"
+              className="relative mx-auto rounded-full bg-[#ffffff14] px-4 py-1.5 text-center text-[13px] text-[#d4ece8] hover:bg-[#ffffff22]"
+            >
+              {t("dashboard.allBusinessesToday", {
+                in: money(allToday.totals.in, locale),
+                net: money(allToday.totals.net, locale),
+              })}{" "}
+              →
+            </Link>
+          ) : null}
           {methods.length > 0 ? (
             <>
               <div className="relative mt-1 flex h-2.5 gap-1">
@@ -112,7 +179,11 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
                   <span
                     key={method}
                     className="h-full origin-left animate-grow rounded-full"
-                    style={{ flexGrow: amount, background: METHOD_COLOR[method], animationDelay: `${500 + i * 150}ms` }}
+                    style={{
+                      flexGrow: amount,
+                      background: METHOD_COLOR[method],
+                      animationDelay: `${500 + i * 150}ms`,
+                    }}
                   />
                 ))}
               </div>
@@ -120,7 +191,10 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
                 {methods.slice(0, 3).map(([method, amount]) => (
                   <div key={method} className="flex flex-col gap-0.5">
                     <span className="flex items-center gap-1.5 text-[13px] text-[#a9cfc9]">
-                      <span className="h-2 w-2 rounded-full" style={{ background: METHOD_COLOR[method] }} />
+                      <span
+                        className="h-2 w-2 rounded-full"
+                        style={{ background: METHOD_COLOR[method] }}
+                      />
                       {t(`methods.${method}`)}
                     </span>
                     <span className="tabular text-lg font-semibold">{money(amount, locale)}</span>
@@ -141,34 +215,63 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
             </span>
             <span className="text-[15px] font-semibold">{t("units.hajj")}</span>
             <span className="tabular text-2xl font-bold">{digits(totalPilgrims, locale)}</span>
-            <span className="text-[13px] text-ink-3">{t("dashboard.pilgrimsRegistered", { count: digits(totalPilgrims, locale) })}</span>
+            <span className="text-[13px] text-ink-3">
+              {t("dashboard.pilgrimsRegistered", { count: digits(totalPilgrims, locale) })}
+            </span>
           </Link>
           <Link
             href="/app/inquiries"
             className="lift flex animate-rise flex-col gap-2 rounded-[60px_60px_18px_18px] border-t-4 border-saffron bg-paper px-5 pt-6 pb-5 [animation-delay:200ms]"
           >
             <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-saffron-tint">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 0 1 4 13.5z" fill="var(--color-paper)" />
-                <path d="M10 7.6a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1v.4" stroke="var(--color-saffron-deep)" />
+              <svg
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 0 1 4 13.5z"
+                  fill="var(--color-paper)"
+                />
+                <path
+                  d="M10 7.6a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1v.4"
+                  stroke="var(--color-saffron-deep)"
+                />
               </svg>
             </span>
             <span className="text-[15px] font-semibold">{t("nav.inquiries")}</span>
             <span className="tabular text-2xl font-bold">{digits(openInquiries, locale)}</span>
-            <span className="text-[13px] text-ink-3">{t("dashboard.openInquiries", { count: digits(openInquiries, locale) })}</span>
+            <span className="text-[13px] text-ink-3">
+              {t("dashboard.openInquiries", { count: digits(openInquiries, locale) })}
+            </span>
           </Link>
           {units.map(({ unit, icon: Icon, color, tint }, i) => (
-            <div
+            <Link
               key={unit}
-              className="flex animate-rise flex-col gap-2 rounded-[60px_60px_18px_18px] border-t-4 bg-paper px-5 pt-6 pb-5 opacity-80"
+              href={`/app/shop/${unit}`}
+              className="lift flex animate-rise flex-col gap-2 rounded-[60px_60px_18px_18px] border-t-4 bg-paper px-5 pt-6 pb-5"
               style={{ borderColor: color, animationDelay: `${250 + i * 50}ms` }}
             >
-              <span className="flex h-[52px] w-[52px] items-center justify-center rounded-full" style={{ background: tint }}>
+              <span
+                className="flex h-[52px] w-[52px] items-center justify-center rounded-full"
+                style={{ background: tint }}
+              >
                 <Icon size={30} tint="var(--color-paper)" />
               </span>
               <span className="text-[15px] font-semibold">{t(`units.${unit}`)}</span>
-              <span className="text-[13px] text-ink-3">{t("common.comingSoon")}</span>
-            </div>
+              <span className="tabular text-2xl font-bold">
+                {money(shopToday[i]!.sales, locale)}
+              </span>
+              <span className="text-[13px] text-ink-3">
+                {t("dashboard.shopToday", { count: digits(shopToday[i]!.count, locale) })}
+              </span>
+            </Link>
           ))}
         </section>
       </div>
@@ -177,7 +280,11 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
         <section className="relative flex animate-rise flex-col gap-4 overflow-hidden rounded-[120px_120px_22px_22px] bg-paper px-6 pt-10 pb-6 [animation-delay:280ms] sm:px-12">
           <div className="flex flex-col items-center gap-1 text-center">
             <span className="font-hand text-xl text-saffron-deep">
-              {daily.kind === "dua" ? t("sacred.dayDua") : daily.kind === "hadith" ? t("sacred.dayHadith") : t("sacred.dayVerse")}
+              {daily.kind === "dua"
+                ? t("sacred.dayDua")
+                : daily.kind === "hadith"
+                  ? t("sacred.dayHadith")
+                  : t("sacred.dayVerse")}
             </span>
             <span className="text-sm text-ink-3">
               {daily.title[locale]} · {daily.citation[locale]}
@@ -238,12 +345,18 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
                     className={`border-t border-[#eef3f2] ${i === 0 ? "animate-flash [animation-delay:900ms]" : ""} ${r.voidedAt ? "text-ink-3 line-through" : ""}`}
                   >
                     <td className="px-6 py-3.5">
-                      <Link href={`/app/receipts/${r.id}`} className="font-mono text-[13px] text-haram hover:underline">
+                      <Link
+                        href={`/app/receipts/${r.id}`}
+                        className="font-mono text-[13px] text-haram hover:underline"
+                      >
                         {r.receiptNo}
                       </Link>
                     </td>
                     <td className="px-3 py-3.5">
-                      <Link href={`/app/pilgrims/${r.pilgrimId}`} className="flex items-center gap-2.5">
+                      <Link
+                        href={`/app/pilgrims/${r.pilgrimId}`}
+                        className="flex items-center gap-2.5"
+                      >
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-haram-tint text-sm font-bold text-haram-deep">
                           {initials(r.pilgrimName)}
                         </span>
@@ -255,12 +368,19 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
                     </td>
                     <td className="px-3 py-3.5">
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ background: METHOD_COLOR[r.method] }} />
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ background: METHOD_COLOR[r.method] }}
+                        />
                         {t(`methods.${r.method}`)}
                       </span>
                     </td>
-                    <td className="tabular px-3 py-3.5 text-right font-bold">{money(r.amount, locale, r.currency)}</td>
-                    <td className="px-6 py-3.5 text-right text-[13px] text-ink-3">{timeText(r.receivedAt, locale)}</td>
+                    <td className="tabular px-3 py-3.5 text-right font-bold">
+                      {money(r.amount, locale, r.currency)}
+                    </td>
+                    <td className="px-6 py-3.5 text-right text-[13px] text-ink-3">
+                      {timeText(r.receivedAt, locale)}
+                    </td>
                   </tr>
                 ))}
               </tbody>

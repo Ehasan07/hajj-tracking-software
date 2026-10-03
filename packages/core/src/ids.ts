@@ -11,6 +11,10 @@ export const ID_KINDS = {
   salarySheet: "SS",
   sale: "SL",
   booking: "HB",
+  medicineSale: "MD",
+  zamzamSale: "ZM",
+  coffeeSale: "NC",
+  supernovaSale: "SN",
 } as const;
 
 export type IdKind = keyof typeof ID_KINDS;
@@ -36,7 +40,9 @@ export function formatReference({ prefix, year, sequence }: FormatIdInput): stri
 
 const REFERENCE_PATTERN = /^([A-Z]{2,5})-(\d{2})-(\d{6,})$/;
 
-export function parseReference(value: string): { prefix: string; yy: number; sequence: number } | null {
+export function parseReference(
+  value: string,
+): { prefix: string; yy: number; sequence: number } | null {
   const match = REFERENCE_PATTERN.exec(value.trim().toUpperCase());
   if (!match) return null;
   return { prefix: match[1]!, yy: Number(match[2]), sequence: Number(match[3]) };
@@ -45,6 +51,10 @@ export function parseReference(value: string): { prefix: string; yy: number; seq
 /** Normalise a Bangladeshi mobile number to E.164 (+8801XXXXXXXXX). */
 export function normalizeBdPhone(input: string): string | null {
   const digits = input.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/\D/g, "");
-  const local = digits.startsWith("880") ? digits.slice(3) : digits.startsWith("0") ? digits.slice(1) : digits;
+  const local = digits.startsWith("880")
+    ? digits.slice(3)
+    : digits.startsWith("0")
+      ? digits.slice(1)
+      : digits;
   return /^1[3-9]\d{8}$/.test(local) ? `+880${local}` : null;
 }

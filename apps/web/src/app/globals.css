@@ -65,43 +65,88 @@
   --animate-ripple: ripple 1.8s ease-out infinite;
 
   @keyframes rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: none; }
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
   }
   @keyframes grow {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
   }
   @keyframes turn {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
   @keyframes stamp {
-    0% { opacity: 0; transform: rotate(-12deg) scale(1.8); }
-    55% { opacity: 1; transform: rotate(-12deg) scale(0.92); }
-    100% { opacity: 1; transform: rotate(-12deg) scale(1); }
+    0% {
+      opacity: 0;
+      transform: rotate(-12deg) scale(1.8);
+    }
+    55% {
+      opacity: 1;
+      transform: rotate(-12deg) scale(0.92);
+    }
+    100% {
+      opacity: 1;
+      transform: rotate(-12deg) scale(1);
+    }
   }
   @keyframes flash {
-    from { background-color: var(--color-saffron-tint); }
-    to { background-color: transparent; }
+    from {
+      background-color: var(--color-saffron-tint);
+    }
+    to {
+      background-color: transparent;
+    }
   }
   @keyframes ripple {
-    0% { box-shadow: 0 0 0 0 rgb(11 122 111 / 0.45); }
-    100% { box-shadow: 0 0 0 12px rgb(11 122 111 / 0); }
+    0% {
+      box-shadow: 0 0 0 0 rgb(11 122 111 / 0.45);
+    }
+    100% {
+      box-shadow: 0 0 0 12px rgb(11 122 111 / 0);
+    }
   }
   @keyframes draw {
-    to { stroke-dashoffset: 0; }
+    to {
+      stroke-dashoffset: 0;
+    }
   }
   @keyframes twinkle {
-    0%, 100% { opacity: 0.35; }
-    50% { opacity: 1; }
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 1;
+    }
   }
   @keyframes float {
-    0%, 100% { transform: translateY(0) rotate(-3deg); }
-    50% { transform: translateY(-8px) rotate(-3deg); }
+    0%,
+    100% {
+      transform: translateY(0) rotate(-3deg);
+    }
+    50% {
+      transform: translateY(-8px) rotate(-3deg);
+    }
   }
   @keyframes reveal {
-    from { clip-path: inset(100% 0 0 0); }
-    to { clip-path: inset(0 0 0 0); }
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
   }
 }
 
@@ -128,7 +173,9 @@
     font-variant-numeric: tabular-nums;
   }
   .lift {
-    transition: transform 0.25s var(--ease-out-soft), box-shadow 0.25s;
+    transition:
+      transform 0.25s var(--ease-out-soft),
+      box-shadow 0.25s;
   }
   .lift:hover {
     transform: translateY(-3px);
@@ -166,6 +213,18 @@
     box-shadow: none !important;
     border-radius: 0 !important;
   }
+  .print-doc,
+  .print-doc * {
+    visibility: visible;
+  }
+  .print-doc {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .print-doc *,
   .print-area * {
     animation: none !important;
     -webkit-print-color-adjust: exact;

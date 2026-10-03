@@ -104,6 +104,20 @@ describe("reference counters", () => {
     expect(other).toBe(1);
   });
 
+  it("isolates every table that holds agency data", async () => {
+    // Any table with a tenant_id column must have row level security on and a policy for the app role.
+    const unguarded = await db.execute<{ table: string }>(sql`
+      select c.relname as table
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace and n.nspname = 'public'
+      join pg_attribute a on a.attrelid = c.oid and a.attname = 'tenant_id' and not a.attisdropped
+      where c.relkind = 'r'
+        and (not c.relrowsecurity
+          or not exists (select 1 from pg_policies p where p.schemaname = 'public' and p.tablename = c.relname and 'hajj_app' = any (p.roles)))
+      order by 1`);
+    expect(unguarded.map((r) => r.table)).toEqual([]);
+  });
+
   it("fails when no tenant is set", async () => {
     await expect(db.execute(sql`select next_reference('pilgrim', 2026)`)).rejects.toThrow();
     const leftovers = await db.select().from(counters);

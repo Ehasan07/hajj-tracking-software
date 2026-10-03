@@ -10,14 +10,30 @@ import {
   parseReference,
 } from "@hajj/core";
 import type { Transaction } from "@hajj/db";
-import { inquiries, payments, pilgrimDocuments, pilgrims, plans, subscriptions, travelPackages } from "@hajj/db/schema";
+import {
+  inquiries,
+  payments,
+  pilgrimDocuments,
+  pilgrims,
+  plans,
+  subscriptions,
+  travelPackages,
+} from "@hajj/db/schema";
 import { pilgrimReadiness } from "../services/pilgrim";
 import { blindIndex, decryptField, encryptField } from "../crypto";
 import { getSettings, nextReference } from "../services/tenant";
 import { router, tenantProcedure, withRoles } from "../trpc";
 import { optionalText, phoneInput } from "./shared";
 
-const pilgrimStatuses = ["registered", "documents", "visa", "ready", "travelled", "completed", "cancelled"] as const;
+const pilgrimStatuses = [
+  "registered",
+  "documents",
+  "visa",
+  "ready",
+  "travelled",
+  "completed",
+  "cancelled",
+] as const;
 const FINAL_STATUSES = new Set<string>(["ready", "travelled", "completed"]);
 
 const passportNumberInput = z
@@ -48,7 +64,9 @@ const profileInput = z.object({
   /** Bangladeshi NID: 10, 13 or 17 digits; Bangla digits accepted. */
   nidNumber: z
     .string()
-    .transform((v) => v.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/\D/g, ""))
+    .transform((v) =>
+      v.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/\D/g, ""),
+    )
     .pipe(z.string().regex(/^(\d{10}|\d{13}|\d{17})$/, "INVALID_NID"))
     .optional()
     .or(z.literal("").transform(() => undefined)),
@@ -59,7 +77,11 @@ const profileInput = z.object({
 
 function nidColumns(tenantId: string, nid: string | undefined) {
   if (!nid) return {};
-  return { nidEnc: encryptField(nid), nidIndex: blindIndex(tenantId, `nid:${nid}`), nidLast4: nid.slice(-4) };
+  return {
+    nidEnc: encryptField(nid),
+    nidIndex: blindIndex(tenantId, `nid:${nid}`),
+    nidLast4: nid.slice(-4),
+  };
 }
 
 function passportColumns(tenantId: string, number: string | undefined) {
@@ -75,7 +97,12 @@ async function findByPassport(tx: Transaction, index: string, exceptId?: string)
   const [row] = await tx
     .select({ id: pilgrims.id, ref: pilgrims.ref, fullName: pilgrims.fullName })
     .from(pilgrims)
-    .where(and(eq(pilgrims.passportIndex, index), exceptId ? sql`${pilgrims.id} <> ${exceptId}` : undefined))
+    .where(
+      and(
+        eq(pilgrims.passportIndex, index),
+        exceptId ? sql`${pilgrims.id} <> ${exceptId}` : undefined,
+      ),
+    )
     .limit(1);
   return row;
 }
@@ -85,6 +112,7 @@ const listColumns = {
   ref: pilgrims.ref,
   fullName: pilgrims.fullName,
   phone: pilgrims.phone,
+  gender: pilgrims.gender,
   status: pilgrims.status,
   passportLast2: pilgrims.passportLast2,
   passportExpiry: pilgrims.passportExpiry,
@@ -92,14 +120,21 @@ const listColumns = {
   packagePrice: pilgrims.packagePrice,
   discount: pilgrims.discount,
   currency: pilgrims.currency,
-  paid: sql<number>`coalesce((select sum(p.amount) from payments p where p.pilgrim_id = ${pilgrims.id} and p.voided_at is null), 0)::bigint`.mapWith(Number),
+  paid: sql<number>`coalesce((select sum(p.amount) from payments p where p.pilgrim_id = ${pilgrims.id} and p.voided_at is null), 0)::bigint`.mapWith(
+    Number,
+  ),
   createdAt: pilgrims.createdAt,
 };
 
 export const pilgrimsRouter = router({
   /** One box for everything: reference (HJ-26-000123), mobile number, passport number or name. */
   search: tenantProcedure
-    .input(z.object({ q: z.string().trim().min(1).max(80), limit: z.number().int().min(1).max(50).default(20) }))
+    .input(
+      z.object({
+        q: z.string().trim().min(1).max(80),
+        limit: z.number().int().min(1).max(50).default(20),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const q = input.q;
       const conditions: SQL[] = [];
@@ -112,7 +147,9 @@ export const pilgrimsRouter = router({
       if (/^[A-Z0-9]{6,12}$/.test(passport) && /\d/.test(passport) && !phone) {
         conditions.push(eq(pilgrims.passportIndex, blindIndex(ctx.tenantId, passport)));
       }
-      const digitsOnly = q.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/[\s-]/g, "");
+      const digitsOnly = q
+        .replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)))
+        .replace(/[\s-]/g, "");
       if (/^(\d{10}|\d{13}|\d{17})$/.test(digitsOnly)) {
         conditions.push(eq(pilgrims.nidIndex, blindIndex(ctx.tenantId, `nid:${digitsOnly}`)));
       }
@@ -154,7 +191,11 @@ export const pilgrimsRouter = router({
 
   get: tenantProcedure.input(z.object({ id: z.uuid() })).query(async ({ ctx, input }) => {
     const [row] = await ctx.tx
-      .select({ pilgrim: pilgrims, packageName: travelPackages.name, packageKind: travelPackages.kind })
+      .select({
+        pilgrim: pilgrims,
+        packageName: travelPackages.name,
+        packageKind: travelPackages.kind,
+      })
       .from(pilgrims)
       .leftJoin(travelPackages, eq(travelPackages.id, pilgrims.packageId))
       .where(eq(pilgrims.id, input.id));
@@ -171,7 +212,13 @@ export const pilgrimsRouter = router({
       [row.pilgrim.discount],
     );
 
-    const { passportNumberEnc, passportIndex: _index, nidEnc, nidIndex: _nid, ...pilgrim } = row.pilgrim;
+    const {
+      passportNumberEnc,
+      passportIndex: _index,
+      nidEnc,
+      nidIndex: _nid,
+      ...pilgrim
+    } = row.pilgrim;
     const masked = passportNumberEnc ? maskPassportNumber(decryptField(passportNumberEnc)) : null;
     const documents = await ctx.tx
       .select({
@@ -218,9 +265,21 @@ export const pilgrimsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { packageId, discount, passportNumber, allowDuplicatePassport, inquiryId, nidNumber, ...profile } = input;
-      const [pkg] = await ctx.tx.select().from(travelPackages).where(eq(travelPackages.id, packageId));
-      if (!pkg || !pkg.active) throw new TRPCError({ code: "BAD_REQUEST", message: "PACKAGE_UNAVAILABLE" });
+      const {
+        packageId,
+        discount,
+        passportNumber,
+        allowDuplicatePassport,
+        inquiryId,
+        nidNumber,
+        ...profile
+      } = input;
+      const [pkg] = await ctx.tx
+        .select()
+        .from(travelPackages)
+        .where(eq(travelPackages.id, packageId));
+      if (!pkg || !pkg.active)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "PACKAGE_UNAVAILABLE" });
 
       // Plan limit: pilgrims registered this calendar year.
       const [plan] = await ctx.tx
@@ -307,7 +366,8 @@ export const pilgrimsRouter = router({
       const passport = passportColumns(ctx.tenantId, passportNumber);
       if (!allowDuplicatePassport) {
         const existing = await findByPassport(ctx.tx, passport.passportIndex!, id);
-        if (existing) throw new TRPCError({ code: "CONFLICT", message: `DUPLICATE_PASSPORT:${existing.ref}` });
+        if (existing)
+          throw new TRPCError({ code: "CONFLICT", message: `DUPLICATE_PASSPORT:${existing.ref}` });
       }
       const [row] = await ctx.tx
         .update(pilgrims)
@@ -349,9 +409,13 @@ export const pilgrimsRouter = router({
         const check = await pilgrimReadiness(ctx.tx, input.id);
         if (!check.ready) {
           if (!input.overrideReason) {
-            throw new TRPCError({ code: "PRECONDITION_FAILED", message: `NOT_READY:${check.issues.length}` });
+            throw new TRPCError({
+              code: "PRECONDITION_FAILED",
+              message: `NOT_READY:${check.issues.length}`,
+            });
           }
-          if (ctx.role !== "owner" && ctx.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+          if (ctx.role !== "owner" && ctx.role !== "admin")
+            throw new TRPCError({ code: "FORBIDDEN" });
           await ctx.tx.execute(
             sql`select record_access('pilgrims', ${input.id}, ${`OVERRIDE_READY: ${input.overrideReason}`})`,
           );
@@ -381,13 +445,15 @@ export const pilgrimsRouter = router({
       return row;
     }),
 
-  passportScanKey: tenantProcedure.input(z.object({ id: z.uuid() })).query(async ({ ctx, input }) => {
-    const [row] = await ctx.tx
-      .select({ key: pilgrims.passportScanKey })
-      .from(pilgrims)
-      .where(eq(pilgrims.id, input.id));
-    return row?.key ?? null;
-  }),
+  passportScanKey: tenantProcedure
+    .input(z.object({ id: z.uuid() }))
+    .query(async ({ ctx, input }) => {
+      const [row] = await ctx.tx
+        .select({ key: pilgrims.passportScanKey })
+        .from(pilgrims)
+        .where(eq(pilgrims.id, input.id));
+      return row?.key ?? null;
+    }),
 
   statusCounts: tenantProcedure.query(async ({ ctx }) => {
     const rows = await ctx.tx

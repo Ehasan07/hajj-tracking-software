@@ -33,3 +33,28 @@ export const optionalText = (max: number) =>
     .max(max)
     .optional()
     .transform((v) => (v ? v : undefined));
+
+/** An amount that may be zero, e.g. a discount or the part paid now on credit. */
+export const amountOrZero = z
+  .string()
+  .trim()
+  .min(1)
+  .refine((v) => {
+    try {
+      return parseAmount(v) >= 0;
+    } catch {
+      return false;
+    }
+  }, "INVALID_AMOUNT");
+
+export const dateKey = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "INVALID_DATE");
+
+export const paymentMethods = [
+  "cash",
+  "bkash",
+  "nagad",
+  "rocket",
+  "bank",
+  "card",
+  "other",
+] as const;

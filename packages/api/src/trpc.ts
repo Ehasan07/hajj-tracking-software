@@ -54,13 +54,19 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
  * procedure inside one tenant-scoped transaction. Any error rolls back.
  */
 /** A subscription that no longer allows changes: suspended, cancelled, unpaid, or a trial past its end. */
-export function subscriptionInactive(sub: { status: string; trialEndsAt: Date | null } | undefined, now = new Date()) {
+export function subscriptionInactive(
+  sub: { status: string; trialEndsAt: Date | null } | undefined,
+  now = new Date(),
+) {
   if (!sub) return false;
   if (sub.status === "trial") return sub.trialEndsAt !== null && sub.trialEndsAt < now;
   return sub.status !== "active";
 }
 
-export const tenantProcedure = protectedProcedure.use(async ({ ctx, next, type }) => {
+/** What a shop-only login may call. Everything else (pilgrims, money, payroll...) is closed to it. */
+const SHOP_OPERATOR_PATHS = ["shop.", "tenant.me", "tenant.settings", "tenant.subscription"];
+
+export const tenantProcedure = protectedProcedure.use(async ({ ctx, next, type, path }) => {
   const tenantId = ctx.session.activeOrganizationId;
   if (!tenantId) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "NO_ACTIVE_AGENCY" });
 
@@ -72,6 +78,12 @@ export const tenantProcedure = protectedProcedure.use(async ({ ctx, next, type }
   if (!membership) throw new TRPCError({ code: "FORBIDDEN" });
 
   const role = membership.role as Role;
+  if (
+    role === "shop_operator" &&
+    !SHOP_OPERATOR_PATHS.some((p) => (p.endsWith(".") ? path.startsWith(p) : path === p))
+  ) {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
   return withTenant(ctx.db, { tenantId, userId: ctx.session.userId }, async (tx: Transaction) => {
     // An agency whose subscription has lapsed can still read everything, but change nothing.
     if (type === "mutation") {
@@ -79,7 +91,8 @@ export const tenantProcedure = protectedProcedure.use(async ({ ctx, next, type }
         .select({ status: subscriptions.status, trialEndsAt: subscriptions.trialEndsAt })
         .from(subscriptions)
         .limit(1);
-      if (subscriptionInactive(sub)) throw new TRPCError({ code: "FORBIDDEN", message: "SUBSCRIPTION_INACTIVE" });
+      if (subscriptionInactive(sub))
+        throw new TRPCError({ code: "FORBIDDEN", message: "SUBSCRIPTION_INACTIVE" });
     }
     const result = await next({ ctx: { ...ctx, tx, tenantId, role } });
     // tRPC captures errors into the result; rethrow so the transaction rolls back.

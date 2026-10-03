@@ -63,7 +63,10 @@ export function InquiryIcon(props: IconProps) {
   const { svg, tint, accent } = base(props);
   return (
     <svg {...svg}>
-      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 0 1 4 13.5z" fill={tint} />
+      <path
+        d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H11l-4.5 4v-4A2.5 2.5 0 0 1 4 13.5z"
+        fill={tint}
+      />
       <path d="M10 7.6a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1v.4" stroke={accent} />
       <circle cx="12" cy="12.9" r=".4" fill="currentColor" />
     </svg>
@@ -133,7 +136,10 @@ export function SupernovaIcon(props: IconProps) {
   const { svg, tint, accent } = base({ accent: "var(--color-unit-supernova)", ...props });
   return (
     <svg {...svg}>
-      <path d="M12 2.5l1.8 6.2 6.2-2.2-4.2 5.5 4.2 5.5-6.2-2.2L12 21.5l-1.8-6.2-6.2 2.2 4.2-5.5-4.2-5.5 6.2 2.2z" fill={tint} />
+      <path
+        d="M12 2.5l1.8 6.2 6.2-2.2-4.2 5.5 4.2 5.5-6.2-2.2L12 21.5l-1.8-6.2-6.2 2.2 4.2-5.5-4.2-5.5 6.2 2.2z"
+        fill={tint}
+      />
       <circle cx="12" cy="12" r="2" fill={accent} stroke="none" />
     </svg>
   );
@@ -266,9 +272,58 @@ export function QuranIcon(props: IconProps) {
   const { svg, tint, accent } = base({ accent: "var(--color-saffron-deep)", ...props });
   return (
     <svg {...svg}>
-      <path d="M3.5 6.5c2.9-1.1 5.8-.8 8.5 1.2 2.7-2 5.6-2.3 8.5-1.2v7c-2.9-1.1-5.8-.8-8.5 1.2-2.7-2-5.6-2.3-8.5-1.2z" fill={tint} />
+      <path
+        d="M3.5 6.5c2.9-1.1 5.8-.8 8.5 1.2 2.7-2 5.6-2.3 8.5-1.2v7c-2.9-1.1-5.8-.8-8.5 1.2-2.7-2-5.6-2.3-8.5-1.2z"
+        fill={tint}
+      />
       <path d="M12 7.7v7" />
       <path d="M7 20.5l10-5.3M17 20.5 7 15.2" stroke={accent} />
+    </svg>
+  );
+}
+
+/** Two colleagues, the nearer one highlighted. */
+export function TeamIcon(props: IconProps) {
+  const { svg, tint, accent } = base({ accent: "var(--color-haram)", ...props });
+  return (
+    <svg {...svg}>
+      <circle cx="15.5" cy="7.5" r="2.6" />
+      <path d="M12.6 19.5c.3-3 1.4-5 2.9-5s2.9 1.3 3.6 3.8" />
+      <circle cx="9" cy="8.5" r="3" fill={tint} stroke={accent} />
+      <path d="M3.8 20c.5-3.6 2.4-5.8 5.2-5.8s4.7 2.2 5.2 5.8z" fill={tint} stroke={accent} />
+    </svg>
+  );
+}
+
+export function TruckIcon(props: IconProps) {
+  const { svg, tint, accent } = base({ accent: "var(--color-unit-zamzam)", ...props });
+  return (
+    <svg {...svg}>
+      <path d="M2.5 6.5h11v10h-11z" fill={tint} />
+      <path d="M13.5 9.5h4l3 3.5v3.5h-7" />
+      <circle cx="7" cy="17.5" r="1.8" fill="var(--color-paper)" stroke={accent} />
+      <circle cx="17" cy="17.5" r="1.8" fill="var(--color-paper)" stroke={accent} />
+    </svg>
+  );
+}
+
+export function BoxIcon(props: IconProps) {
+  const { svg, tint, accent } = base(props);
+  return (
+    <svg {...svg}>
+      <path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z" fill={tint} />
+      <path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9" />
+      <path d="m7.8 5.5 8.4 4" stroke={accent} />
+    </svg>
+  );
+}
+
+export function ChevronIcon(props: IconProps & { dir?: "left" | "right" }) {
+  const { dir = "right", ...rest } = props;
+  const { svg } = base(rest);
+  return (
+    <svg {...svg}>
+      <path d={dir === "right" ? "m9 6 6 6-6 6" : "m15 6-6 6 6 6"} />
     </svg>
   );
 }

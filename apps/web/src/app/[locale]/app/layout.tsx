@@ -24,14 +24,19 @@ export default async function AppLayout({
 
   const settings = await caller.tenant.settings();
   if (!settings) return redirect({ href: "/onboarding", locale });
-  const [counts, subscription] = await Promise.all([caller.inquiries.counts(), caller.tenant.subscription()]);
+  const me = await caller.tenant.me();
+  const [counts, subscription] = await Promise.all([
+    me.role === "shop_operator" ? Promise.resolve(null) : caller.inquiries.counts(),
+    caller.tenant.subscription(),
+  ]);
 
   return (
     <AppShell
       agency={settings.legalName}
       licence={settings.licenseNumber}
-      enabledUnits={settings.enabledUnits}
-      openInquiries={(counts.new ?? 0) + (counts.follow_up ?? 0)}
+      role={me.role}
+      shops={me.shops}
+      openInquiries={counts ? (counts.new ?? 0) + (counts.follow_up ?? 0) : 0}
       subscription={
         subscription
           ? {

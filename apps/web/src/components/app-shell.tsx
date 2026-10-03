@@ -2,28 +2,25 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
-import type { BusinessUnit } from "@hajj/core";
+import type { ShopUnit } from "@hajj/core";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
+import { BOOK_ROLES, MANAGER_ROLES, SHOP_ORDER, UNIT_THEME } from "@/lib/units";
 import {
   BookIcon,
   HotelIcon,
   InquiryIcon,
   LogoutIcon,
+  PaymentIcon,
   PayrollIcon,
   PilgrimIcon,
   StatementIcon,
   KaabaIcon,
   QuranIcon,
+  TeamIcon,
 } from "./icons";
 import { Khatam } from "./ui";
-
-const UNIT_DOT: Partial<Record<BusinessUnit, string>> = {
-  medicine: "bg-unit-medicine",
-  zamzam: "bg-unit-zamzam",
-  coffee: "bg-unit-coffee",
-  supernova: "bg-unit-supernova",
-};
+import { UnitIcon } from "./unit-icon";
 
 interface ShellProps {
   subscription: {
@@ -35,39 +32,116 @@ interface ShellProps {
   } | null;
   agency: string;
   licence: string | null;
-  enabledUnits: BusinessUnit[];
+  role: string;
+  shops: ShopUnit[];
   openInquiries: number;
   children: ReactNode;
 }
 
-export function AppShell({ agency, licence, enabledUnits, openInquiries, subscription, children }: ShellProps) {
+export function AppShell({
+  agency,
+  licence,
+  role,
+  shops,
+  openInquiries,
+  subscription,
+  children,
+}: ShellProps) {
   const t = useTranslations();
   const pathname = usePathname();
   const router = useRouter();
   const locale = useLocale();
   const [open, setOpen] = useState(false);
 
-  const nav = [
-    { href: "/app", label: t("nav.today"), icon: StatementIcon, tint: "var(--color-haram-tint)" },
-    { href: "/app/pilgrims", label: t("nav.pilgrims"), icon: PilgrimIcon, tint: "var(--color-haram-tint)" },
-    {
-      href: "/app/inquiries",
-      label: t("nav.inquiries"),
-      icon: InquiryIcon,
-      tint: "var(--color-saffron-tint)",
-      badge: openInquiries > 0 ? openInquiries : undefined,
-    },
-    { href: "/app/packages", label: t("nav.packages"), icon: KaabaIcon, tint: "var(--color-haram-tint)" },
-    { href: "/app/sacred", label: t("nav.sacred"), icon: QuranIcon, tint: "var(--color-saffron-tint)" },
-    { href: "/app/guide", label: t("nav.guide"), icon: BookIcon, tint: "var(--color-unit-supernova-tint)" },
-  ];
-  const later = [
-    { label: t("nav.hotels"), icon: HotelIcon, tint: "var(--color-unit-hotel-tint)" },
-    { label: t("nav.payroll"), icon: PayrollIcon, tint: "var(--color-unit-office-tint)" },
-  ];
-  const units = enabledUnits.filter((u) => UNIT_DOT[u]);
+  const books = BOOK_ROLES.includes(role);
+  const shopOnly = role === "shop_operator";
+  const nav = shopOnly
+    ? []
+    : [
+        {
+          href: "/app",
+          label: t("nav.today"),
+          icon: StatementIcon,
+          tint: "var(--color-haram-tint)",
+        },
+        {
+          href: "/app/pilgrims",
+          label: t("nav.pilgrims"),
+          icon: PilgrimIcon,
+          tint: "var(--color-haram-tint)",
+        },
+        {
+          href: "/app/inquiries",
+          label: t("nav.inquiries"),
+          icon: InquiryIcon,
+          tint: "var(--color-saffron-tint)",
+          badge: openInquiries > 0 ? openInquiries : undefined,
+        },
+        {
+          href: "/app/packages",
+          label: t("nav.packages"),
+          icon: KaabaIcon,
+          tint: "var(--color-haram-tint)",
+        },
+        ...(role !== "alim"
+          ? [
+              {
+                href: "/app/hotels",
+                label: t("nav.hotels"),
+                icon: HotelIcon,
+                tint: "var(--color-unit-hotel-tint)",
+              },
+            ]
+          : []),
+        ...(books
+          ? [
+              {
+                href: "/app/statements",
+                label: t("nav.statements"),
+                icon: StatementIcon,
+                tint: "var(--color-saffron-tint)",
+              },
+              {
+                href: "/app/expenses",
+                label: t("nav.expenses"),
+                icon: PaymentIcon,
+                tint: "var(--color-unit-office-tint)",
+              },
+              {
+                href: "/app/payroll",
+                label: t("nav.payroll"),
+                icon: PayrollIcon,
+                tint: "var(--color-unit-office-tint)",
+              },
+            ]
+          : []),
+        {
+          href: "/app/sacred",
+          label: t("nav.sacred"),
+          icon: QuranIcon,
+          tint: "var(--color-saffron-tint)",
+        },
+        {
+          href: "/app/guide",
+          label: t("nav.guide"),
+          icon: BookIcon,
+          tint: "var(--color-unit-supernova-tint)",
+        },
+        ...(MANAGER_ROLES.includes(role)
+          ? [
+              {
+                href: "/app/team",
+                label: t("nav.team"),
+                icon: TeamIcon,
+                tint: "var(--color-haram-tint)",
+              },
+            ]
+          : []),
+      ];
+  const units = SHOP_ORDER.filter((u) => shops.includes(u));
 
-  const isActive = (href: string) => (href === "/app" ? pathname === "/app" : pathname.startsWith(href));
+  const isActive = (href: string) =>
+    href === "/app" ? pathname === "/app" : pathname.startsWith(href);
 
   async function signOut() {
     await authClient.signOut();
@@ -110,25 +184,32 @@ export function AppShell({ agency, licence, enabledUnits, openInquiries, subscri
             </Link>
           );
         })}
-        {later.map(({ label, icon: Icon, tint }) => (
-          <span key={label} className="flex h-12 items-center gap-3 rounded-md px-3 text-[15px] text-ink-3">
-            <Icon size={22} tint={tint} />
-            {label}
-            <span className="ml-auto text-[11px] font-semibold">{t("common.comingSoon")}</span>
-          </span>
-        ))}
       </div>
 
       {units.length > 0 ? (
         <div className="flex flex-col gap-0.5">
           <p className="px-3 pb-1 text-xs font-semibold text-ink-3">{t("nav.myBusiness")}</p>
-          {units.map((unit) => (
-            <span key={unit} className="flex h-11 items-center gap-3 rounded-md px-3 text-[15px] text-ink-2">
-              <span className={`h-2.5 w-2.5 rounded-full ${UNIT_DOT[unit]}`} />
-              {t(`units.${unit}`)}
-              <span className="ml-auto text-[11px] font-semibold text-ink-3">{t("common.comingSoon")}</span>
-            </span>
-          ))}
+          {units.map((unit) => {
+            const href = `/app/shop/${unit}`;
+            const active = pathname.startsWith(href);
+            return (
+              <Link
+                key={unit}
+                href={href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`flex h-12 items-center gap-3 rounded-md px-3 text-[15px] transition-colors ${active ? "font-bold" : "hover:bg-ground"}`}
+                style={active ? { background: UNIT_THEME[unit].tint } : undefined}
+              >
+                <UnitIcon
+                  unit={unit}
+                  size={22}
+                  tint={active ? "var(--color-paper)" : UNIT_THEME[unit].tint}
+                />
+                {t(`units.${unit}`)}
+              </Link>
+            );
+          })}
         </div>
       ) : null}
 
@@ -161,7 +242,9 @@ export function AppShell({ agency, licence, enabledUnits, openInquiries, subscri
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
-      <aside className="sticky top-0 hidden h-dvh overflow-y-auto border-r border-line bg-paper lg:block">{sidebar}</aside>
+      <aside className="sticky top-0 hidden h-dvh overflow-y-auto border-r border-line bg-paper lg:block">
+        {sidebar}
+      </aside>
 
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-paper/95 px-4 backdrop-blur lg:hidden">
         <Link href="/app" className="flex items-center gap-2 font-bold">
@@ -177,7 +260,16 @@ export function AppShell({ agency, licence, enabledUnits, openInquiries, subscri
           aria-expanded={open}
           className="flex h-11 w-11 items-center justify-center rounded-md bg-ground"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
             <path d="M4 7h16M4 12h16M4 17h10" />
           </svg>
         </button>
@@ -185,7 +277,12 @@ export function AppShell({ agency, licence, enabledUnits, openInquiries, subscri
 
       {open ? (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true">
-          <button type="button" aria-label={t("common.close")} className="absolute inset-0 bg-ink/40" onClick={() => setOpen(false)} />
+          <button
+            type="button"
+            aria-label={t("common.close")}
+            className="absolute inset-0 bg-ink/40"
+            onClick={() => setOpen(false)}
+          />
           <aside className="absolute inset-y-0 left-0 w-[86%] max-w-xs animate-[rise_0.3s_ease-out_both] overflow-y-auto bg-paper">
             {sidebar}
           </aside>
@@ -194,15 +291,21 @@ export function AppShell({ agency, licence, enabledUnits, openInquiries, subscri
 
       <div className="min-w-0">
         {subscription?.inactive ? (
-          <div role="alert" className="bg-due px-4 py-3 text-center text-[15px] font-semibold text-white sm:px-8">
+          <div
+            role="alert"
+            className="bg-due px-4 py-3 text-center text-[15px] font-semibold text-white sm:px-8"
+          >
             {t("subscription.inactiveBanner")}
           </div>
         ) : subscription?.status === "trial" && subscription.trialEndsAt ? (
           <div className="bg-saffron-tint px-4 py-2.5 text-center text-[14px] font-semibold text-saffron-ink sm:px-8">
             {t("subscription.trialBanner", {
-              date: new Intl.DateTimeFormat(locale === "bn" ? "bn-BD" : "en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Dhaka" }).format(
-                new Date(subscription.trialEndsAt),
-              ),
+              date: new Intl.DateTimeFormat(locale === "bn" ? "bn-BD" : "en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                timeZone: "Asia/Dhaka",
+              }).format(new Date(subscription.trialEndsAt)),
               plan: locale === "bn" ? subscription.planNameBn : subscription.planNameEn,
             })}
           </div>

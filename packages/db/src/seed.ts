@@ -23,19 +23,47 @@ await sql.begin(async (tx) => {
     values (
       ${DEMO_ID}, 'বায়তুল্লাহ ট্রাভেলস (ডেমো)', 'BT', 'RL-0000',
       'বাড়ি ১২, রোড ৫, মিরপুর ১০, ঢাকা ১২১৬', '+8801700000000', 'info@example.com',
-      '{hajj,zamzam,coffee,office}'::business_unit[], true
+      '{hajj,office,zamzam,medicine,coffee,supernova}'::business_unit[], true
     )
     on conflict (tenant_id) do update set
       legal_name = excluded.legal_name, license_number = excluded.license_number,
       address = excluded.address, phone = excluded.phone, email = excluded.email,
-      show_draft_meanings = excluded.show_draft_meanings`;
+      enabled_units = excluded.enabled_units, show_draft_meanings = excluded.show_draft_meanings`;
+
+  // The demo shows every business, so it runs on the plan that includes them all.
+  await tx`
+    insert into subscriptions (tenant_id, plan_id, status, cycle, current_period_end)
+    select ${DEMO_ID}, id, 'active', 'yearly', now() + interval '1 year' from plans where code = 'premium'
+    on conflict (tenant_id) do update set plan_id = excluded.plan_id, status = 'active', trial_ends_at = null,
+      current_period_end = excluded.current_period_end, updated_at = now()`;
 
   await tx`delete from travel_packages where tenant_id = ${DEMO_ID}
     and not exists (select 1 from pilgrims p where p.package_id = travel_packages.id)`;
   const packages = [
-    { kind: "hajj", name: "সাধারণ হজ প্যাকেজ", season: "১৪৪৮", price: 6_95_000_00, days: 40, notes: "মক্কায় হারাম থেকে হাঁটা দূরত্বে হোটেল, মদিনায় ৮ দিন, তিন বেলা খাবার" },
-    { kind: "hajj", name: "প্রিমিয়াম হজ প্যাকেজ", season: "১৪৪৮", price: 8_50_000_00, days: 30, notes: "হারামের কাছে হোটেল, মিনায় উন্নত তাঁবু, অভিজ্ঞ গাইড সঙ্গে" },
-    { kind: "umrah", name: "ওমরা প্যাকেজ", season: "সারা বছর", price: 1_45_000_00, days: 14, notes: "মক্কায় ৭ রাত, মদিনায় ৫ রাত, ভিসা ও বিমান টিকিটসহ" },
+    {
+      kind: "hajj",
+      name: "সাধারণ হজ প্যাকেজ",
+      season: "১৪৪৮",
+      price: 6_95_000_00,
+      days: 40,
+      notes: "মক্কায় হারাম থেকে হাঁটা দূরত্বে হোটেল, মদিনায় ৮ দিন, তিন বেলা খাবার",
+    },
+    {
+      kind: "hajj",
+      name: "প্রিমিয়াম হজ প্যাকেজ",
+      season: "১৪৪৮",
+      price: 8_50_000_00,
+      days: 30,
+      notes: "হারামের কাছে হোটেল, মিনায় উন্নত তাঁবু, অভিজ্ঞ গাইড সঙ্গে",
+    },
+    {
+      kind: "umrah",
+      name: "ওমরা প্যাকেজ",
+      season: "সারা বছর",
+      price: 1_45_000_00,
+      days: 14,
+      notes: "মক্কায় ৭ রাত, মদিনায় ৫ রাত, ভিসা ও বিমান টিকিটসহ",
+    },
   ];
   for (const p of packages) {
     await tx`
@@ -45,4 +73,6 @@ await sql.begin(async (tx) => {
 });
 
 await sql.end();
-console.info("Demo agency ready: slug 'demo'. Set PUBLIC_TENANT_SLUG=demo to show it on the public site.");
+console.info(
+  "Demo agency ready: slug 'demo'. Set PUBLIC_TENANT_SLUG=demo to show it on the public site.",
+);
