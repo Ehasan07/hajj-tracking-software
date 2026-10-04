@@ -1,0 +1,129 @@
+# Production stack for one server. Run from the repository root:
+#
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env up -d --build
+#
+# Only Caddy listens on the internet (80/443). The database, cache and file
+# storage are reachable from the app containers only.
+name: hajj
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hajj_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in deploy/.env}
+      POSTGRES_DB: hajj
+      HAJJ_APP_PASSWORD: ${HAJJ_APP_PASSWORD:?set in deploy/.env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../packages/db/docker/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+      - ./postgres-app-password.sh:/docker-entrypoint-initdb.d/01-app-password.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hajj_owner -d hajj"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+
+  storage:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?set in deploy/.env}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?set in deploy/.env}
+      RUSTFS_CONSOLE_ENABLE: "false"
+    volumes:
+      - storagedata:/data
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: migrate
+    environment:
+      DATABASE_OWNER_URL: postgres://hajj_owner:${POSTGRES_PASSWORD}@postgres:5432/hajj
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: web
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://hajj_app:${HAJJ_APP_PASSWORD}@postgres:5432/hajj
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://storage:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: hajj-private
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set in deploy/.env}
+      BETTER_AUTH_URL: https://${DOMAIN:?set in deploy/.env}
+      FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:?set in deploy/.env}
+      BLIND_INDEX_KEY: ${BLIND_INDEX_KEY:?set in deploy/.env}
+      PUBLIC_TENANT_SLUG: ${PUBLIC_TENANT_SLUG:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      storage:
+        condition: service_started
+    # Bound to the loopback interface so an existing reverse proxy on the host can reach it too.
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3100}:3100"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    profiles: ["proxy"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      - web
+
+  # Nightly database dump, kept for 14 days, in deploy/backups on the host.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          f=/backups/hajj-$$(date +%Y%m%d-%H%M).sql.gz
+          pg_dump -h postgres -U hajj_owner hajj | gzip > "$$f" && echo "backup $$f"
+          find /backups -name 'hajj-*.sql.gz' -mtime +14 -delete
+          sleep 86400
+        done
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  storagedata:
+  caddydata:
+  caddyconfig:

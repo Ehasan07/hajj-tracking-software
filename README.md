@@ -65,4 +65,15 @@ npx playwright test           # browser tests: an office day, the public site, t
 
 ## Deploy
 
-`Dockerfile` builds two targets: `web` (the Next.js standalone server) and `migrate` (runs database migrations). Production runs behind Caddy on the agency's own server.
+`Dockerfile` builds two targets: `web` (the Next.js standalone server) and `migrate` (runs database migrations).
+
+On a server with Docker, from a clone of this repository:
+
+```bash
+sh deploy/deploy.sh hajj.example.com   # first run: writes deploy/.env with fresh secrets, builds, migrates, starts
+sh deploy/deploy.sh                    # updates: pull, rebuild, migrate, restart
+```
+
+`deploy/docker-compose.prod.yml` runs Postgres, Redis, object storage, the app, a nightly database dump to `deploy/backups/` (14 days kept) and Caddy for HTTPS. Only Caddy is open to the internet. On a server that already has nginx or Caddy on ports 80/443, run with `PROXY=host` and forward the domain to `127.0.0.1:3100`.
+
+Keep a copy of `deploy/.env` somewhere safe: the encryption keys in it are needed to read stored passport numbers.
