@@ -77,3 +77,11 @@ sh deploy/deploy.sh                    # updates: pull, rebuild, migrate, restar
 `deploy/docker-compose.prod.yml` runs Postgres, Redis, object storage, the app, a nightly database dump to `deploy/backups/` (14 days kept) and Caddy for HTTPS. Only Caddy is open to the internet. On a server that already has nginx or Caddy on ports 80/443, run with `PROXY=host` and forward the domain to `127.0.0.1:3100`.
 
 Keep a copy of `deploy/.env` somewhere safe: the encryption keys in it are needed to read stored passport numbers.
+
+### hajj.takatracker.com
+
+That server already runs other sites, a VPN and its own PostgreSQL, so the app runs natively beside them instead of in Docker: user `hajj`, files in `/opt/hajj`, its own `hajj` database, systemd services `hajj` (app, memory-capped) and `hajj-storage` (local S3 store), nginx site `hajj.takatracker.com` with a Let's Encrypt certificate, and a nightly backup at 03:00 Dhaka to `/opt/hajj/backups`. To ship new code from a developer machine:
+
+```bash
+sh deploy/update-server.sh root@46.225.148.245   # build, back up, migrate, switch, check
+```
