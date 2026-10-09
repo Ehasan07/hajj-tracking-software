@@ -5,7 +5,7 @@
 
 
 <p align="center">
-<img src="https://img.shields.io/badge/Next.js-16-000000-000000?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js-16-000000"> <img src="https://img.shields.io/badge/TypeScript-strict-3178C6-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript-strict-3178C6"> <img src="https://img.shields.io/badge/PostgreSQL-RLS-4169E1-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL-RLS-4169E1"> <img src="https://img.shields.io/badge/tRPC-11-2596BE-2596BE?style=flat-square&logo=trpc&logoColor=white" alt="tRPC-11-2596BE"> <img src="https://img.shields.io/badge/Bangla%20%2B%20English-0B7A6F-0B7A6F?style=flat-square" alt="Bangla %2B English-0B7A6F">
+<img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js-16-000000"> <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript-strict-3178C6"> <img src="https://img.shields.io/badge/PostgreSQL-RLS-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL-RLS-4169E1"> <img src="https://img.shields.io/badge/tRPC-11-2596BE?style=flat-square&logo=trpc&logoColor=white" alt="tRPC-11-2596BE"> <img src="https://img.shields.io/badge/Bangla%20%2B%20English-0B7A6F?style=flat-square" alt="Bangla %2B English-0B7A6F">
 </p>
 
 ## A look inside
