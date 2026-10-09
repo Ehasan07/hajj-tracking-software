@@ -1,3 +1,23 @@
+<!-- banner -->
+<p align="center"><img src=".github/assets/banner.png" alt="Hajj Tracking Software" width="100%"></p>
+
+<p align="center"><a href="https://hajj.takatracker.com"><b>Live: hajj.takatracker.com</b></a> · <a href="#a-look-inside">A look inside</a> · <a href="#features-so-far">Features</a> · <a href="#local-setup">Run it</a></p>
+
+
+<p align="center">
+<img src="https://img.shields.io/badge/Next.js-16-000000-000000?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js-16-000000"> <img src="https://img.shields.io/badge/TypeScript-strict-3178C6-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript-strict-3178C6"> <img src="https://img.shields.io/badge/PostgreSQL-RLS-4169E1-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL-RLS-4169E1"> <img src="https://img.shields.io/badge/tRPC-11-2596BE-2596BE?style=flat-square&logo=trpc&logoColor=white" alt="tRPC-11-2596BE"> <img src="https://img.shields.io/badge/Bangla%20%2B%20English-0B7A6F-0B7A6F?style=flat-square" alt="Bangla %2B English-0B7A6F">
+</p>
+
+## A look inside
+
+| | |
+|---|---|
+| <img src=".github/assets/statement.png" alt="Monthly statement across every business"> <br><sub>Monthly statement across every business, straight from the ledger</sub> | <img src=".github/assets/receipt.png" alt="Money receipt with QR check"> <br><sub>A5 money receipt in Bangla and English, with a QR code anyone can verify</sub> |
+| <img src=".github/assets/zamzam-routes.png" alt="Zamzam water deliveries by shop"> <br><sub>Zamzam water: seven weekday routes and which shop got how much</sub> | <img src=".github/assets/pilgrims.png" alt="Pilgrim register"> <br><sub>Pilgrim register with paid and due at a glance</sub> |
+| <img src=".github/assets/payroll.png" alt="Salary sheet"> <br><sub>Monthly salary sheet: draft, lock, pay into the ledger</sub> | <img src=".github/assets/hotels.png" alt="Hotel bookings"> <br><sub>Makkah and Madinah hotel blocks, rooms filled night by night</sub> |
+| <img src=".github/assets/medicine.png" alt="Medicine shop with expiry warnings"> <br><sub>Medicine shop: batches, expiry warnings, earliest expiry sold first</sub> | <img src=".github/assets/duas.png" alt="Verses and duas with Bangla meaning"> <br><sub>Verses and duas with Bangla pronunciation and meaning, reviewed by a scholar</sub> |
+<!-- /banner -->
+
 # Hajj Tracking Software
 
 Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and English, BDT and SAR.
