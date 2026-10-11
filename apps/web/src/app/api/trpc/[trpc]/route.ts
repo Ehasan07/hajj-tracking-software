@@ -1,6 +1,7 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter, createContext } from "@hajj/api";
 import { auth } from "@/server/auth";
+import { clientIp } from "@/server/client-ip";
 
 async function handler(req: Request) {
   return fetchRequestHandler({
@@ -13,7 +14,7 @@ async function handler(req: Request) {
         session: result
           ? { userId: result.user.id, activeOrganizationId: result.session.activeOrganizationId ?? null }
           : null,
-        ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+        ip: clientIp(req.headers),
       });
     },
     onError({ error, path }) {

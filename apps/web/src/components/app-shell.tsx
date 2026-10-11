@@ -17,6 +17,7 @@ import {
   StatementIcon,
   KaabaIcon,
   QuranIcon,
+  ShieldIcon,
   TeamIcon,
 } from "./icons";
 import { Khatam } from "./ui";
@@ -228,6 +229,15 @@ export function AppShell({
             </Link>
           ))}
         </div>
+        <Link
+          href="/app/devices"
+          onClick={() => setOpen(false)}
+          aria-current={pathname.startsWith("/app/devices") ? "page" : undefined}
+          className={`flex h-11 items-center gap-3 rounded-md px-3 text-[15px] ${pathname.startsWith("/app/devices") ? "bg-haram-tint font-bold text-haram-deep" : "text-ink-2 hover:bg-ground"}`}
+        >
+          <ShieldIcon size={20} tint="var(--color-haram-tint)" />
+          {t("nav.devices")}
+        </Link>
         <button
           type="button"
           onClick={signOut}

@@ -44,6 +44,9 @@ jobs:
       # Test-only keys; production keys live in the server's environment.
       FIELD_ENCRYPTION_KEY: h2etwd3JOTbv6xpkRh7zzZS1vz7SHIRwxOIapL7tKSs=
       BLIND_INDEX_KEY: 4ah07ta7KFjb8igsjSW3OWcNMZ0wMZNS+NGFmFGv46g=
+      # Emails go to files the browser tests read the sign-in codes from.
+      MAIL_TRANSPORT: file
+      MAIL_OUTBOX_DIR: /tmp/hajj-mail
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

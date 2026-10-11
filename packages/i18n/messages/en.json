@@ -36,7 +36,45 @@
     "noAccount": "No account yet?",
     "haveAccount": "Already have an account?",
     "invalid": "Email or password is incorrect",
-    "tooMany": "Too many attempts. Try again in a minute."
+    "tooMany": "Too many attempts. Try again in a minute.",
+    "locked": "Five wrong passwords were entered. Sign-in for this email is paused for 15 minutes, or reset the password.",
+    "device": {
+      "title": "Sign-in from a new device",
+      "sent": "We sent a 6-digit code to {email}. It works for 10 minutes.",
+      "this": "This device: {device}",
+      "code": "6-digit code",
+      "verify": "Verify",
+      "incorrect": "That code didn't match. {n} tries left.",
+      "expired": "The code has expired. Ask for a new one.",
+      "tooMany": "Too many wrong tries. Ask for a new code.",
+      "restart": "That took too long. Enter your email and password again.",
+      "resent": "A new code is on its way.",
+      "resend": "Send a new code",
+      "resendIn": "You can ask again in {s} s",
+      "back": "Sign in to another account",
+      "why": "To keep your account safe, the first sign-in from a new browser or device needs this code. After that, this device won't ask again for 90 days."
+    },
+    "forgot": {
+      "link": "Forgot your password?",
+      "title": "Reset your password",
+      "intro": "Enter your account's email and we'll send a 6-digit code to it.",
+      "badEmail": "Enter a valid email address",
+      "send": "Send the code",
+      "sending": "Sending…",
+      "sent": "If {email} has an account, a 6-digit code is on its way. It works for 10 minutes.",
+      "checking": "Checking…",
+      "incorrect": "That code didn't match. Try again.",
+      "otherEmail": "Use another email",
+      "newPassword": "New password",
+      "rule": "At least 10 characters",
+      "confirm": "Type the new password again",
+      "short": "The password needs at least 10 characters",
+      "mismatch": "The two passwords don't match",
+      "save": "Save and sign in",
+      "saving": "Saving…",
+      "afterNote": "Changing the password signs out every other device, and an alert goes to your email.",
+      "backToSignIn": "Back to sign in"
+    }
   },
   "onboarding": {
     "title": "About your agency",
@@ -94,7 +132,8 @@
     "menu": "Menu",
     "sacred": "Ayat & duas",
     "expenses": "Expenses",
-    "team": "Team & settings"
+    "team": "Team & settings",
+    "devices": "My devices"
   },
   "methods": {
     "cash": "Cash",
@@ -572,7 +611,8 @@
       "overview": "Overview",
       "agencies": "Agencies",
       "plans": "Plans & pricing",
-      "backToApp": "Go to agency app"
+      "backToApp": "Go to agency app",
+      "devices": "Devices & security"
     },
     "overview": {
       "title": "Your SaaS at a glance",
@@ -1204,5 +1244,40 @@
     "created": "Login created:",
     "remove": "Remove from team",
     "confirmRemove": "Yes, remove"
+  },
+  "devices": {
+    "title": "My devices",
+    "subtitle": "Devices that can open your account without a code",
+    "on": "Email codes for new devices are on",
+    "off": "Email codes for new devices are off for now",
+    "howItWorks": "Signing in from a new browser or device sends a 6-digit code to your email. Once it matches, that device is trusted for {days} days. If you see a device you don't know, remove it now.",
+    "offHint": "This switches itself on once the server can send email.",
+    "rules": {
+      "code": "Codes work for 10 minutes, stop after 5 wrong tries, and a new one can be asked for after 45 seconds",
+      "lock": "Five wrong passwords for one email pause sign-in for 15 minutes",
+      "alert": "Adding a device or changing the password sends an alert to your email",
+      "reset": "At most 2 password resets a day; a reset signs out every other device"
+    },
+    "trusted": "Trusted devices ({n})",
+    "none": "No trusted devices yet",
+    "thisDevice": "This device",
+    "added": "Added {date}",
+    "lastSeen": "last used {date}",
+    "until": "Trusted until {date}",
+    "remove": "Remove",
+    "removeHint": "Signing in from that device will ask for a code again",
+    "removeThisHint": "The next sign-in from this device will ask for a code again",
+    "confirmRemove": "Yes, remove",
+    "others": "Sign out of all other devices ({n})",
+    "othersHint": "Everywhere except this device will be signed out",
+    "othersConfirm": "Yes, sign them out",
+    "othersDone": "Signed out of every other device",
+    "othersFailed": "That didn't work, try again",
+    "adminTitle": "Devices & security",
+    "adminSubtitle": "Trusted devices across all users ({n})",
+    "adminSearch": "Search by name or email",
+    "user": "User",
+    "device": "Device",
+    "lastSeenCol": "Last used"
   }
 }

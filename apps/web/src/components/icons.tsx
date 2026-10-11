@@ -327,3 +327,34 @@ export function ChevronIcon(props: IconProps & { dir?: "left" | "right" }) {
     </svg>
   );
 }
+
+/** A shield with a tick, for sign-in security and devices. */
+export function ShieldIcon(props: IconProps) {
+  const { svg, tint, accent } = base({ accent: "var(--color-haram)", ...props });
+  return (
+    <svg {...svg}>
+      <path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.3 7.5 9.5 4.4-1.2 7.5-4.9 7.5-9.5V6z" fill={tint} />
+      <path d="m8.8 12.2 2.2 2.2 4.4-4.6" stroke={accent} strokeWidth={1.8} />
+    </svg>
+  );
+}
+
+/** A phone or a laptop, by device type. */
+export function DeviceIcon({ kind, ...props }: IconProps & { kind?: string | null }) {
+  const { svg, tint, accent } = base({ accent: "var(--color-haram)", ...props });
+  if (kind === "mobile" || kind === "tablet") {
+    return (
+      <svg {...svg}>
+        <rect x={kind === "tablet" ? 5 : 7} y="3" width={kind === "tablet" ? 14 : 10} height="18" rx="2.2" fill={tint} />
+        <path d="M11 18h2" stroke={accent} strokeWidth={1.8} />
+      </svg>
+    );
+  }
+  return (
+    <svg {...svg}>
+      <rect x="4.5" y="5" width="15" height="10.5" rx="1.6" fill={tint} />
+      <path d="M2.5 18.5h19" />
+      <path d="M10 8.5h4" stroke={accent} strokeWidth={1.8} />
+    </svg>
+  );
+}

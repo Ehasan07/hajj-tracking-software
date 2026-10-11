@@ -1,4 +1,5 @@
 import { publicProcedure, router } from "./trpc";
+import { accountRouter } from "./routers/account";
 import { articlesRouter } from "./routers/articles";
 import { documentsRouter } from "./routers/documents";
 import { hotelsRouter } from "./routers/hotels";
@@ -31,6 +32,7 @@ export const appRouter = router({
   payroll: payrollRouter,
   hotels: hotelsRouter,
   team: teamRouter,
+  account: accountRouter,
 });
 
 export type AppRouter = typeof appRouter;

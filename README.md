@@ -51,6 +51,12 @@ Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and Engli
   - Zamzam water: seven routes for the seven days, shops on each route, a route-day sheet for deliveries and dues, and a report of which shop got how much
   - Naba Coffee and Supernova: menu or product list, quick sales, daily statement
 - Separate logins per colleague; a shop login sees only the shops it is given
+- Sign-in security:
+  - A new browser has to enter a 6-digit code sent to the account's email; after that it is trusted for 90 days and listed under "My devices", where it can be removed
+  - Password reset by emailed code, with the same answer whether or not the account exists
+  - An email to the owner whenever a new device is added or the password changes; a reset signs every other device out at once
+  - Five wrong passwords lock that email from that address for 15 minutes; codes last 10 minutes, allow 5 tries and can be resent after 45 seconds
+  - The platform console lists every trusted device and can remove any of them
 
 ## Ground rules
 
@@ -58,6 +64,7 @@ Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and Engli
 - Every tenant table is protected by row level security. The app connects as `hajj_app`, which never owns tables.
 - The ledger is append-only. Mistakes are corrected with reversing entries.
 - Every change to protected tables is written to `audit_log` by a database trigger.
+- One-time codes are stored only as an HMAC and device tokens only as a SHA-256. Rate limits use the address nginx saw, never a client-supplied `X-Forwarded-For` list.
 
 ## Local setup
 
@@ -71,6 +78,7 @@ pnpm db:up                    # postgres :5440, redis :6390, storage :9020
 pnpm db:migrate
 pnpm db:seed                  # demo agency for the public website
 pnpm dev                      # http://localhost:3100
+                              # with MAIL_TRANSPORT=file, emails (sign-in codes) show at /dev/mail
 pnpm --filter @hajj/db seed:demo   # demo login with pilgrims, shops, salaries and hotels (app must be running)
 ```
 
@@ -80,7 +88,7 @@ pnpm --filter @hajj/db seed:demo   # demo login with pilgrims, shops, salaries a
 pnpm typecheck
 pnpm test                     # core, i18n, database (RLS) and API flow tests
 pnpm --filter @hajj/web build
-npx playwright test           # browser tests: an office day, the public site, the side businesses
+npx playwright test           # browser tests: an office day, the public site, the side businesses, sign-in security
 ```
 
 ## Deploy

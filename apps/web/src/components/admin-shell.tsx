@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
-import { KaabaIcon, LogoutIcon, PilgrimIcon, StatementIcon } from "./icons";
+import { KaabaIcon, LogoutIcon, PilgrimIcon, ShieldIcon, StatementIcon } from "./icons";
 import { Khatam } from "./ui";
 
 /** The platform owner's console. Deliberately dark, so it is never mistaken for an agency's app. */
@@ -17,6 +17,7 @@ export function AdminShell({ email, children }: { email: string; children: React
     { href: "/admin", label: t("nav.overview"), icon: StatementIcon },
     { href: "/admin/agencies", label: t("nav.agencies"), icon: PilgrimIcon },
     { href: "/admin/plans", label: t("nav.plans"), icon: KaabaIcon },
+    { href: "/admin/devices", label: t("nav.devices"), icon: ShieldIcon },
   ];
   const active = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
 

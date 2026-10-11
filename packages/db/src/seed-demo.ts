@@ -59,13 +59,45 @@ async function trpc<T>(
   return body.result.data.json;
 }
 
+/**
+ * Sign in as the demo owner. From a "browser" the account hasn't used, the app
+ * asks for the emailed code; with MAIL_TRANSPORT=file the code is read from the
+ * outbox, as a person would read their inbox.
+ */
 async function signIn() {
   cookie = "";
+  const asked = new Date();
   const res = await call("/api/auth/sign-in/email", {
     method: "POST",
     body: JSON.stringify({ email: DEMO_EMAIL, password: DEMO_PASSWORD }),
   });
-  return res.ok;
+  if (!res.ok) return false;
+  const body = (await res.json().catch(() => ({}))) as { deviceVerification?: boolean };
+  if (!body.deviceVerification) return true;
+  const code = await codeFromOutbox(DEMO_EMAIL, asked);
+  const verified = await call("/api/device/verify", { method: "POST", body: JSON.stringify({ code }) });
+  if (!verified.ok) throw new Error(`device code rejected: ${verified.status}`);
+  const again = await call("/api/auth/sign-in/email", {
+    method: "POST",
+    body: JSON.stringify({ email: DEMO_EMAIL, password: DEMO_PASSWORD }),
+  });
+  return again.ok;
+}
+
+async function codeFromOutbox(to: string, after: Date): Promise<string> {
+  const dir = process.env.MAIL_OUTBOX_DIR;
+  if (process.env.MAIL_TRANSPORT !== "file" || !dir) {
+    throw new Error("The app asked for an emailed code. Run the demo seed with MAIL_TRANSPORT=file and MAIL_OUTBOX_DIR set.");
+  }
+  const { readdir, readFile } = await import("node:fs/promises");
+  for (let i = 0; i < 40; i++) {
+    for (const f of (await readdir(dir).catch(() => [] as string[])).filter((n) => n.endsWith(".json")).sort().reverse()) {
+      const m = JSON.parse(await readFile(`${dir}/${f}`, "utf8")) as { to: string; subject: string; sentAt: string };
+      if (m.to === to && new Date(m.sentAt) >= after && /^\d{6}/.test(m.subject)) return m.subject.slice(0, 6);
+    }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  throw new Error(`No code email for ${to} in ${dir}`);
 }
 
 const ownerUrl = process.env.DATABASE_OWNER_URL;

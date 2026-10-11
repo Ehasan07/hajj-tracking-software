@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 // Runs against the agency set by PUBLIC_TENANT_SLUG (the seeded demo agency locally and in CI).
 test("public website: packages, sacred text and the inquiry form", async ({ page }) => {

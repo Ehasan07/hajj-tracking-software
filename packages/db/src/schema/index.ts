@@ -6,3 +6,4 @@ export * from "./sacred";
 export * from "./platform";
 export * from "./commerce";
 export * from "./office";
+export * from "./security";

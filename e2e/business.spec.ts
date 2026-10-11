@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
+import { waitForCode } from "./mail";
 
 const shots = process.env.E2E_SCREENSHOTS;
 async function snap(page: import("@playwright/test").Page, name: string) {
@@ -75,12 +76,25 @@ test("side businesses: zamzam route on credit, statements, and a medicine-only l
 
   await page.getByRole("button", { name: "লগআউট" }).first().click();
   await page.waitForURL("**/sign-in");
+  const since = new Date();
   await page.locator("#email").fill(`pharmacy-${stamp}@example.com`);
   await page.locator("#password").fill("Pharma-2026-ok");
   await page.getByRole("button", { name: "লগইন" }).click();
+  // First sign-in for this login from this browser: the emailed code.
+  await expect(page.getByText("নতুন ডিভাইস থেকে লগইন")).toBeVisible();
+  await page.getByRole("textbox", { name: "৬ সংখ্যার কোড 1" }).click();
+  await page.keyboard.type(await waitForCode(`pharmacy-${stamp}@example.com`, since));
   await page.waitForURL(/\/app\/shop\/medicine$/);
   await expect(page.getByRole("heading", { name: "ঔষধের দোকান" })).toBeVisible();
   await expect(page.getByRole("link", { name: "হাজী" })).toHaveCount(0);
   await page.goto("/app/shop/zamzam");
   await expect(page.getByText("আপনার লগইনে এই দোকান খোলার অনুমতি নেই")).toBeVisible();
+
+  // One office computer, two logins: the owner stays trusted on it and signs straight back in.
+  await page.getByRole("button", { name: "লগআউট" }).first().click();
+  await page.waitForURL("**/sign-in");
+  await page.locator("#email").fill(`shops-${stamp}@example.com`);
+  await page.locator("#password").fill("correct-horse-battery");
+  await page.getByRole("button", { name: "লগইন" }).click();
+  await page.waitForURL(/\/app$/);
 });

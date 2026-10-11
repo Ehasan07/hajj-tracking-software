@@ -9,6 +9,7 @@ import { and, eq } from "drizzle-orm";
 import { getSettings, nextReference } from "@hajj/api/services/tenant";
 import { allow } from "@/server/rate-limit";
 import { PUBLIC_ACTOR, resolvePublicTenant } from "@/server/site";
+import { clientIp } from "@/server/client-ip";
 
 type Values = Partial<Record<"name" | "phone" | "interest" | "packageId" | "partySize" | "notes", string>>;
 
@@ -50,7 +51,7 @@ const schema = z.object({
 /** Public inquiry form. Lands in the agency's inquiry log with status "new". */
 export async function submitInquiry(_prev: InquiryState, form: FormData): Promise<InquiryState> {
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "local";
+  const ip = clientIp(h) ?? "unknown";
   const values = echo(form);
   if (!allow(`inquiry:${ip}`, 5, 10 * 60_000)) return { status: "error", code: "TOO_MANY", values };
 
