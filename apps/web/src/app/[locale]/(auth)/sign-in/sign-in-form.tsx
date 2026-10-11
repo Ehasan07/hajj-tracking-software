@@ -20,7 +20,8 @@ interface Challenge {
  * until the code is accepted, then signs in once more from the now-trusted
  * browser.
  */
-export function SignInForm() {
+/** `canReset`: the server can send email, so the reset-by-code link is shown. */
+export function SignInForm({ canReset }: { canReset: boolean }) {
   const t = useTranslations();
   const locale = useLocale() as "bn" | "en";
   const router = useRouter();
@@ -171,11 +172,13 @@ export function SignInForm() {
         label={t("auth.password")}
         error={error}
       />
-      <div className="-mt-2 flex justify-end">
-        <Link href="/forgot-password" className="text-[14px] font-semibold text-haram underline underline-offset-4">
-          {t("auth.forgot.link")}
-        </Link>
-      </div>
+      {canReset ? (
+        <div className="-mt-2 flex justify-end">
+          <Link href="/forgot-password" className="text-[14px] font-semibold text-haram underline underline-offset-4">
+            {t("auth.forgot.link")}
+          </Link>
+        </div>
+      ) : null}
       <Button type="submit" disabled={pending}>
         {pending ? t("common.loading") : t("common.signIn")}
       </Button>
