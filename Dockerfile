@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1.7
-FROM node:22-alpine AS base
+# Debian (glibc), not Alpine: the image library sharp ships a native binary,
+# and the same build also runs natively on the Ubuntu server.
+FROM node:22-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 
@@ -13,7 +15,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
     BETTER_AUTH_SECRET=build-time-placeholder-secret-value-000000
 RUN pnpm --filter @hajj/web build
 
-FROM node:22-alpine AS web
+FROM node:22-bookworm-slim AS web
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3100 HOSTNAME=0.0.0.0
 COPY --from=build --chown=node:node /repo/apps/web/.next/standalone ./
