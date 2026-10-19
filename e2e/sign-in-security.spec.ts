@@ -1,7 +1,7 @@
 import { clientAddress, expect, test } from "./fixtures";
 import { waitForCode, waitForMail } from "./mail";
 
-const PASSWORD = "correct-horse-battery";
+const PASSWORD = "Correct-Horse-Battery-7";
 
 async function signUp(page: import("@playwright/test").Page, email: string) {
   await page.goto("/sign-up");
@@ -89,8 +89,8 @@ test("password reset by emailed code signs straight in and other devices out", a
   await fresh.getByRole("button", { name: "কোড পাঠান" }).click();
   await expect(fresh.getByText("কোনো অ্যাকাউন্ট থাকলে")).toBeVisible();
   await typeCode(fresh, await waitForCode(email, since));
-  await fresh.locator("#password").fill("a-brand-new-password");
-  await fresh.locator("#confirm").fill("a-brand-new-password");
+  await fresh.locator("#password").fill("Brand-New-Secret-42");
+  await fresh.locator("#confirm").fill("Brand-New-Secret-42");
   await fresh.getByRole("button", { name: "পাসওয়ার্ড সেভ করে লগইন" }).click();
   await fresh.waitForURL(/\/app$/);
   await waitForMail(email, since, /password was changed/);
@@ -115,4 +115,34 @@ test("an unknown email gets the same answer, and five wrong passwords lock sign-
   }
   await submitPassword(page, email, "still-wrong-password");
   await expect(page.getByText(/১৫ মিনিট/)).toBeVisible();
+});
+
+test("sign-up shows the password rules, can reveal the password, and the server refuses a weak one", async ({ page, request }) => {
+  const email = `rules-${Date.now()}@example.com`;
+  await page.goto("/sign-up");
+  await page.locator("#name").fill("Nadia Islam");
+  await page.locator("#email").fill(email);
+  await expect(page.getByText("পাসওয়ার্ডে যা থাকতে হবে")).toBeVisible();
+
+  await page.locator("#password").fill("nadia12345");
+  await expect(page.getByText("শক্তি: খুব দুর্বল")).toBeVisible();
+  await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await expect(page.getByText("পাসওয়ার্ড এখনো সব শর্ত পূরণ করেনি")).toBeVisible();
+  await expect(page).toHaveURL(/sign-up/);
+
+  await page.getByRole("button", { name: "পাসওয়ার্ড দেখুন" }).click();
+  await expect(page.locator("#password")).toHaveAttribute("type", "text");
+  await page.getByRole("button", { name: "পাসওয়ার্ড লুকান" }).click();
+  await expect(page.locator("#password")).toHaveAttribute("type", "password");
+
+  await page.locator("#password").fill("Rx7#mangoTree!river");
+  await expect(page.getByText("শক্তি: খুব শক্ত")).toBeVisible();
+
+  // Skipping the form doesn't skip the rules.
+  const res = await request.post("/api/auth/sign-up/email", {
+    headers: { origin: new URL(page.url()).origin },
+    data: { name: "Nadia Islam", email: `api-${email}`, password: "password1234" },
+  });
+  expect(res.status()).toBe(400);
+  expect((await res.json()).code).toBe("WEAK_PASSWORD");
 });

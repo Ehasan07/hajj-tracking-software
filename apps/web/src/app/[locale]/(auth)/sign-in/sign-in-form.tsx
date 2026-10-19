@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState, type FormEvent } from "react";
 import { OtpInput } from "@/components/otp-input";
+import { PasswordField } from "@/components/password-field";
 import { Button, Field } from "@/components/ui";
 import { useCountdown } from "@/components/use-countdown";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -163,15 +164,7 @@ export function SignInForm({ canReset }: { canReset: boolean }) {
   return (
     <form onSubmit={onPassword} className="flex flex-col gap-5" noValidate>
       <Field id="email" name="email" type="email" autoComplete="email" required label={t("auth.email")} defaultValue={credentials?.email} />
-      <Field
-        id="password"
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        required
-        label={t("auth.password")}
-        error={error}
-      />
+      <PasswordField id="password" name="password" autoComplete="current-password" required label={t("auth.password")} error={error} />
       {canReset ? (
         <div className="-mt-2 flex justify-end">
           <Link href="/forgot-password" className="text-[14px] font-semibold text-haram underline underline-offset-4">

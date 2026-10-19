@@ -29,7 +29,7 @@ export function Button({
   return <button className={buttonClass(variant, className)} {...props} />;
 }
 
-const fieldClass =
+export const fieldClass =
   "w-full rounded-md border-[1.5px] border-line-strong bg-field px-4 text-[17px] text-ink outline-none transition-[border-color,box-shadow] placeholder:text-ink-3/70 focus:border-haram focus:bg-paper focus:shadow-[0_0_0_4px_var(--color-haram-tint)] aria-[invalid=true]:border-due";
 
 interface FieldChrome {

@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { hashPassword } from "better-auth/crypto";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { BUSINESS_UNITS, SHOP_UNITS } from "@hajj/core";
+import { BUSINESS_UNITS, checkPassword, PASSWORD_MAX, SHOP_UNITS } from "@hajj/core";
 import type { Transaction } from "@hajj/db";
 import {
   account,
@@ -68,7 +68,7 @@ export const teamRouter = router({
       z.object({
         name: z.string().trim().min(2).max(120),
         email: z.email().transform((v) => v.toLowerCase()),
-        password: z.string().min(10, "WEAK_PASSWORD").max(128),
+        password: z.string().max(PASSWORD_MAX),
         role: z.enum(ASSIGNABLE),
         units: z.array(z.enum(SHOP_UNITS)).max(4).default([]),
       }),
@@ -76,6 +76,8 @@ export const teamRouter = router({
     .mutation(async ({ ctx, input }) => {
       if (input.role === "admin" && ctx.role !== "owner")
         throw new TRPCError({ code: "FORBIDDEN" });
+      if (!checkPassword(input.password, { name: input.name, email: input.email }).ok)
+        throw new TRPCError({ code: "BAD_REQUEST", message: "WEAK_PASSWORD" });
       if (input.role === "shop_operator" && input.units.length === 0)
         throw new TRPCError({ code: "BAD_REQUEST", message: "UNITS_REQUIRED" });
       await seatCheck(ctx.tx, ctx.tenantId);

@@ -1,8 +1,9 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { OtpInput } from "@/components/otp-input";
+import { PasswordField, passwordReady } from "@/components/password-field";
 import { Button, Field } from "@/components/ui";
 import { useCountdown } from "@/components/use-countdown";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -27,6 +28,10 @@ export function ForgotPasswordForm() {
   const [notice, setNotice] = useState<string>();
   const [pending, setPending] = useState(false);
   const [resendIn, setResendIn] = useCountdown(0);
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const tp = useTranslations("password");
+  const context = useMemo(() => ({ email }), [email]);
 
   async function request(target: string) {
     setPending(true);
@@ -79,10 +84,8 @@ export function ForgotPasswordForm() {
 
   async function onPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const password = String(form.get("password"));
-    if (password.length < 10) return setError(t("forgot.short"));
-    if (password !== String(form.get("confirm"))) return setError(t("forgot.mismatch"));
+    if (!passwordReady(password, context)) return setError(tp("notReady"));
+    if (password !== confirm) return setError(t("forgot.mismatch"));
     setPending(true);
     setError(undefined);
     const { error: failure } = await authClient.emailOtp.resetPassword({ email, otp: code, password });
@@ -170,8 +173,28 @@ export function ForgotPasswordForm() {
     <form onSubmit={onPassword} className="flex flex-col gap-5" noValidate>
       {/* Lets the browser's password manager save the new password against the right account. */}
       <input type="email" name="username" autoComplete="username" value={email} readOnly hidden />
-      <Field id="password" name="password" type="password" autoComplete="new-password" required minLength={10} label={t("forgot.newPassword")} hint={t("forgot.rule")} />
-      <Field id="confirm" name="confirm" type="password" autoComplete="new-password" required label={t("forgot.confirm")} error={error} />
+      <PasswordField
+        id="password"
+        name="password"
+        autoComplete="new-password"
+        required
+        label={t("forgot.newPassword")}
+        value={password}
+        onValueChange={(v) => (setPassword(v), setError(undefined))}
+        meter
+        context={context}
+      />
+      <PasswordField
+        id="confirm"
+        name="confirm"
+        autoComplete="new-password"
+        required
+        label={t("forgot.confirm")}
+        value={confirm}
+        onValueChange={(v) => (setConfirm(v), setError(undefined))}
+        matchWith={password}
+        error={error}
+      />
       <Button type="submit" disabled={pending}>
         {pending ? t("forgot.saving") : t("forgot.save")}
       </Button>

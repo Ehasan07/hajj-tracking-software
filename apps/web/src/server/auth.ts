@@ -4,6 +4,7 @@ import { nextCookies } from "better-auth/next-js";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP, organization, phoneNumber, twoFactor } from "better-auth/plugins";
 import { asc, eq } from "drizzle-orm";
+import { checkPassword, PASSWORD_MAX, PASSWORD_MIN } from "@hajj/core";
 import { db, schema } from "@hajj/db";
 import {
   allowPasswordReset,
@@ -35,8 +36,30 @@ const hookIp = (ctx: HookContext) => clientIp(ctx.headers) ?? "unknown";
 
 const cookieAttrs = (o: typeof trustCookieOptions) => ({ httpOnly: o.httpOnly, secure: o.secure, sameSite: o.sameSite, path: o.path, maxAge: o.maxAge });
 
-/** Before sign-in: refuse a locked email/address pair. Before a reset code: enforce the wait and daily limit. */
+/** Paths that set a password, and the body field that carries it. */
+const PASSWORD_FIELDS: Record<string, string> = {
+  "/sign-up/email": "password",
+  "/email-otp/reset-password": "password",
+  "/reset-password": "newPassword",
+  "/change-password": "newPassword",
+};
+
+/**
+ * Before sign-in: refuse a locked email/address pair. Before a reset code:
+ * enforce the wait and daily limit. Before any new password: the same rules
+ * the form shows, so a request made outside the form can't skip them.
+ */
 const beforeHook = createAuthMiddleware(async (ctx) => {
+  const field = PASSWORD_FIELDS[ctx.path];
+  if (field) {
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
+    const email = typeof body.email === "string" ? body.email : "";
+    let name = typeof body.name === "string" ? body.name : "";
+    if (!name && email) name = (await ctx.context.internalAdapter.findUserByEmail(email.toLowerCase()))?.user.name ?? "";
+    if (!checkPassword(String(body[field] ?? ""), { name, email }).ok) {
+      throw new APIError("BAD_REQUEST", { message: "WEAK_PASSWORD", code: "WEAK_PASSWORD" });
+    }
+  }
   if (ctx.path === "/sign-in/email") {
     const email = String((ctx.body as { email?: string } | undefined)?.email ?? "");
     if (isLocked(hookIp(ctx), email)) throw new APIError("TOO_MANY_REQUESTS", { message: "LOCKED" });
@@ -127,8 +150,8 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 10,
-    maxPasswordLength: 128,
+    minPasswordLength: PASSWORD_MIN,
+    maxPasswordLength: PASSWORD_MAX,
     // A new password signs every other device out.
     revokeSessionsOnPasswordReset: true,
   },

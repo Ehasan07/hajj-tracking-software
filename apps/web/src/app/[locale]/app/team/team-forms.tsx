@@ -2,9 +2,10 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { SHOP_UNITS, type BusinessUnit, type ShopUnit } from "@hajj/core";
 import { FormError } from "@/components/form-error";
+import { PasswordField, passwordReady } from "@/components/password-field";
 import { Button, Field, SelectField } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
 import { useTRPC } from "@/trpc/react";
@@ -120,6 +121,11 @@ export function CreateLoginForm({ shops, isOwner }: { shops: ShopUnit[]; isOwner
   const [role, setRole] = useState<Role>("shop_operator");
   const [units, setUnits] = useState<ShopUnit[]>(shops.slice(0, 1));
   const [created, setCreated] = useState<{ email: string; password: string } | null>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string>();
+  const context = useMemo(() => ({ name, email }), [name, email]);
   const create = useMutation(trpc.team.create.mutationOptions());
   return (
     <form
@@ -128,21 +134,35 @@ export function CreateLoginForm({ shops, isOwner }: { shops: ShopUnit[]; isOwner
       onSubmit={async (e) => {
         e.preventDefault();
         setCreated(null);
-        const f = new FormData(e.currentTarget);
-        const s = (k: string) => String(f.get(k) ?? "").trim();
+        if (!passwordReady(password, context)) {
+          setPasswordError(t("password.notReady"));
+          document.getElementById("tm-password")?.focus();
+          return;
+        }
         await create.mutateAsync({
-          name: s("name"),
-          email: s("email"),
-          password: String(f.get("password")),
+          name: name.trim(),
+          email: email.trim(),
+          password,
           role,
           units: role === "shop_operator" ? units : [],
         });
-        setCreated({ email: s("email").toLowerCase(), password: String(f.get("password")) });
+        setCreated({ email: email.trim().toLowerCase(), password });
         form.current?.reset();
+        setName("");
+        setEmail("");
+        setPassword("");
         router.refresh();
       }}
     >
-      <Field id="tm-name" name="name" required minLength={2} label={t("team.name")} />
+      <Field
+        id="tm-name"
+        name="name"
+        required
+        minLength={2}
+        label={t("team.name")}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
       <Field
         id="tm-email"
         name="email"
@@ -150,17 +170,25 @@ export function CreateLoginForm({ shops, isOwner }: { shops: ShopUnit[]; isOwner
         required
         autoComplete="off"
         label={t("team.email")}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
       />
-      <Field
-        id="tm-password"
-        name="password"
-        type="text"
-        required
-        minLength={10}
-        autoComplete="new-password"
-        label={t("team.password")}
-        hint={t("team.passwordHint")}
-      />
+      <div className="sm:col-span-2">
+        <PasswordField
+          id="tm-password"
+          name="password"
+          required
+          autoComplete="new-password"
+          label={t("team.password")}
+          hint={t("team.passwordHint")}
+          value={password}
+          onValueChange={(v) => (setPassword(v), setPasswordError(undefined))}
+          meter
+          generate
+          context={context}
+          error={passwordError}
+        />
+      </div>
       <SelectField
         id="tm-role"
         label={t("team.role")}

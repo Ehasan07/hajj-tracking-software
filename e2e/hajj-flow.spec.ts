@@ -14,7 +14,7 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await page.goto("/sign-up");
   await page.locator("#name").fill("Rahim Uddin");
   await page.locator("#email").fill(email);
-  await page.locator("#password").fill("correct-horse-battery");
+  await page.locator("#password").fill("Correct-Horse-Battery-7");
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
 
   await page.waitForURL("**/onboarding");
@@ -128,7 +128,7 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.waitForURL(/sign-in/);
   await page.locator("#email").fill(email);
-  await page.locator("#password").fill("correct-horse-battery");
+  await page.locator("#password").fill("Correct-Horse-Battery-7");
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.waitForURL(/\/app$/);
   await expect(page.getByText("Al Madina Travels").first()).toBeVisible();

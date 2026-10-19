@@ -17,7 +17,7 @@ test("side businesses: zamzam route on credit, statements, and a medicine-only l
   await page.goto("/sign-up");
   await page.locator("#name").fill("Karim Mia");
   await page.locator("#email").fill(`shops-${stamp}@example.com`);
-  await page.locator("#password").fill("correct-horse-battery");
+  await page.locator("#password").fill("Correct-Horse-Battery-7");
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
   await page.waitForURL("**/onboarding");
   await page.locator("#agencyName").fill("Safa Travels");
@@ -70,6 +70,10 @@ test("side businesses: zamzam route on credit, statements, and a medicine-only l
   await page.goto("/app/team");
   await page.locator("#tm-name").fill("Pharmacist");
   await page.locator("#tm-email").fill(`pharmacy-${stamp}@example.com`);
+  // The owner can have a strong password made up for the colleague.
+  await page.getByRole("button", { name: "শক্ত পাসওয়ার্ড বানিয়ে দিন" }).click();
+  await expect(page.locator("#tm-password")).toHaveValue(/^.{16}$/);
+  await expect(page.getByText(/শক্তি: (খুব )?শক্ত/)).toBeVisible();
   await page.locator("#tm-password").fill("Pharma-2026-ok");
   await page.getByRole("button", { name: "লগইন তৈরি করুন" }).click();
   await expect(page.getByText("লগইন তৈরি হয়েছে")).toBeVisible();
@@ -94,7 +98,7 @@ test("side businesses: zamzam route on credit, statements, and a medicine-only l
   await page.getByRole("button", { name: "লগআউট" }).first().click();
   await page.waitForURL("**/sign-in");
   await page.locator("#email").fill(`shops-${stamp}@example.com`);
-  await page.locator("#password").fill("correct-horse-battery");
+  await page.locator("#password").fill("Correct-Horse-Battery-7");
   await page.getByRole("button", { name: "লগইন" }).click();
   await page.waitForURL(/\/app$/);
 });

@@ -32,7 +32,6 @@
     "name": "Your name",
     "email": "Email",
     "password": "Password",
-    "passwordHint": "At least 10 characters",
     "noAccount": "No account yet?",
     "haveAccount": "Already have an account?",
     "invalid": "Email or password is incorrect",
@@ -66,9 +65,7 @@
       "incorrect": "That code didn't match. Try again.",
       "otherEmail": "Use another email",
       "newPassword": "New password",
-      "rule": "At least 10 characters",
       "confirm": "Type the new password again",
-      "short": "The password needs at least 10 characters",
       "mismatch": "The two passwords don't match",
       "save": "Save and sign in",
       "saving": "Saving…",
@@ -407,7 +404,7 @@
     "SEAT_LIMIT": "Your plan allows up to {n} logins",
     "UNITS_REQUIRED": "Choose at least one shop",
     "CANNOT_CHANGE_OWNER": "The owner's role, or your own, can't be changed",
-    "WEAK_PASSWORD": "The password needs at least 10 characters",
+    "WEAK_PASSWORD": "The password isn't strong enough: use at least 10 characters with upper and lower case letters and a number, and avoid names and common words",
     "BACKDATE_NOT_ALLOWED": "Only the owner or an accountant can enter an earlier date",
     "BACKDATE_TOO_OLD": "Entries can't be dated more than a month back",
     "FUTURE_DATE": "A future date can't be used",
@@ -1230,7 +1227,7 @@
     "name": "Name",
     "email": "Email (used to sign in)",
     "password": "Password",
-    "passwordHint": "At least 10 characters. Hand it over in person.",
+    "passwordHint": "Hand it over in person.",
     "role": "Role",
     "roleHints": {
       "staff": "Pilgrims, inquiries, payments, hotels and selling in every shop",
@@ -1279,5 +1276,35 @@
     "user": "User",
     "device": "Device",
     "lastSeenCol": "Last used"
+  },
+  "password": {
+    "show": "Show password",
+    "hide": "Hide password",
+    "rulesTitle": "Your password needs",
+    "rules": {
+      "length": "At least 10 characters",
+      "upper": "An uppercase letter (A–Z)",
+      "lower": "A lowercase letter (a–z)",
+      "number": "A number (0–9)",
+      "symbol": "A symbol (! @ # …)",
+      "notCommon": "Not a common or easy-to-guess password (like 123456, password, bismillah)",
+      "notPersonal": "Not your name or email"
+    },
+    "optionalStronger": "optional, makes it stronger",
+    "strength": "Strength: {level}",
+    "levels": [
+      "Very weak",
+      "Weak",
+      "Fair",
+      "Strong",
+      "Very strong"
+    ],
+    "passed": "done",
+    "missing": "still needed",
+    "notReady": "The password doesn't meet every rule yet. See the list below.",
+    "match": "Both passwords match",
+    "mismatch": "The two passwords don't match",
+    "generate": "Suggest a strong password",
+    "generated": "A new password is filled in. Check it and keep a note of it."
   }
 }

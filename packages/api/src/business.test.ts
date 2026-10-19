@@ -508,6 +508,12 @@ describe("team logins", () => {
         units: ["medicine"],
       }),
     ).rejects.toThrow(/FORBIDDEN/);
+    // The same password rules as sign-up: not too simple, not the person's own name.
+    for (const password of ["pharmacy-shop", "Password2026", "Pharmacist-77x"]) {
+      await expect(
+        owner().team.create({ name: "Pharmacist", email, password, role: "shop_operator", units: ["medicine"] }),
+      ).rejects.toThrow(/WEAK_PASSWORD/);
+    }
     const { userId } = await owner().team.create({
       name: "Pharmacist",
       email,

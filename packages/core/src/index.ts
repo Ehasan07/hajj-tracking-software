@@ -7,3 +7,4 @@ export * from "./mrz";
 export * from "./documents";
 export * from "./commerce";
 export * from "./device";
+export * from "./password";
