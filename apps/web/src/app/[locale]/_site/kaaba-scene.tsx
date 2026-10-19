@@ -19,6 +19,13 @@ const STARS: [number, number, number][] = [
 const RING = (rx: number, ry: number, cy: number) =>
   `M ${200 - rx},${cy} a ${rx},${ry} 0 1,0 ${rx * 2},0 a ${rx},${ry} 0 1,0 ${-rx * 2},0`;
 
+// The agency's theme colours where the scene sits on its website; the platform's teal elsewhere.
+const SKY = "var(--color-haram-night)";
+const STONE = "var(--site-raised, #14635d)";
+const ARCH = "color-mix(in srgb, var(--color-haram-night) 55%, var(--site-raised, #14635d))";
+const LEDGE = "var(--color-haram-deep)";
+const RING_LINE = "var(--site-muted, #a9cfc9)";
+
 const OUTER = RING(156, 54, 402);
 const INNER = RING(112, 38, 396);
 
@@ -40,7 +47,7 @@ export function KaabaScene({ label }: { label: string }) {
 
   return (
     <svg viewBox="0 0 400 500" role="img" aria-label={label} className="h-full w-full">
-      <rect width="400" height="500" fill="#0b4f4a" />
+      <rect width="400" height="500" style={{ fill: SKY }} />
 
       {STARS.map(([x, y, r], i) => (
         <circle
@@ -56,7 +63,7 @@ export function KaabaScene({ label }: { label: string }) {
 
       {/* crescent */}
       <circle cx="318" cy="78" r="22" fill="#f2b33d" />
-      <circle cx="329" cy="70" r="20" fill="#0b4f4a" />
+      <circle cx="329" cy="70" r="20" style={{ fill: SKY }} />
 
       {/* minarets */}
       {(
@@ -67,7 +74,7 @@ export function KaabaScene({ label }: { label: string }) {
           [296, 0.75],
         ] as const
       ).map(([x, s]) => (
-        <g key={x} transform={`translate(${x} ${330 - 170 * s}) scale(${s})`} fill="#14635d">
+        <g key={x} transform={`translate(${x} ${330 - 170 * s}) scale(${s})`} style={{ fill: STONE }}>
           <path d="M-2 -26 L0 -40 L2 -26 Z" fill="#c9a24a" />
           <path d="M-7 -12 Q0 -30 7 -12 Z" />
           <rect x="-7" y="-12" width="14" height="40" />
@@ -79,18 +86,18 @@ export function KaabaScene({ label }: { label: string }) {
       ))}
 
       {/* arcade of the mosque */}
-      <g fill="#14635d">
+      <g style={{ fill: STONE }}>
         <rect x="0" y="300" width="400" height="44" />
         {Array.from({ length: 13 }, (_, i) => (
-          <path key={i} d={`M ${i * 32 - 2} 344 v -22 a 12 14 0 0 1 24 0 v 22 z`} fill="#0f5a54" />
+          <path key={i} d={`M ${i * 32 - 2} 344 v -22 a 12 14 0 0 1 24 0 v 22 z`} style={{ fill: ARCH }} />
         ))}
-        <rect x="0" y="296" width="400" height="4" fill="#1c7068" />
+        <rect x="0" y="296" width="400" height="4" style={{ fill: LEDGE }} />
       </g>
 
       {/* marble floor and the rings of tawaf */}
       <ellipse cx="200" cy="410" rx="200" ry="78" fill="#e9efed" opacity="0.1" />
-      <path d={OUTER} fill="none" stroke="#a9cfc9" strokeOpacity="0.28" strokeDasharray="2 5" />
-      <path d={INNER} fill="none" stroke="#a9cfc9" strokeOpacity="0.28" strokeDasharray="2 5" />
+      <path d={OUTER} fill="none" style={{ stroke: RING_LINE }} strokeOpacity="0.28" strokeDasharray="2 5" />
+      <path d={INNER} fill="none" style={{ stroke: RING_LINE }} strokeOpacity="0.28" strokeDasharray="2 5" />
 
       {/* soft light around the House */}
       <circle cx="200" cy="330" r="96" fill="#f2b33d" opacity="0.06" />

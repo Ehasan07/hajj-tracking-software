@@ -1577,5 +1577,166 @@
       "delete": "Delete",
       "confirmDelete": "Delete this question?"
     }
+  },
+  "landing": {
+    "brand": "Hajj Tracking",
+    "nav": {
+      "label": "Page sections",
+      "journey": "How it works",
+      "businesses": "Other businesses",
+      "website": "Website",
+      "pricing": "Pricing"
+    },
+    "signIn": "Sign in",
+    "start": "Start free",
+    "hero": {
+      "title": "A Hajj agency's whole office, in one ledger",
+      "body": "Inquiries, pilgrims' papers, instalments and receipts, hotels in Makkah and Madinah, the zamzam and medicine shops, staff salaries. All in one place, in Bangla, in taka and riyal.",
+      "cta": "Use it free for {days} days",
+      "note": "No card needed. Just your agency's name to start."
+    },
+    "arafah": {
+      "label": "Countdown to the Day of Arafah",
+      "until": "Hajj {year}: the Day of Arafah is",
+      "days": "days away",
+      "note": "Moon sighting can move it by a day or two"
+    },
+    "journey": {
+      "title": "One pilgrim's journey, from the first call to the flight home",
+      "body": "Everything the office has to write down at each step, the software keeps in order. Each picture on the right is a piece of a real page in the software.",
+      "steps": {
+        "inquiry": {
+          "title": "The first question",
+          "body": "Someone calls or walks in: name, phone, which package they're interested in. It reminds you on the day to call back. Questions from your website land here too."
+        },
+        "passport": {
+          "title": "Registration and passport",
+          "body": "Reading the two lines at the bottom of the passport fills in the name, number and expiry. Each pilgrim gets their own ID, found in a moment."
+        },
+        "receipt": {
+          "title": "Instalments and receipts",
+          "body": "However many instalments, what's paid and what's due is always in front of you. Every receipt has the amount in words and a QR code that proves it's genuine."
+        },
+        "hotel": {
+          "title": "Hotels in Makkah and Madinah",
+          "body": "Which pilgrim is in which bed of which room, for how many nights, at what cost in riyal. Nobody can be put in two places on the same night."
+        },
+        "journey": {
+          "title": "On the journey",
+          "body": "Duas and ayat in Arabic with Bangla pronunciation and meaning. The steps of Hajj and Umrah in plain words. Meanings are marked as drafts until a scholar checks them."
+        },
+        "books": {
+          "title": "The day's books",
+          "body": "At midnight the day's statement makes itself: what came in and went out, business by business. The same at month and year end. Nothing is ever erased; a mistake is fixed with a reversing entry."
+        }
+      }
+    },
+    "businesses": {
+      "title": "The businesses you run alongside Hajj, in the same ledger",
+      "body": "Many agencies also run a shop or a zamzam water round. Each keeps its own books, and at month end they all meet in one statement.",
+      "units": {
+        "zamzam": {
+          "title": "Zamzam water",
+          "body": "Seven routes for the seven days of the week. How many jars each shop took and what it still owes, written down on the route."
+        },
+        "medicine": {
+          "title": "Medicine shop",
+          "body": "Stock by batch and expiry date. The batch that expires first is sold first, with a warning before anything runs out of date."
+        },
+        "coffee": {
+          "title": "Naba Coffee",
+          "body": "Quick sales from the menu, and the day's takings at closing."
+        },
+        "supernova": {
+          "title": "Supernova",
+          "body": "Product list, sales and dues, a statement every day."
+        },
+        "expenses": {
+          "title": "Office costs",
+          "body": "Rent, power, transport, hospitality. Each cost with a photo of its voucher, filed under the business it belongs to."
+        },
+        "payroll": {
+          "title": "Staff salaries",
+          "body": "The month's salary sheet: advances taken off, locked, paid in one go. The payment goes straight into the books."
+        }
+      },
+      "logins": "Every colleague signs in as themselves. Someone who runs the medicine shop sees only the medicine shop, not pilgrims' details or the office books."
+    },
+    "website": {
+      "title": "Every agency gets its own website",
+      "body": "No one to pay to build or run a separate site. Arrange it from inside the software and changes show on the website straight away.",
+      "points": {
+        "look": "Your colours, logo, large picture, headline and story",
+        "posts": "Registration news, notices, offers and photos of past journeys",
+        "reviews": "Pilgrims write reviews themselves; they show once you approve them",
+        "inquiries": "Questions from the website go straight to your inquiry list"
+      },
+      "demo": {
+        "agency": "Al-Madina Travels",
+        "cta": "Contact",
+        "headline": "Your Hajj in trusted hands",
+        "body": "Hajj and Umrah from Dhaka for 25 years.",
+        "packages": {
+          "economy": "Umrah",
+          "standard": "Hajj standard",
+          "premium": "Hajj special"
+        },
+        "prices": {
+          "economy": "৳1.35 lakh",
+          "standard": "৳6.85 lakh",
+          "premium": "৳9.90 lakh"
+        },
+        "review": "We were looked after the whole way, alhamdulillah.",
+        "pick": "Pick a colour to see"
+      }
+    },
+    "security": {
+      "title": "Pilgrims' details, kept safe",
+      "body": "Passports, phone numbers and money are sensitive. The rules for keeping them are strict from the start.",
+      "points": {
+        "passport": {
+          "title": "Passports stay private",
+          "body": "Passport numbers and scans are stored encrypted. Even searching never leaves the real number readable in the database."
+        },
+        "separate": {
+          "title": "Every agency is walled off",
+          "body": "No agency can see anything of another's. The wall is inside the database, not just hidden on the page."
+        },
+        "device": {
+          "title": "An emailed code for new devices",
+          "body": "Signing in from an unfamiliar phone or computer needs a 6-digit code sent by email, and you're told when a new device is added."
+        },
+        "lock": {
+          "title": "Locked after wrong passwords",
+          "body": "Five wrong passwords in a row pause sign-in for 15 minutes. Weak or common passwords aren't accepted."
+        },
+        "audit": {
+          "title": "Every change is on record",
+          "body": "Who changed what, and when, is written down. Nothing can be erased from the money books."
+        },
+        "backup": {
+          "title": "Backed up every night",
+          "body": "The whole database and all files are backed up every night."
+        },
+        "qr": {
+          "title": "Fake receipts get caught",
+          "body": "Scanning a receipt's QR code checks it against our books and shows whether it's genuine."
+        }
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "body": "Everything in the {plan} plan, free for the first {days} days. Then pick the plan that fits your agency.",
+      "perMonth": "per month",
+      "yearly": "{price} when paid yearly",
+      "unlimited": "Unlimited",
+      "pilgrims": "{n} pilgrims a year",
+      "staff": "{n} staff logins",
+      "sms": "{n} SMS a month",
+      "cta": "Start free"
+    },
+    "closing": {
+      "title": "Let this year's Hajj start in a tidy ledger"
+    }
   }
 }
