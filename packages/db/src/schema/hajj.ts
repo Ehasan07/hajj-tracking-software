@@ -47,6 +47,8 @@ export const travelPackages = pgTable(
     days: integer(),
     notes: text(),
     active: boolean().notNull().default(true),
+    /** A photo for the website (tenants/<tenant>/site/…). */
+    imageKey: text(),
     ...timestamps,
   },
   (t) => [

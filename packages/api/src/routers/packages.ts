@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { parseAmount } from "@hajj/core";
@@ -33,6 +34,22 @@ export const packagesRouter = router({
         .values({ ...input, price: parseAmount(input.price) })
         .returning();
       return row!;
+    }),
+
+  /** The photo shown on the website's package card; null removes it. */
+  setImage: withRoles("admin")
+    .input(z.object({ id: z.uuid(), imageKey: z.string().max(200).nullable() }))
+    .mutation(async ({ ctx, input }) => {
+      if (input.imageKey && !new RegExp(`^tenants/${ctx.tenantId}/site/[0-9a-f-]{36}\\.webp$`).test(input.imageKey)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "BAD_IMAGE" });
+      }
+      const [row] = await ctx.tx
+        .update(travelPackages)
+        .set({ imageKey: input.imageKey })
+        .where(eq(travelPackages.id, input.id))
+        .returning();
+      if (!row) throw new TRPCError({ code: "NOT_FOUND" });
+      return row;
     }),
 
   setActive: withRoles("admin")

@@ -130,7 +130,8 @@
     "sacred": "Ayat & duas",
     "expenses": "Expenses",
     "team": "Team & settings",
-    "devices": "My devices"
+    "devices": "My devices",
+    "website": "Website"
   },
   "methods": {
     "cash": "Cash",
@@ -307,7 +308,9 @@
     "emptyBody": "Add at least one package before registering pilgrims.",
     "deactivate": "Deactivate",
     "activate": "Activate",
-    "save": "Add package"
+    "save": "Add package",
+    "photo": "Website photo",
+    "photoFor": "Add a photo for {name}"
   },
   "guide": {
     "title": "Hajj & Umrah guide",
@@ -362,7 +365,7 @@
     "REFERENCE_REQUIRED": "Enter the transaction number",
     "ALREADY_VOID": "This receipt is already void",
     "PILGRIM_CANCELLED": "This registration is cancelled",
-    "SLUG_TAKEN": "This web address is already used",
+    "SLUG_TAKEN": "Another agency already uses this address",
     "TOO_LARGE": "File is larger than 8 MB",
     "UNSUPPORTED_TYPE": "Only JPG, PNG, WEBP or PDF",
     "INVALID_SLUG": "Only lowercase letters, numbers and dashes",
@@ -408,7 +411,12 @@
     "BACKDATE_NOT_ALLOWED": "Only the owner or an accountant can enter an earlier date",
     "BACKDATE_TOO_OLD": "Entries can't be dated more than a month back",
     "FUTURE_DATE": "A future date can't be used",
-    "INVALID_PERIOD": "That period isn't valid"
+    "INVALID_PERIOD": "That period isn't valid",
+    "SLUG_FORMAT": "Use 3 to 40 lowercase letters, numbers and inner hyphens (-)",
+    "SLUG_RESERVED": "That address is reserved; choose another",
+    "BAD_IMAGE": "That picture couldn't be opened. Use a JPG, PNG or WEBP image.",
+    "INVALID_LINK": "That link isn't right: use your Facebook or YouTube page link starting with https://",
+    "GALLERY_FULL": "The gallery holds up to 60 photos"
   },
   "sacred": {
     "title": "Ayat, duas and the rites of Hajj",
@@ -456,7 +464,12 @@
       "duas": "Duas",
       "contact": "Contact",
       "pilgrimLogin": "Pilgrim login",
-      "staff": "Office login"
+      "staff": "Office login",
+      "label": "Website sections",
+      "posts": "News",
+      "gallery": "Photos",
+      "reviews": "Reviews",
+      "faq": "FAQ"
     },
     "badge": "Hajj 1448 · Registration open",
     "hero": {
@@ -469,7 +482,8 @@
       "call": "Talk to the office",
       "toast": "Receipt verified",
       "toastBody": "Scan the QR to check any receipt",
-      "art": "The Kaabah with pilgrims performing tawaf"
+      "art": "The Kaabah with pilgrims performing tawaf",
+      "photo": "A photo from {name}"
     },
     "features": {
       "licence": "Government licensed Hajj agency",
@@ -527,7 +541,9 @@
       "title": "Office",
       "address": "Address",
       "phone": "Phone",
-      "email": "Email"
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "hours": "Office hours"
     },
     "footer": {
       "rights": "All rights reserved",
@@ -536,7 +552,58 @@
     "pronunciation": "Pronunciation",
     "meaning": "Meaning",
     "draftChip": "Draft translation · awaiting scholar review",
-    "draftNote": "The meanings and pronunciation on this page are awaiting scholar review. The Arabic is from verified sources."
+    "draftNote": "The meanings and pronunciation on this page are awaiting scholar review. The Arabic is from verified sources.",
+    "previewOff": "This website is switched off; only you can see it",
+    "posts": {
+      "eyebrow": "Latest",
+      "title": "News and notices",
+      "read": "Read more",
+      "pinned": "Pinned",
+      "kinds": {
+        "news": "News",
+        "notice": "Notice",
+        "offer": "Offer"
+      },
+      "back": "All news",
+      "contact": "Get in touch"
+    },
+    "gallery": {
+      "eyebrow": "Our journeys",
+      "title": "Photo gallery"
+    },
+    "reviews": {
+      "eyebrow": "In their words",
+      "title": "What pilgrims say",
+      "count": "{n} reviews",
+      "empty": "No reviews yet. If you travelled with us, be the first to write one.",
+      "write": "Share your experience",
+      "thanks": "Thank you! Your review will appear here once the agency has read it.",
+      "rating": "How many stars?",
+      "stars": "{n} stars",
+      "name": "Your name",
+      "place": "From",
+      "placeHint": "e.g. Cumilla",
+      "trip": "Which journey",
+      "tripHint": "e.g. Hajj 2025, or Umrah in Ramadan 2026",
+      "body": "Your experience",
+      "moderated": "Reviews don't appear straight away: the agency reads and approves each one. Please leave out links and phone numbers.",
+      "sending": "Sending…",
+      "submit": "Send review",
+      "errors": {
+        "INVALID": "Write your name (2+ letters) and your experience (10+ letters)",
+        "SPAM": "Reviews can't contain links, emails or web addresses",
+        "TOO_MANY": "Too many reviews sent; try again later",
+        "UNAVAILABLE": "Reviews can't be taken right now",
+        "generic": "Couldn't send it; please try again"
+      }
+    },
+    "faq": {
+      "eyebrow": "Want to know?",
+      "title": "Questions and answers"
+    },
+    "about": {
+      "title": "About us"
+    }
   },
   "docs": {
     "title": "Documents",
@@ -1306,5 +1373,209 @@
     "mismatch": "The two passwords don't match",
     "generate": "Suggest a strong password",
     "generated": "A new password is filled in. Check it and keep a note of it."
+  },
+  "website": {
+    "title": "Website",
+    "subtitle": "Arrange your agency's own website here: colours, logo, posts, photos, reviews and FAQ",
+    "open": "View website",
+    "tabs": {
+      "general": "General",
+      "sections": "Sections",
+      "posts": "Posts and notices",
+      "gallery": "Gallery",
+      "reviews": "Reviews",
+      "faq": "FAQ"
+    },
+    "address": {
+      "title": "Website address",
+      "hint": "Put this link on Facebook, WhatsApp or your visiting card",
+      "confirm": "Old links stop working when the address changes. Change it?",
+      "label": "New address",
+      "rule": "Lowercase letters, numbers and hyphens (-), 3 to 40 long. e.g. al-madina-travels",
+      "save": "Save address",
+      "cancel": "Cancel",
+      "copied": "Copied",
+      "copy": "Copy link",
+      "change": "Change address"
+    },
+    "published": {
+      "title": "Website on",
+      "on": "Everyone can see your website",
+      "off": "Website off: only you and your admins can see it"
+    },
+    "look": {
+      "title": "Colours and pictures",
+      "hint": "Pick a colour and the whole website takes it on",
+      "theme": "Colour",
+      "custom": "Your own colour",
+      "pick": "Pick a colour",
+      "darkened": "White text would be hard to read on that colour, so it has been darkened a little.",
+      "logo": "Logo",
+      "logoHint": "A square PNG works best, ideally with a transparent background",
+      "hero": "Large top picture",
+      "heroHint": "Your office, the Kaaba or one of your journeys. Without one, a drawn Kaaba scene shows."
+    },
+    "words": {
+      "title": "Your words",
+      "hint": "Bangla alone is fine; where there's no English, the Bangla shows",
+      "taglineBn": "Headline (Bangla)",
+      "taglineEn": "Headline (English)",
+      "taglinePlaceholder": "e.g. Your Hajj and Umrah in trusted hands",
+      "aboutBn": "About the agency (Bangla)",
+      "aboutEn": "About the agency (English)",
+      "aboutHint": "The first paragraph shows under the headline, the rest in the contact section"
+    },
+    "contact": {
+      "title": "Contact",
+      "hint": "These show on the website and on receipts",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp number",
+      "email": "Email",
+      "hours": "Office hours",
+      "hoursPlaceholder": "e.g. Sat to Thu, 10am to 8pm",
+      "address": "Address",
+      "facebook": "Facebook page link",
+      "youtube": "YouTube channel link"
+    },
+    "saving": "Saving…",
+    "save": "Save",
+    "saved": "Saved",
+    "image": {
+      "empty": "No picture yet",
+      "uploading": "Uploading…",
+      "replace": "Replace",
+      "choose": "Choose a picture",
+      "remove": "Remove"
+    },
+    "sections": {
+      "title": "Which sections show, in what order",
+      "hint": "Untick to hide a section. Use the arrows to move it.",
+      "alwaysFirst": "always first",
+      "up": "Move {name} up",
+      "down": "Move {name} down",
+      "emptyNote": "Posts, gallery and FAQ don't show while they're empty.",
+      "save": "Save order",
+      "saved": "Saved",
+      "names": {
+        "hero": "Top banner",
+        "highlights": "Highlights",
+        "packages": "Packages",
+        "posts": "Posts and notices",
+        "gallery": "Photo gallery",
+        "reviews": "Pilgrims' reviews",
+        "steps": "Hajj and Umrah steps",
+        "duas": "Ayah and duas",
+        "faq": "Questions and answers",
+        "contact": "Inquiry and contact"
+      },
+      "about": {
+        "hero": "Name, headline and the large picture",
+        "highlights": "Licence, receipts, guide and honest books",
+        "packages": "Your active packages, with photos and prices",
+        "posts": "Your news, notices and offers",
+        "gallery": "Photos from past journeys",
+        "reviews": "Approved reviews, and a form to write one",
+        "steps": "The steps of Umrah and Hajj, in brief",
+        "duas": "The ayah of the House and the key duas",
+        "faq": "Answers to the questions people keep asking",
+        "contact": "Inquiry form, address, phone, WhatsApp"
+      }
+    },
+    "posts": {
+      "edit": "Edit post",
+      "new": "New post",
+      "kind": "Type",
+      "kinds": {
+        "news": "News",
+        "notice": "Notice",
+        "offer": "Offer"
+      },
+      "titleBn": "Title",
+      "titlePlaceholder": "e.g. Registration for Hajj 2027 is open",
+      "bodyBn": "Text",
+      "formatting": "A blank line starts a new paragraph. \"## \" makes a subheading, \"- \" a list.",
+      "titleEn": "Title (English)",
+      "bodyEn": "Text (English)",
+      "addEnglish": "+ Also write it in English (optional)",
+      "cover": "Picture",
+      "coverHint": "Wide pictures look best",
+      "publish": "Publish now",
+      "pin": "Pin to the top",
+      "save": "Save post",
+      "cancel": "Cancel",
+      "hint": "Published posts show in the website's \"News and notices\" section, newest first",
+      "empty": "No posts yet",
+      "emptyBody": "Start with registration news, flight dates or a special offer",
+      "live": "Published",
+      "draft": "Draft",
+      "pinned": "Pinned",
+      "view": "View",
+      "editShort": "Edit",
+      "confirmDelete": "Delete this post? It can't be brought back.",
+      "delete": "Delete"
+    },
+    "gallery": {
+      "caption": "Caption",
+      "hint": "You can pick several photos at once. Big phone photos are resized, and the location data inside them is removed.",
+      "progress": "{done}/{total} uploaded",
+      "add": "Add photos",
+      "empty": "No photos yet",
+      "emptyBody": "Add photos from past Hajj and Umrah journeys. They're what visitors look at most.",
+      "earlier": "Move earlier",
+      "later": "Move later",
+      "confirmDelete": "Remove this photo from the website?",
+      "delete": "Remove"
+    },
+    "reviews": {
+      "addTitle": "Add a review given in the office",
+      "addHint": "When someone gives feedback in person or in the visitor book, add it here with their permission. It shows straight away.",
+      "name": "Name",
+      "rating": "Stars",
+      "place": "From",
+      "trip": "Which journey",
+      "body": "Review",
+      "addSave": "Add review",
+      "cancel": "Cancel",
+      "filter": "Review status",
+      "status": {
+        "pending": "Waiting",
+        "approved": "Published",
+        "hidden": "Hidden"
+      },
+      "add": "Add a review",
+      "empty": {
+        "pending": "No new reviews waiting",
+        "approved": "No published reviews yet",
+        "hidden": "No hidden reviews"
+      },
+      "emptyBody": "Reviews sent from the website arrive here and show only after you publish them.",
+      "source": {
+        "website": "From the website",
+        "office": "From the office"
+      },
+      "approve": "Publish",
+      "hide": "Hide",
+      "confirmDelete": "Delete this review?",
+      "delete": "Delete"
+    },
+    "faq": {
+      "question": "Question",
+      "questionPlaceholder": "e.g. Which papers do I need for Hajj?",
+      "answer": "Answer",
+      "questionEn": "Question (English)",
+      "answerEn": "Answer (English)",
+      "addEnglish": "+ Also write it in English (optional)",
+      "save": "Save",
+      "cancel": "Cancel",
+      "hint": "Write down the answers to the questions people keep asking",
+      "new": "New question",
+      "empty": "No questions yet",
+      "emptyBody": "Start with cost, papers, timing or instalments",
+      "up": "Move up",
+      "down": "Move down",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this question?"
+    }
   }
 }

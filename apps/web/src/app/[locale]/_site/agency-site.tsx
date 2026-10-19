@@ -1,5 +1,8 @@
+import type { CSSProperties, ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
+import type { SiteSection, ThemeColors } from "@hajj/core";
 import { getItem, STEPS, type ResolvedItem } from "@hajj/sacred";
+import { articlePreview } from "@/components/article-body";
 import {
   ArrowIcon,
   BookIcon,
@@ -12,14 +15,37 @@ import {
 import { DraftChip, LabbaikOrnament, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
 import { buttonClass, Khatam } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
-import { digits, money, phoneText, type Locale } from "@/lib/format";
+import { dateText, digits, money, phoneText, type Locale } from "@/lib/format";
 import type { loadSite } from "@/server/site";
 import { InquiryForm } from "./inquiry-form";
 import { KaabaScene } from "./kaaba-scene";
+import { ReviewForm, Stars } from "./review-form";
 
-type Site = Awaited<ReturnType<typeof loadSite>>;
+export type Site = Awaited<ReturnType<typeof loadSite>>;
 
 const SITE_DUAS = ["dua_talbiyah", "dua_travel", "dua_rukn_yamani", "dua_arafah"];
+
+/**
+ * The agency's colours as CSS variables. The site's utilities (bg-haram,
+ * text-haram-deep …) read these, so one wrapper re-themes every section.
+ */
+export function themeStyle(theme: ThemeColors): CSSProperties {
+  return {
+    "--color-haram": theme.primary,
+    "--color-haram-deep": theme.deep,
+    "--color-haram-night": theme.night,
+    "--color-haram-tint": theme.tint,
+    "--site-raised": theme.nightRaised,
+    "--site-line": theme.nightLine,
+    "--site-muted": theme.nightMuted,
+    "--site-mist": theme.mist,
+  } as CSSProperties;
+}
+
+/** Bangla or English, falling back to whichever the agency wrote. */
+export function pick(locale: Locale, bn: string | null | undefined, en: string | null | undefined) {
+  return (locale === "en" ? en || bn : bn || en) ?? "";
+}
 
 /**
  * What to show under the Arabic: the scholar's approved wording, or, when the
@@ -36,117 +62,89 @@ function reading(site: Site, item: ResolvedItem, locale: Locale) {
   };
 }
 
+function waLink(number: string) {
+  return `https://wa.me/${number.replace(/\D/g, "")}`;
+}
+
+/** The agency's mark: its uploaded logo, else the platform's arch with the khatam star. */
+export function AgencyMark({ logoUrl, className = "h-11 w-10" }: { logoUrl: string | null; className?: string }) {
+  if (logoUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={logoUrl} alt="" className={`${className} shrink-0 rounded-md object-contain`} />;
+  }
+  return (
+    <span className={`flex ${className} shrink-0 items-center justify-center rounded-[20px_20px_8px_8px] bg-haram`}>
+      <Khatam className="h-6 w-6 text-saffron" strokeWidth={7} />
+    </span>
+  );
+}
+
+function SectionTitle({ eyebrow, title, tone = "light" }: { eyebrow: string; title: string; tone?: "light" | "dark" }) {
+  return (
+    <div className="flex flex-col items-center gap-2 text-center">
+      <span className={`font-hand text-2xl ${tone === "dark" ? "text-saffron" : "text-saffron-deep"}`}>{eyebrow}</span>
+      <h2 className="font-display text-4xl sm:text-5xl">{title}</h2>
+    </div>
+  );
+}
+
 export async function AgencySite({
   site,
   locale,
   selectedPackage,
+  base,
+  preview = false,
 }: {
   site: Site;
   locale: Locale;
   selectedPackage?: string;
+  /** Where this site lives, e.g. "/site/al-madina"; post pages hang off it. */
+  base: string;
+  /** The agency's own manager looking at a website that is switched off. */
+  preview?: boolean;
 }) {
   const t = await getTranslations("site");
   const tc = await getTranslations("common");
   const ti = await getTranslations("interest");
   const agency = site.settings!;
+  const web = site.web;
   const house = getItem("ayah_first_house");
   const houseReading = reading(site, house, locale);
   const labels = { pronunciation: t("pronunciation"), meaning: t("meaning") };
   const duas = SITE_DUAS.map(getItem);
   const featuredIndex = site.packages.length >= 3 ? 1 : -1;
+  const tagline = pick(locale, web.taglineBn, web.taglineEn);
+  const about = pick(locale, web.aboutBn, web.aboutEn);
+  const aboutParagraphs = about.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
-  return (
-    <div className="relative overflow-x-clip">
-      {/* ------------------------------------------------------------ header */}
-      <header className="sticky top-0 z-30 border-b border-line/70 bg-paper/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
-          <a href="#top" className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-11 w-10 shrink-0 items-center justify-center rounded-[20px_20px_8px_8px] bg-haram">
-              <Khatam className="h-6 w-6 text-saffron" strokeWidth={7} />
-            </span>
-            <span className="truncate text-lg font-bold">{agency.legalName}</span>
-          </a>
-          <nav aria-label={t("nav.contact")} className="hidden items-center gap-1 text-[15px] lg:flex">
-            {[
-              ["#packages", t("nav.packages")],
-              ["#steps", t("nav.steps")],
-              ["#duas", t("nav.duas")],
-              ["#contact", t("nav.contact")],
-            ].map(([href, label]) => (
-              <a key={href} href={href} className="rounded-md px-3.5 py-2.5 hover:bg-haram-tint">
-                {label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-2">
-            <Link href="/" locale={locale === "bn" ? "en" : "bn"} className="rounded-md px-3 py-2.5 text-[15px] font-semibold text-ink-2 hover:bg-ground">
-              {locale === "bn" ? "EN" : "বাংলা"}
-            </Link>
-            <Link href="/sign-in" className={buttonClass("primary", "h-11 px-4 text-[15px]")}>
-              {t("nav.staff")}
-            </Link>
-          </div>
-        </div>
-      </header>
+  /** Sections the agency switched on that also have something to show. */
+  const hasContent: Record<SiteSection, boolean> = {
+    highlights: true,
+    packages: true,
+    posts: site.posts.length > 0,
+    gallery: site.gallery.length > 0,
+    reviews: true,
+    steps: true,
+    duas: true,
+    faq: site.faqs.length > 0,
+    contact: true,
+  };
+  const shown = web.sections.filter((s) => s.visible && hasContent[s.id]).map((s) => s.id);
+  const navLabels: Partial<Record<SiteSection, string>> = {
+    packages: t("nav.packages"),
+    posts: t("nav.posts"),
+    gallery: t("nav.gallery"),
+    reviews: t("nav.reviews"),
+    steps: t("nav.steps"),
+    faq: t("nav.faq"),
+    contact: t("nav.contact"),
+  };
+  const nav = shown.filter((id) => navLabels[id]).slice(0, 6);
 
-      {/* -------------------------------------------------------------- hero */}
-      <section id="top" className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pt-12 pb-20 sm:px-8 lg:grid-cols-12 lg:pt-16">
-        <LabbaikOrnament className="pointer-events-none absolute -top-8 -left-24 text-[300px] text-haram-tint/70" />
-        <div className="relative flex flex-col gap-6 lg:col-span-7">
-          <span className="inline-flex h-9 w-fit animate-rise items-center gap-2 rounded-full bg-saffron-tint px-4 text-sm font-bold text-saffron-ink">
-            <span className="h-2 w-2 animate-ripple rounded-full bg-saffron" />
-            {t("badge")}
-          </span>
-          <h1 className="animate-rise font-display text-[44px] leading-[1.12] [animation-delay:80ms] sm:text-6xl lg:text-[68px]">
-            {t("hero.title1")} {t("hero.title2")}{" "}
-            <span className="relative inline-block text-haram">
-              {t("hero.title3")}
-              <svg viewBox="0 0 200 18" preserveAspectRatio="none" aria-hidden="true" className="absolute -bottom-2 left-0 h-4 w-full">
-                <path
-                  d="M3 12 C 50 3, 100 16, 197 7"
-                  fill="none"
-                  stroke="var(--color-saffron)"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  className="[stroke-dasharray:220] [stroke-dashoffset:220] animate-[draw_0.9s_0.9s_ease-out_forwards]"
-                />
-              </svg>
-            </span>{" "}
-            {t("hero.title4")}
-          </h1>
-          <p className="max-w-xl animate-rise text-lg leading-relaxed text-ink-2 [animation-delay:160ms]">{t("hero.body")}</p>
-          <div className="flex animate-rise flex-wrap gap-3 [animation-delay:240ms]">
-            <a href="#packages" className={buttonClass("primary", "h-14 px-7 text-lg")}>
-              {t("hero.packages")}
-              <ArrowIcon size={20} />
-            </a>
-            {agency.phone ? (
-              <a href={`tel:${agency.phone}`} className={buttonClass("outline", "h-14 border-line-strong px-6 text-lg")}>
-                <PhoneIcon size={20} className="text-haram" />
-                {phoneText(agency.phone, locale)}
-              </a>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="relative flex justify-center lg:col-span-5">
-          <div className="relative aspect-[4/5] w-full max-w-[400px] animate-[reveal_1.1s_0.15s_cubic-bezier(.6,0,.2,1)_both] overflow-hidden rounded-[200px_200px_28px_28px] border-[10px] border-paper shadow-[0_40px_80px_-40px_rgb(18_48_46/0.6)]">
-            <KaabaScene label={t("hero.art")} />
-          </div>
-          <div className="absolute bottom-10 -left-2 flex animate-[float_5s_ease-in-out_infinite] items-center gap-3 rounded-lg bg-paper px-4 py-3.5 shadow-[0_18px_40px_-20px_rgb(18_48_46/0.5)] sm:-left-6">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-paid-tint text-paid">
-              <CheckIcon size={22} />
-            </span>
-            <span className="flex flex-col">
-              <b className="text-[15px]">{t("hero.toast")}</b>
-              <span className="text-[13px] text-ink-3">{t("hero.toastBody")}</span>
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ---------------------------------------------------------- features */}
-      <section className="bg-haram-night text-ground">
+  const sections: Record<SiteSection, () => ReactNode> = {
+    /* --------------------------------------------------------- highlights */
+    highlights: () => (
+      <section key="highlights" className="bg-haram-night text-ground">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
           {[
             agency.licenseNumber
@@ -159,24 +157,23 @@ export async function AgencySite({
             .filter((f): f is NonNullable<typeof f> => f !== null)
             .map(({ icon: Icon, title, body }) => (
               <div key={title} className="flex gap-4">
-                <span className="flex h-14 w-12 shrink-0 items-center justify-center rounded-[24px_24px_10px_10px] bg-[#14635d] text-ground">
+                <span className="flex h-14 w-12 shrink-0 items-center justify-center rounded-[24px_24px_10px_10px] bg-[var(--site-raised)] text-ground">
                   <Icon size={26} tint="transparent" accent="var(--color-saffron)" />
                 </span>
                 <span className="flex flex-col gap-1">
                   <b className="text-[17px]">{title}</b>
-                  <span className="text-[15px] leading-relaxed text-[#a9cfc9]">{body}</span>
+                  <span className="text-[15px] leading-relaxed text-[var(--site-muted)]">{body}</span>
                 </span>
               </div>
             ))}
         </div>
       </section>
+    ),
 
-      {/* ---------------------------------------------------------- packages */}
-      <section id="packages" className="mx-auto flex max-w-7xl scroll-mt-20 flex-col gap-10 px-4 py-20 sm:px-8">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <span className="font-hand text-2xl text-saffron-deep">{t("packages.eyebrow")}</span>
-          <h2 className="font-display text-4xl sm:text-5xl">{t("packages.title")}</h2>
-        </div>
+    /* ----------------------------------------------------------- packages */
+    packages: () => (
+      <section key="packages" id="packages" className="mx-auto flex max-w-7xl scroll-mt-20 flex-col gap-10 px-4 py-20 sm:px-8">
+        <SectionTitle eyebrow={t("packages.eyebrow")} title={t("packages.title")} />
         {site.packages.length === 0 ? (
           <p className="text-center text-ink-3">{t("packages.empty")}</p>
         ) : (
@@ -186,30 +183,40 @@ export async function AgencySite({
               return (
                 <article
                   key={p.id}
-                  className={`lift relative flex flex-col items-center gap-4 overflow-hidden rounded-[150px_150px_24px_24px] px-7 pt-14 pb-7 text-center ${
-                    featured ? "bg-haram-night text-ground" : "bg-paper"
-                  }`}
+                  className={`lift relative flex flex-col items-center gap-4 overflow-hidden rounded-[150px_150px_24px_24px] px-7 pb-7 text-center ${
+                    p.imageUrl ? "pt-0" : "pt-14"
+                  } ${featured ? "bg-haram-night text-ground" : "bg-paper"}`}
                 >
+                  {p.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.imageUrl} alt="" loading="lazy" className="-mx-7 aspect-[4/3] w-[calc(100%+3.5rem)] max-w-none object-cover" />
+                  ) : null}
                   {featured ? (
-                    <span className="absolute top-5 left-1/2 -translate-x-1/2 rounded-full bg-saffron px-4 py-1 text-[13px] font-extrabold text-ink">
+                    <span className="absolute top-5 left-1/2 -translate-x-1/2 rounded-full bg-saffron px-4 py-1 text-[13px] font-extrabold text-ink shadow">
                       {t("packages.popular")}
                     </span>
                   ) : null}
-                  <span className={`mt-3 flex h-16 w-16 items-center justify-center rounded-full ${featured ? "bg-[#14635d]" : "bg-haram-tint"}`}>
-                    <KaabaIcon size={34} tint={featured ? "transparent" : "var(--color-paper)"} className={featured ? "text-ground" : ""} />
-                  </span>
-                  <span className={`text-[13px] font-semibold ${featured ? "text-[#a9cfc9]" : "text-ink-3"}`}>
+                  {p.imageUrl ? null : (
+                    <span className={`mt-3 flex h-16 w-16 items-center justify-center rounded-full ${featured ? "bg-[var(--site-raised)]" : "bg-haram-tint"}`}>
+                      <KaabaIcon size={34} tint={featured ? "transparent" : "var(--color-paper)"} className={featured ? "text-ground" : ""} />
+                    </span>
+                  )}
+                  <span className={`text-[13px] font-semibold ${featured ? "text-[var(--site-muted)]" : "text-ink-3"}`}>
                     {ti(p.kind)} · {digits(p.season, locale)}
                   </span>
                   <h3 className="text-2xl font-bold">{p.name}</h3>
                   <p className={`tabular text-3xl font-bold ${featured ? "text-saffron" : "text-haram"}`}>{money(p.price, locale, p.currency)}</p>
                   {p.days ? (
-                    <span className={`text-[15px] ${featured ? "text-[#c7ddd9]" : "text-ink-2"}`}>
+                    <span className={`text-[15px] ${featured ? "text-[var(--site-muted)]" : "text-ink-2"}`}>
                       {t("packages.days", { days: digits(p.days, locale) })}
                     </span>
                   ) : null}
                   {p.notes ? (
-                    <p className={`w-full border-t border-dashed pt-4 text-[15px] leading-relaxed ${featured ? "border-[#2a6a64] text-[#c7ddd9]" : "border-line-strong text-ink-2"}`}>
+                    <p
+                      className={`w-full border-t border-dashed pt-4 text-[15px] leading-relaxed ${
+                        featured ? "border-[var(--site-line)] text-[var(--site-muted)]" : "border-line-strong text-ink-2"
+                      }`}
+                    >
                       {p.notes}
                     </p>
                   ) : null}
@@ -225,32 +232,116 @@ export async function AgencySite({
           </div>
         )}
       </section>
+    ),
 
-      {/* -------------------------------------------------------------- ayah */}
-      <section className="relative overflow-hidden bg-paper">
-        <Khatam className="pointer-events-none absolute -top-40 -right-40 h-[480px] w-[480px] animate-turn text-[#eef3f2]" strokeWidth={0.6} />
-        <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 py-20 text-center sm:px-8">
-          <span className="font-hand text-2xl text-saffron-deep">{t("ayah.eyebrow")}</span>
-          <StarDivider className="w-full max-w-md text-saffron" />
-          <Verses item={house} className="text-center text-[28px] sm:text-[36px]" />
-          {houseReading ? (
-            <div className="flex w-full max-w-3xl flex-col gap-4 rounded-[28px_28px_16px_16px] bg-ground px-6 py-6 sm:px-8">
-              {houseReading.draft ? <DraftChip label={t("draftChip")} /> : null}
-              <ReadingLines item={house} pronunciation={houseReading.pronunciation} meanings={houseReading.meanings} locale={locale} labels={labels} />
-            </div>
-          ) : null}
-          <span className="flex flex-wrap items-center justify-center gap-2 text-sm text-ink-3">
-            {house.citation[locale]} · <QuranAttribution locale={locale} />
-          </span>
+    /* -------------------------------------------------------------- posts */
+    posts: () => (
+      <section key="posts" id="posts" className="scroll-mt-20 bg-paper">
+        <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-20 sm:px-8">
+          <SectionTitle eyebrow={t("posts.eyebrow")} title={t("posts.title")} />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {site.posts.map((post) => (
+              <article key={post.id} className="lift group flex flex-col overflow-hidden rounded-[28px_28px_16px_16px] border border-line bg-ground">
+                {post.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={post.coverUrl} alt="" loading="lazy" className="aspect-[16/10] w-full object-cover" />
+                ) : (
+                  <div className="flex aspect-[16/10] items-center justify-center bg-haram-tint">
+                    <Khatam className="h-20 w-20 text-haram/40" strokeWidth={3} />
+                  </div>
+                )}
+                <div className="flex flex-1 flex-col gap-3 p-6">
+                  <div className="flex flex-wrap items-center gap-2 text-[13px]">
+                    <span
+                      className={`rounded-full px-3 py-0.5 font-bold ${
+                        post.kind === "offer" ? "bg-saffron-tint text-saffron-ink" : post.kind === "notice" ? "bg-due-tint text-due" : "bg-haram-tint text-haram-deep"
+                      }`}
+                    >
+                      {t(`posts.kinds.${post.kind as "news" | "notice" | "offer"}`)}
+                    </span>
+                    {post.pinned ? <span className="font-semibold text-ink-3">· {t("posts.pinned")}</span> : null}
+                    {post.publishedAt ? <span className="text-ink-3">{dateText(post.publishedAt, locale)}</span> : null}
+                  </div>
+                  <h3 className="text-xl leading-snug font-bold">{pick(locale, post.titleBn, post.titleEn)}</h3>
+                  <p className="line-clamp-3 text-[15px] leading-relaxed text-ink-2">{articlePreview(pick(locale, post.bodyBn, post.bodyEn))}</p>
+                  <Link href={`${base}/posts/${post.slug}`} className="mt-auto inline-flex items-center gap-1.5 pt-2 font-semibold text-haram">
+                    {t("posts.read")}
+                    <ArrowIcon size={18} className="transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
+    ),
 
-      {/* ------------------------------------------------------------- steps */}
-      <section id="steps" className="mx-auto flex max-w-7xl scroll-mt-20 flex-col gap-10 px-4 py-20 sm:px-8">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <span className="font-hand text-2xl text-saffron-deep">{t("steps.eyebrow")}</span>
-          <h2 className="font-display text-4xl sm:text-5xl">{t("steps.title")}</h2>
+    /* ------------------------------------------------------------ gallery */
+    gallery: () => (
+      <section key="gallery" id="gallery" className="mx-auto flex max-w-7xl scroll-mt-20 flex-col gap-10 px-4 py-20 sm:px-8">
+        <SectionTitle eyebrow={t("gallery.eyebrow")} title={t("gallery.title")} />
+        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
+          {site.gallery.map((g) => {
+            const caption = pick(locale, g.captionBn, g.captionEn);
+            return (
+              <figure key={g.id} className="mb-4 break-inside-avoid overflow-hidden rounded-[20px] bg-paper">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={g.url} alt={caption} loading="lazy" className="w-full" />
+                {caption ? <figcaption className="px-4 py-3 text-[14px] text-ink-2">{caption}</figcaption> : null}
+              </figure>
+            );
+          })}
         </div>
+      </section>
+    ),
+
+    /* ------------------------------------------------------------ reviews */
+    reviews: () => (
+      <section key="reviews" id="reviews" className="scroll-mt-20 bg-haram-night text-ground">
+        <div className="relative mx-auto flex max-w-7xl flex-col gap-10 overflow-hidden px-4 py-20 sm:px-8">
+          <SectionTitle eyebrow={t("reviews.eyebrow")} title={t("reviews.title")} tone="dark" />
+          {site.rating.count > 0 && site.rating.average ? (
+            <p className="-mt-4 flex items-center justify-center gap-3 text-center text-[17px]">
+              <Stars value={site.rating.average} size={22} />
+              <b className="text-2xl">{digits(site.rating.average.toFixed(1), locale)}</b>
+              <span className="text-[var(--site-muted)]">{t("reviews.count", { n: digits(site.rating.count, locale) })}</span>
+            </p>
+          ) : null}
+          {site.testimonials.length > 0 ? (
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {site.testimonials.map((r) => (
+                <blockquote key={r.id} className="flex flex-col gap-4 rounded-[28px_28px_16px_16px] bg-[var(--site-raised)] p-6">
+                  <Stars value={r.rating} />
+                  <p className="flex-1 text-[16px] leading-relaxed">“{r.body}”</p>
+                  <footer className="flex flex-col border-t border-[var(--site-line)] pt-3 text-[14px]">
+                    <b>{r.name}</b>
+                    <span className="text-[var(--site-muted)]">{[r.place, r.trip].filter(Boolean).join(" · ")}</span>
+                  </footer>
+                </blockquote>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-[var(--site-muted)]">{t("reviews.empty")}</p>
+          )}
+          <details className="group mx-auto w-full max-w-2xl rounded-[28px_28px_16px_16px] bg-paper text-ink open:shadow-xl">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-5 text-lg font-bold">
+              {t("reviews.write")}
+              <span className="text-haram transition-transform group-open:rotate-45" aria-hidden="true">
+                +
+              </span>
+            </summary>
+            <div className="px-6 pb-6">
+              <ReviewForm site={site.slug ?? undefined} />
+            </div>
+          </details>
+        </div>
+      </section>
+    ),
+
+    /* -------------------------------------------------------------- steps */
+    steps: () => (
+      <section key="steps" id="steps" className="mx-auto flex max-w-7xl scroll-mt-20 flex-col gap-10 px-4 py-20 sm:px-8">
+        <SectionTitle eyebrow={t("steps.eyebrow")} title={t("steps.title")} />
         <div className="grid gap-8 lg:grid-cols-2">
           {(["umrah", "hajj"] as const).map((phase) => (
             <div key={phase} className="flex flex-col gap-5 rounded-[60px_60px_24px_24px] bg-paper px-6 pt-10 pb-8 sm:px-10">
@@ -288,66 +379,118 @@ export async function AgencySite({
         </div>
         <p className="text-center font-hand text-xl text-ink-3">{t("steps.more")}</p>
       </section>
+    ),
 
-      {/* -------------------------------------------------------------- duas */}
-      <section id="duas" className="scroll-mt-20 bg-haram-night text-ground">
-        <div className="relative mx-auto flex max-w-7xl flex-col gap-10 overflow-hidden px-4 py-20 sm:px-8">
-          <LabbaikOrnament className="pointer-events-none absolute -right-10 bottom-0 text-[260px] text-[#14635d]" />
-          <div className="relative flex flex-col items-center gap-2 text-center">
-            <span className="font-hand text-2xl text-saffron">{t("duas.eyebrow")}</span>
-            <h2 className="font-display text-4xl sm:text-5xl">{t("duas.title")}</h2>
+    /* ------------------------------------------------------- ayah & duas */
+    duas: () => (
+      <div key="duas">
+        <section className="relative overflow-hidden bg-paper">
+          <Khatam className="pointer-events-none absolute -top-40 -right-40 h-[480px] w-[480px] animate-turn text-[var(--site-mist)]" strokeWidth={0.6} />
+          <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 py-20 text-center sm:px-8">
+            <span className="font-hand text-2xl text-saffron-deep">{t("ayah.eyebrow")}</span>
+            <StarDivider className="w-full max-w-md text-saffron" />
+            <Verses item={house} className="text-center text-[28px] sm:text-[36px]" />
+            {houseReading ? (
+              <div className="flex w-full max-w-3xl flex-col gap-4 rounded-[28px_28px_16px_16px] bg-ground px-6 py-6 sm:px-8">
+                {houseReading.draft ? <DraftChip label={t("draftChip")} /> : null}
+                <ReadingLines item={house} pronunciation={houseReading.pronunciation} meanings={houseReading.meanings} locale={locale} labels={labels} />
+              </div>
+            ) : null}
+            <span className="flex flex-wrap items-center justify-center gap-2 text-sm text-ink-3">
+              {house.citation[locale]} · <QuranAttribution locale={locale} />
+            </span>
           </div>
-          <div className="relative grid gap-6 md:grid-cols-2">
-            {duas.map((dua) => {
-              const shown = reading(site, dua, locale);
-              return (
-                <article key={dua.id} className="flex flex-col gap-4 rounded-[40px_40px_20px_20px] bg-[#0e5a54] p-7">
-                  <div className="flex flex-wrap items-baseline justify-between gap-3">
-                    <h3 className="text-lg font-bold">{dua.title[locale]}</h3>
-                    <span className="text-[13px] text-[#a9cfc9]">{dua.citation[locale]}</span>
-                  </div>
-                  <p lang="ar" dir="rtl" className="font-naskh text-[26px] leading-[2] text-ground">
-                    {dua.verses[0]!.arabic}
-                  </p>
-                  {shown ? (
-                    <div className="flex flex-col gap-3 border-t border-[#2a6a64] pt-4">
-                      {shown.draft ? <DraftChip label={t("draftChip")} tone="dark" /> : null}
-                      <ReadingLines item={dua} pronunciation={shown.pronunciation} meanings={shown.meanings} locale={locale} tone="dark" labels={labels} />
-                      {dua.when ? <p className="text-[14px] leading-relaxed text-[#a9cfc9]">{dua.when[locale]}</p> : null}
+        </section>
+        <section id="duas" className="scroll-mt-20 bg-haram-night text-ground">
+          <div className="relative mx-auto flex max-w-7xl flex-col gap-10 overflow-hidden px-4 py-20 sm:px-8">
+            <LabbaikOrnament className="pointer-events-none absolute -right-10 bottom-0 text-[260px] text-[var(--site-raised)]" />
+            <div className="relative">
+              <SectionTitle eyebrow={t("duas.eyebrow")} title={t("duas.title")} tone="dark" />
+            </div>
+            <div className="relative grid gap-6 md:grid-cols-2">
+              {duas.map((dua) => {
+                const r = reading(site, dua, locale);
+                return (
+                  <article key={dua.id} className="flex flex-col gap-4 rounded-[40px_40px_20px_20px] bg-[var(--site-raised)] p-7">
+                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                      <h3 className="text-lg font-bold">{dua.title[locale]}</h3>
+                      <span className="text-[13px] text-[var(--site-muted)]">{dua.citation[locale]}</span>
                     </div>
-                  ) : null}
-                </article>
-              );
-            })}
+                    <p lang="ar" dir="rtl" className="font-naskh text-[26px] leading-[2] text-ground">
+                      {dua.verses[0]!.arabic}
+                    </p>
+                    {r ? (
+                      <div className="flex flex-col gap-3 border-t border-[var(--site-line)] pt-4">
+                        {r.draft ? <DraftChip label={t("draftChip")} tone="dark" /> : null}
+                        <ReadingLines item={dua} pronunciation={r.pronunciation} meanings={r.meanings} locale={locale} tone="dark" labels={labels} />
+                        {dua.when ? <p className="text-[14px] leading-relaxed text-[var(--site-muted)]">{dua.when[locale]}</p> : null}
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
           </div>
+        </section>
+      </div>
+    ),
+
+    /* ---------------------------------------------------------------- faq */
+    faq: () => (
+      <section key="faq" id="faq" className="mx-auto flex max-w-4xl scroll-mt-20 flex-col gap-10 px-4 py-20 sm:px-8">
+        <SectionTitle eyebrow={t("faq.eyebrow")} title={t("faq.title")} />
+        <div className="flex flex-col gap-3">
+          {site.faqs.map((f) => (
+            <details key={f.id} className="group rounded-[20px] border border-line bg-paper px-6 open:border-haram/40">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-4 py-5 text-[17px] font-bold">
+                {pick(locale, f.questionBn, f.questionEn)}
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-haram-tint text-haram-deep transition-transform group-open:rotate-45" aria-hidden="true">
+                  +
+                </span>
+              </summary>
+              <p className="pb-5 text-[16px] leading-relaxed whitespace-pre-line text-ink-2">{pick(locale, f.answerBn, f.answerEn)}</p>
+            </details>
+          ))}
         </div>
       </section>
+    ),
 
-      {/* ------------------------------------------------- inquiry & contact */}
-      <section id="inquiry" className="mx-auto grid max-w-7xl scroll-mt-20 gap-8 px-4 py-20 sm:px-8 lg:grid-cols-12">
+    /* ---------------------------------------------------- inquiry/contact */
+    contact: () => (
+      <section key="contact" id="inquiry" className="mx-auto grid max-w-7xl scroll-mt-20 gap-8 px-4 py-20 sm:px-8 lg:grid-cols-12">
         <div className="flex flex-col gap-6 rounded-[60px_60px_24px_24px] bg-paper px-6 pt-12 pb-8 sm:px-10 lg:col-span-7">
           <div className="flex flex-col gap-2">
             <span className="font-hand text-2xl text-saffron-deep">{t("inquiry.eyebrow")}</span>
             <h2 className="font-display text-4xl">{t("inquiry.title")}</h2>
             <p className="text-[16px] leading-relaxed text-ink-2">{t("inquiry.body")}</p>
           </div>
-          <InquiryForm packages={site.packages.map((p) => ({ id: p.id, name: p.name }))} selectedPackage={selectedPackage} />
+          <InquiryForm packages={site.packages.map((p) => ({ id: p.id, name: p.name }))} selectedPackage={selectedPackage} site={site.slug ?? undefined} />
         </div>
 
         <aside id="contact" className="flex scroll-mt-20 flex-col gap-6 lg:col-span-5">
+          {aboutParagraphs.length > 1 ? (
+            <div className="flex flex-col gap-3 rounded-[40px_40px_20px_20px] bg-paper px-8 pt-10 pb-8">
+              <h2 className="font-display text-2xl">{t("about.title")}</h2>
+              {aboutParagraphs.map((p, i) => (
+                <p key={i} className="text-[15px] leading-relaxed text-ink-2">
+                  {p}
+                </p>
+              ))}
+            </div>
+          ) : null}
           <div className="relative flex flex-col gap-5 overflow-hidden rounded-[60px_60px_24px_24px] bg-haram-night px-8 pt-12 pb-8 text-ground">
-            <Khatam className="absolute -right-16 -bottom-16 h-56 w-56 text-[#14635d]" strokeWidth={1} />
+            <Khatam className="absolute -right-16 -bottom-16 h-56 w-56 text-[var(--site-raised)]" strokeWidth={1} />
             <h2 className="relative font-display text-3xl">{t("contact.title")}</h2>
             <dl className="relative flex flex-col gap-4 text-[16px]">
               {agency.address ? (
                 <div>
-                  <dt className="text-[13px] text-[#a9cfc9]">{t("contact.address")}</dt>
+                  <dt className="text-[13px] text-[var(--site-muted)]">{t("contact.address")}</dt>
                   <dd className="leading-relaxed">{agency.address}</dd>
                 </div>
               ) : null}
               {agency.phone ? (
                 <div>
-                  <dt className="text-[13px] text-[#a9cfc9]">{t("contact.phone")}</dt>
+                  <dt className="text-[13px] text-[var(--site-muted)]">{t("contact.phone")}</dt>
                   <dd>
                     <a href={`tel:${agency.phone}`} className="text-xl font-semibold text-saffron">
                       {phoneText(agency.phone, locale)}
@@ -355,9 +498,19 @@ export async function AgencySite({
                   </dd>
                 </div>
               ) : null}
+              {web.whatsapp ? (
+                <div>
+                  <dt className="text-[13px] text-[var(--site-muted)]">{t("contact.whatsapp")}</dt>
+                  <dd>
+                    <a href={waLink(web.whatsapp)} rel="noopener noreferrer" target="_blank" className="font-semibold underline underline-offset-4">
+                      {web.whatsapp.startsWith("+880") ? phoneText(web.whatsapp, locale) : web.whatsapp}
+                    </a>
+                  </dd>
+                </div>
+              ) : null}
               {agency.email ? (
                 <div>
-                  <dt className="text-[13px] text-[#a9cfc9]">{t("contact.email")}</dt>
+                  <dt className="text-[13px] text-[var(--site-muted)]">{t("contact.email")}</dt>
                   <dd>
                     <a href={`mailto:${agency.email}`} className="underline underline-offset-4">
                       {agency.email}
@@ -365,7 +518,27 @@ export async function AgencySite({
                   </dd>
                 </div>
               ) : null}
+              {web.officeHours ? (
+                <div>
+                  <dt className="text-[13px] text-[var(--site-muted)]">{t("contact.hours")}</dt>
+                  <dd>{web.officeHours}</dd>
+                </div>
+              ) : null}
             </dl>
+            {web.facebookUrl || web.youtubeUrl ? (
+              <div className="relative flex flex-wrap gap-2">
+                {web.facebookUrl ? (
+                  <a href={web.facebookUrl} rel="noopener noreferrer" target="_blank" className="rounded-full bg-[var(--site-raised)] px-4 py-2 text-[14px] font-semibold">
+                    Facebook
+                  </a>
+                ) : null}
+                {web.youtubeUrl ? (
+                  <a href={web.youtubeUrl} rel="noopener noreferrer" target="_blank" className="rounded-full bg-[var(--site-raised)] px-4 py-2 text-[14px] font-semibold">
+                    YouTube
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="flex items-center gap-4 rounded-lg bg-saffron-tint px-6 py-5 text-saffron-ink">
             <ReceiptIcon size={34} tint="var(--color-paper)" accent="var(--color-haram)" />
@@ -373,6 +546,115 @@ export async function AgencySite({
           </div>
         </aside>
       </section>
+    ),
+  };
+
+  return (
+    <div className="relative overflow-x-clip" style={themeStyle(web.theme)}>
+      {preview ? (
+        <p role="status" className="bg-saffron px-4 py-2.5 text-center text-[14px] font-bold text-ink">
+          {t("previewOff")}
+        </p>
+      ) : null}
+
+      {/* ------------------------------------------------------------ header */}
+      <header className="sticky top-0 z-30 border-b border-line/70 bg-paper/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
+          <a href="#top" className="flex min-w-0 items-center gap-2.5">
+            <AgencyMark logoUrl={web.logoUrl} />
+            <span className="truncate text-lg font-bold">{agency.legalName}</span>
+          </a>
+          <nav aria-label={t("nav.label")} className="hidden items-center gap-1 text-[15px] lg:flex">
+            {nav.map((id) => (
+              <a key={id} href={`#${id === "contact" ? "contact" : id}`} className="rounded-md px-3.5 py-2.5 hover:bg-haram-tint">
+                {navLabels[id]}
+              </a>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2">
+            <Link href={base || "/"} locale={locale === "bn" ? "en" : "bn"} className="rounded-md px-3 py-2.5 text-[15px] font-semibold text-ink-2 hover:bg-ground">
+              {locale === "bn" ? "EN" : "বাংলা"}
+            </Link>
+            <Link href="/sign-in" className={buttonClass("primary", "h-11 px-4 text-[15px]")}>
+              {t("nav.staff")}
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* -------------------------------------------------------------- hero */}
+      <section id="top" className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pt-12 pb-20 sm:px-8 lg:grid-cols-12 lg:pt-16">
+        <LabbaikOrnament className="pointer-events-none absolute -top-8 -left-24 text-[300px] text-haram-tint/70" />
+        <div className="relative flex flex-col gap-6 lg:col-span-7">
+          <span className="inline-flex h-9 w-fit animate-rise items-center gap-2 rounded-full bg-saffron-tint px-4 text-sm font-bold text-saffron-ink">
+            <span className="h-2 w-2 animate-ripple rounded-full bg-saffron" />
+            {t("badge")}
+          </span>
+          <h1 className="animate-rise font-display text-[44px] leading-[1.12] [animation-delay:80ms] sm:text-6xl lg:text-[68px]">
+            {tagline ? (
+              tagline
+            ) : (
+              <>
+                {t("hero.title1")} {t("hero.title2")}{" "}
+                <span className="relative inline-block text-haram">
+                  {t("hero.title3")}
+                  <svg viewBox="0 0 200 18" preserveAspectRatio="none" aria-hidden="true" className="absolute -bottom-2 left-0 h-4 w-full">
+                    <path
+                      d="M3 12 C 50 3, 100 16, 197 7"
+                      fill="none"
+                      stroke="var(--color-saffron)"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      className="[stroke-dasharray:220] [stroke-dashoffset:220] animate-[draw_0.9s_0.9s_ease-out_forwards]"
+                    />
+                  </svg>
+                </span>{" "}
+                {t("hero.title4")}
+              </>
+            )}
+          </h1>
+          <p className="max-w-xl animate-rise text-lg leading-relaxed text-ink-2 [animation-delay:160ms]">{aboutParagraphs[0] ?? t("hero.body")}</p>
+          <div className="flex animate-rise flex-wrap gap-3 [animation-delay:240ms]">
+            <a href="#packages" className={buttonClass("primary", "h-14 px-7 text-lg")}>
+              {t("hero.packages")}
+              <ArrowIcon size={20} />
+            </a>
+            {agency.phone ? (
+              <a href={`tel:${agency.phone}`} className={buttonClass("outline", "h-14 border-line-strong px-6 text-lg")}>
+                <PhoneIcon size={20} className="text-haram" />
+                {phoneText(agency.phone, locale)}
+              </a>
+            ) : null}
+            {web.whatsapp ? (
+              <a href={waLink(web.whatsapp)} rel="noopener noreferrer" target="_blank" className={buttonClass("outline", "h-14 border-line-strong px-6 text-lg")}>
+                WhatsApp
+              </a>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="relative flex justify-center lg:col-span-5">
+          <div className="relative aspect-[4/5] w-full max-w-[400px] animate-[reveal_1.1s_0.15s_cubic-bezier(.6,0,.2,1)_both] overflow-hidden rounded-[200px_200px_28px_28px] border-[10px] border-paper shadow-[0_40px_80px_-40px_rgb(18_48_46/0.6)]">
+            {web.heroUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={web.heroUrl} alt={t("hero.photo", { name: agency.legalName })} className="h-full w-full object-cover" />
+            ) : (
+              <KaabaScene label={t("hero.art")} />
+            )}
+          </div>
+          <div className="absolute bottom-10 -left-2 flex animate-[float_5s_ease-in-out_infinite] items-center gap-3 rounded-lg bg-paper px-4 py-3.5 shadow-[0_18px_40px_-20px_rgb(18_48_46/0.5)] sm:-left-6">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-paid-tint text-paid">
+              <CheckIcon size={22} />
+            </span>
+            <span className="flex flex-col">
+              <b className="text-[15px]">{t("hero.toast")}</b>
+              <span className="text-[13px] text-ink-3">{t("hero.toastBody")}</span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {shown.map((id) => sections[id]())}
 
       {/* ------------------------------------------------------------ footer */}
       <footer className="border-t border-line bg-paper">
@@ -380,7 +662,7 @@ export async function AgencySite({
           <StarDivider className="text-saffron" />
           <div className="flex flex-wrap items-center justify-between gap-4 text-[14px] text-ink-3">
             <span className="flex items-center gap-2">
-              <Khatam className="h-5 w-5 text-haram" strokeWidth={7} />
+              <AgencyMark logoUrl={web.logoUrl} className="h-7 w-6" />
               <b className="text-ink">{agency.legalName}</b>
               {agency.licenseNumber ? <span>· {agency.licenseNumber}</span> : null}
             </span>

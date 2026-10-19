@@ -24,7 +24,12 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "meta" });
-  return { title: { default: t("title"), template: `%s · ${t("title")}` }, description: t("description") };
+  return {
+    // Share previews (Facebook, WhatsApp) need absolute image addresses.
+    metadataBase: new URL(process.env.BETTER_AUTH_URL ?? "http://localhost:3100"),
+    title: { default: t("title"), template: `%s · ${t("title")}` },
+    description: t("description"),
+  };
 }
 
 export default async function LocaleLayout({

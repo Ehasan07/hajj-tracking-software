@@ -26,10 +26,10 @@ export default async function Home({
   // An agency's own website when this host (or the configured default) belongs to one.
   const tenantId = await resolvePublicTenant();
   const site = tenantId ? await loadSite(tenantId) : null;
-  if (site?.settings) {
+  if (site?.settings && site.web.published) {
     const { package: selected } = await searchParams;
     const valid = site.packages.some((p) => p.id === selected) ? selected : undefined;
-    return <AgencySite site={site} locale={locale} selectedPackage={valid} />;
+    return <AgencySite site={site} locale={locale} selectedPackage={valid} base={site.slug ? `/site/${site.slug}` : ""} />;
   }
 
   const t = await getTranslations();

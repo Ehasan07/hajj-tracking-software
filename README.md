@@ -51,6 +51,12 @@ Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and Engli
   - Zamzam water: seven routes for the seven days, shops on each route, a route-day sheet for deliveries and dues, and a report of which shop got how much
   - Naba Coffee and Supernova: menu or product list, quick sales, daily statement
 - Separate logins per colleague; a shop login sees only the shops it is given
+- Each agency's own public website at `/site/<name>`, arranged entirely from the software:
+  - colour theme (curated presets or the agency's own colour, kept readable automatically), logo, large top picture, headline, about text, contact details, WhatsApp, Facebook and YouTube links
+  - posts and notices (news, notices, offers; pinned, drafts, cover pictures), a photo gallery, questions and answers, and photos on package cards
+  - reviews: visitors write them on the site, they arrive pending and show only after the agency approves; reviews collected in the office can be added directly
+  - which sections show and in what order; the whole site can be switched off (the agency's managers can still preview it)
+  - uploaded pictures are decoded and re-encoded as WebP (camera metadata such as GPS is dropped) and stop being served once removed
 - Sign-in security:
   - A new browser has to enter a 6-digit code sent to the account's email; after that it is trusted for 90 days and listed under "My devices", where it can be removed
   - Password reset by emailed code, with the same answer whether or not the account exists

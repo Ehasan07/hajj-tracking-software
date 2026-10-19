@@ -8,6 +8,7 @@ import { authClient } from "@/lib/auth-client";
 import { BOOK_ROLES, MANAGER_ROLES, SHOP_ORDER, UNIT_THEME } from "@/lib/units";
 import {
   BookIcon,
+  GlobeIcon,
   HotelIcon,
   InquiryIcon,
   LogoutIcon,
@@ -36,6 +37,8 @@ interface ShellProps {
   role: string;
   shops: ShopUnit[];
   openInquiries: number;
+  /** Website reviews waiting for a decision (managers only). */
+  pendingReviews?: number;
   children: ReactNode;
 }
 
@@ -45,6 +48,7 @@ export function AppShell({
   role,
   shops,
   openInquiries,
+  pendingReviews = 0,
   subscription,
   children,
 }: ShellProps) {
@@ -130,6 +134,13 @@ export function AppShell({
         },
         ...(MANAGER_ROLES.includes(role)
           ? [
+              {
+                href: "/app/website",
+                label: t("nav.website"),
+                icon: GlobeIcon,
+                tint: "var(--color-unit-zamzam-tint)",
+                badge: pendingReviews > 0 ? pendingReviews : undefined,
+              },
               {
                 href: "/app/team",
                 label: t("nav.team"),

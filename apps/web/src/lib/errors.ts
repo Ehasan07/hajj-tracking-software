@@ -53,6 +53,11 @@ export function errorKey(error: unknown): { key: string; arg?: string } {
     "BACKDATE_TOO_OLD",
     "FUTURE_DATE",
     "INVALID_PERIOD",
+    "SLUG_FORMAT",
+    "SLUG_RESERVED",
+    "BAD_IMAGE",
+    "INVALID_LINK",
+    "GALLERY_FULL",
   ];
   /** Codes that carry a value after the colon, e.g. "OUT_OF_STOCK:Napa 500". */
   const withArg = [

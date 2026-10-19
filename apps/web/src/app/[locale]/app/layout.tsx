@@ -25,9 +25,10 @@ export default async function AppLayout({
   const settings = await caller.tenant.settings();
   if (!settings) return redirect({ href: "/onboarding", locale });
   const me = await caller.tenant.me();
-  const [counts, subscription] = await Promise.all([
+  const [counts, subscription, pendingReviews] = await Promise.all([
     me.role === "shop_operator" ? Promise.resolve(null) : caller.inquiries.counts(),
     caller.tenant.subscription(),
+    me.role === "owner" || me.role === "admin" ? caller.website.pendingCount() : Promise.resolve(0),
   ]);
 
   return (
@@ -37,6 +38,7 @@ export default async function AppLayout({
       role={me.role}
       shops={me.shops}
       openInquiries={counts ? (counts.new ?? 0) + (counts.follow_up ?? 0) : 0}
+      pendingReviews={pendingReviews}
       subscription={
         subscription
           ? {

@@ -4,7 +4,9 @@ import { PageBody, PageHeader } from "@/components/page-header";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { digits, money, type Locale } from "@/lib/format";
 import { api } from "@/trpc/server";
+import { siteImageUrl } from "@/server/site-media";
 import { PackageForm, PackageToggle } from "./package-form";
+import { PackagePhoto } from "./package-photo";
 
 export default async function PackagesPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
@@ -30,9 +32,13 @@ export default async function PackagesPage({ params }: { params: Promise<{ local
                 className={`flex animate-rise items-center gap-4 p-5 ${p.active ? "" : "opacity-60"}`}
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <span className="flex h-14 w-12 shrink-0 items-center justify-center rounded-[24px_24px_10px_10px] bg-haram-tint">
-                  <KaabaIcon size={28} tint="var(--color-paper)" />
-                </span>
+                {canEdit ? (
+                  <PackagePhoto id={p.id} url={siteImageUrl(p.imageKey)} name={p.name} />
+                ) : (
+                  <span className="flex h-14 w-12 shrink-0 items-center justify-center rounded-[24px_24px_10px_10px] bg-haram-tint">
+                    <KaabaIcon size={28} tint="var(--color-paper)" />
+                  </span>
+                )}
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <b className="text-lg">{p.name}</b>

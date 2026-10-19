@@ -1,5 +1,6 @@
 import { publicProcedure, router } from "./trpc";
 import { accountRouter } from "./routers/account";
+import { websiteRouter } from "./routers/website";
 import { articlesRouter } from "./routers/articles";
 import { documentsRouter } from "./routers/documents";
 import { hotelsRouter } from "./routers/hotels";
@@ -33,6 +34,7 @@ export const appRouter = router({
   hotels: hotelsRouter,
   team: teamRouter,
   account: accountRouter,
+  website: websiteRouter,
 });
 
 export type AppRouter = typeof appRouter;

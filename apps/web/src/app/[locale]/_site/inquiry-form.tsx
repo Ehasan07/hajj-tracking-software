@@ -9,9 +9,12 @@ import { submitInquiry, type InquiryState } from "./actions";
 export function InquiryForm({
   packages,
   selectedPackage,
+  site,
 }: {
   packages: { id: string; name: string }[];
   selectedPackage?: string;
+  /** The /site/<slug> this form is on, so it reaches that agency. */
+  site?: string;
 }) {
   const t = useTranslations("site.inquiry");
   const ti = useTranslations("interest");
@@ -51,6 +54,7 @@ export function InquiryForm({
       <div className="sm:col-span-2">
         <TextAreaField id="site-notes" name="notes" maxLength={1000} defaultValue={v.notes} label={t("notes")} className="min-h-24" />
       </div>
+      {site ? <input type="hidden" name="site" value={site} /> : null}
       {/* Honeypot: hidden from people and screen readers, filled only by bots. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label htmlFor="site-website">Website</label>
