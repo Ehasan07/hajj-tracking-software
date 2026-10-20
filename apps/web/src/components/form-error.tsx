@@ -21,6 +21,7 @@ export function useErrorText() {
       return t("ADVANCE_EXCEEDS", { amount: money(Number(arg ?? 0), locale) });
     if (key === "PILGRIM_DOUBLE_BOOKED") return t("PILGRIM_DOUBLE_BOOKED", { ref: arg ?? "" });
     if (key === "SEAT_LIMIT") return t("SEAT_LIMIT", { n: arg ?? "" });
+    if (key === "SMS_LIMIT") return t("SMS_LIMIT", { n: arg ?? "" });
     return t(key as "generic");
   };
 }

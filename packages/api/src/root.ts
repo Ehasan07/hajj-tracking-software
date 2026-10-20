@@ -1,5 +1,6 @@
 import { publicProcedure, router } from "./trpc";
 import { accountRouter } from "./routers/account";
+import { smsRouter } from "./routers/sms";
 import { websiteRouter } from "./routers/website";
 import { articlesRouter } from "./routers/articles";
 import { documentsRouter } from "./routers/documents";
@@ -35,6 +36,7 @@ export const appRouter = router({
   team: teamRouter,
   account: accountRouter,
   website: websiteRouter,
+  sms: smsRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,14 +1,18 @@
+import { connection } from "next/server";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthShell } from "@/components/auth-shell";
+import { smsConfigured } from "@/server/sms";
 import { SignUpForm } from "./sign-up-form";
 
 export default async function SignUpPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("auth");
+  // Whether SMS works depends on the server, not the build.
+  await connection();
   return (
     <AuthShell title={t("signUpTitle")}>
-      <SignUpForm />
+      <SignUpForm phoneRequired={smsConfigured()} />
     </AuthShell>
   );
 }

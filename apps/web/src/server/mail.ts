@@ -107,6 +107,6 @@ export async function sendMail(mail: Mail): Promise<{ ok: boolean; error?: strin
 export async function readOutbox(limit = 30): Promise<StoredMail[]> {
   if (!outboxEnabled()) return [];
   const dir = outboxDir();
-  const files = (await readdir(dir).catch(() => [] as string[])).filter((f) => f.endsWith(".json")).sort().reverse().slice(0, limit);
+  const files = (await readdir(dir).catch(() => [] as string[])).filter((f) => f.endsWith(".json") && !f.startsWith("sms-")).sort().reverse().slice(0, limit);
   return Promise.all(files.map(async (f) => JSON.parse(await readFile(path.join(dir, f), "utf8")) as StoredMail));
 }

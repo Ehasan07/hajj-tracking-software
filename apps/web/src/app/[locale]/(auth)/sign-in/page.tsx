@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthShell } from "@/components/auth-shell";
 import { mailConfigured } from "@/server/mail";
+import { smsConfigured } from "@/server/sms";
 import { SignInForm } from "./sign-in-form";
 
 export default async function SignInPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -12,7 +13,7 @@ export default async function SignInPage({ params }: { params: Promise<{ locale:
   await connection();
   return (
     <AuthShell title={t("signInTitle")}>
-      <SignInForm canReset={mailConfigured()} />
+      <SignInForm canReset={mailConfigured() || smsConfigured()} />
     </AuthShell>
   );
 }

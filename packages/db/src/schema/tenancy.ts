@@ -31,6 +31,8 @@ export const tenantSettings = pgTable(
      * default; the owner can turn it off to show approved text only.
      */
     showDraftMeanings: boolean().notNull().default(true),
+    /** Text the pilgrim when money is taken (counts against the plan's SMS allowance). */
+    smsReceipts: boolean().notNull().default(true),
     /** Host name the agency's public website is served on, e.g. "almadina.example.com". */
     publicHost: text().unique(),
     ...timestamps,

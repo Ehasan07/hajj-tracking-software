@@ -57,6 +57,11 @@ Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and Engli
   - reviews: visitors write them on the site, they arrive pending and show only after the agency approves; reviews collected in the office can be added directly
   - which sections show and in what order; the whole site can be switched off (the agency's managers can still preview it)
   - uploaded pictures are decoded and re-encoded as WebP (camera metadata such as GPS is dropped) and stop being served once removed
+- SMS (through a Bangladeshi gateway: BulkSMSBD, SSL Wireless or Alpha SMS):
+  - a text to the pilgrim for every payment: amount, receipt number, what is still due and a link that proves the receipt
+  - notices to all pilgrims, one package or one stage of the journey, with the SMS count shown before sending
+  - each plan's monthly SMS allowance is counted in parts; messages past it, or with no gateway set up, are kept as not sent
+  - the owner verifies a mobile number at sign-up; a forgotten password can come back by SMS as well as by email
 - Sign-in security:
   - A new browser has to enter a 6-digit code sent to the account's email; after that it is trusted for 90 days and listed under "My devices", where it can be removed
   - Password reset by emailed code, with the same answer whether or not the account exists

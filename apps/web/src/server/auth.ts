@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { emailOTP, organization, phoneNumber, twoFactor } from "better-auth/plugins";
+import { emailOTP, organization, twoFactor } from "better-auth/plugins";
 import { asc, eq } from "drizzle-orm";
 import { checkPassword, PASSWORD_MAX, PASSWORD_MIN } from "@hajj/core";
 import { db, schema } from "@hajj/db";
@@ -28,7 +28,6 @@ import {
   unsign,
 } from "./device-otp";
 import { clientIp } from "./client-ip";
-import { sendSms } from "./sms";
 
 type HookContext = Parameters<Parameters<typeof createAuthMiddleware>[0]>[0];
 
@@ -190,13 +189,6 @@ export const auth = betterAuth({
       rateLimit: { window: 60, max: 12 },
       sendVerificationOTP: async ({ email, otp, type }) => {
         if (type === "forget-password") await sendResetCode(email, otp);
-      },
-    }),
-    phoneNumber({
-      otpLength: 6,
-      expiresIn: 300,
-      sendOTP: async ({ phoneNumber: to, code }) => {
-        await sendSms(to, `Your verification code is ${code}. It expires in 5 minutes.`);
       },
     }),
     nextCookies(),

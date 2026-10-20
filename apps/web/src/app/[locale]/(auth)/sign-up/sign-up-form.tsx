@@ -2,23 +2,35 @@
 
 import { useTranslations } from "next-intl";
 import { useMemo, useState, type FormEvent } from "react";
+import { normalizeBdPhone } from "@hajj/core";
 import { PasswordField, passwordReady } from "@/components/password-field";
+import { PhoneVerify } from "@/components/phone-verify";
 import { Button, Field } from "@/components/ui";
 import { Link, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 
-export function SignUpForm() {
+/** `phoneRequired`: SMS works on this server, so the owner proves a mobile number before setting up the agency. */
+export function SignUpForm({ phoneRequired }: { phoneRequired: boolean }) {
   const t = useTranslations();
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [phoneError, setPhoneError] = useState<string>();
+  const [stage, setStage] = useState<"account" | "phone">("account");
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
   const context = useMemo(() => ({ name, email }), [name, email]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const mobile = normalizeBdPhone(phone);
+    if (phoneRequired && !(mobile && /^\+8801[3-9]\d{8}$/.test(mobile))) {
+      setPhoneError(t("phone.errors.INVALID_PHONE"));
+      document.getElementById("phone")?.focus();
+      return;
+    }
     if (!passwordReady(password, context)) {
       setError(t("password.notReady"));
       document.getElementById("password")?.focus();
@@ -36,7 +48,20 @@ export function SignUpForm() {
       else setError(t("errors.generic"));
       return;
     }
-    router.replace("/onboarding");
+    if (phoneRequired) setStage("phone");
+    else router.replace("/onboarding");
+  }
+
+  if (stage === "phone") {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-bold">{t("phone.title")}</h2>
+          <p className="text-[15px] text-ink-2">{t("phone.why")}</p>
+        </div>
+        <PhoneVerify initialPhone={phone} autoSend onDone={() => router.replace("/onboarding")} />
+      </div>
+    );
   }
 
   return (
@@ -52,6 +77,22 @@ export function SignUpForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
+      {phoneRequired ? (
+        <Field
+          id="phone"
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          required
+          placeholder="01XXX-XXXXXX"
+          label={t("phone.label")}
+          hint={t("phone.signUpHint")}
+          value={phone}
+          onChange={(e) => (setPhone(e.target.value), setPhoneError(undefined))}
+          error={phoneError}
+        />
+      ) : null}
       <PasswordField
         id="password"
         name="password"

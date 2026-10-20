@@ -131,7 +131,8 @@
     "expenses": "Expenses",
     "team": "Team & settings",
     "devices": "My devices",
-    "website": "Website"
+    "website": "Website",
+    "sms": "SMS and notices"
   },
   "methods": {
     "cash": "Cash",
@@ -267,7 +268,11 @@
     "voidReason": "Reason for voiding",
     "confirmVoid": "Confirm void",
     "voided": "Void",
-    "fullDue": "Full due"
+    "fullDue": "Full due",
+    "sms": {
+      "queued": "A text is on its way to the pilgrim's phone",
+      "skipped": "No text sent: this month's allowance is used up, or SMS isn't set up yet"
+    }
   },
   "receipt": {
     "title": "Money receipt",
@@ -416,7 +421,11 @@
     "SLUG_RESERVED": "That address is reserved; choose another",
     "BAD_IMAGE": "That picture couldn't be opened. Use a JPG, PNG or WEBP image.",
     "INVALID_LINK": "That link isn't right: use your Facebook or YouTube page link starting with https://",
-    "GALLERY_FULL": "The gallery holds up to 60 photos"
+    "GALLERY_FULL": "The gallery holds up to 60 photos",
+    "SMS_OFF": "SMS isn't set up on this server yet",
+    "NO_RECIPIENTS": "No pilgrims with a mobile number in this group",
+    "PACKAGE_REQUIRED": "Choose a package",
+    "SMS_LIMIT": "Only {n} SMS left this month, not enough for everyone"
   },
   "sacred": {
     "title": "Ayat, duas and the rites of Hajj",
@@ -1737,6 +1746,140 @@
     },
     "closing": {
       "title": "Let this year's Hajj start in a tidy ledger"
+    }
+  },
+  "phone": {
+    "title": "Verify your mobile",
+    "why": "If you forget your password, a code comes to this number by SMS. Use the phone you keep with you.",
+    "label": "Mobile number",
+    "hint": "The number you get SMS on",
+    "signUpHint": "A 6-digit code will be sent to this number",
+    "send": "Send code",
+    "sending": "Sending…",
+    "sent": "A 6-digit code was sent to {phone}. It works for 10 minutes.",
+    "code": "6-digit code",
+    "verify": "Verify",
+    "checking": "Checking…",
+    "resend": "Send a new code",
+    "resendIn": "New code in {s}s",
+    "change": "Use another number",
+    "errors": {
+      "INVALID_PHONE": "Enter a Bangladeshi mobile number, e.g. 01712-345678",
+      "TAKEN": "This number is verified on another account",
+      "WAIT": "Wait {s} seconds before asking for a new code",
+      "TOO_MANY": "Too many codes went to this number today; try again tomorrow",
+      "SEND_FAILED": "The SMS couldn't be sent; try again shortly",
+      "SMS_OFF": "SMS can't be sent right now",
+      "EXPIRED": "The code has expired; get a new one",
+      "INVALID": "That code no longer works; get a new one",
+      "INCORRECT": "That code didn't match. {n} tries left.",
+      "generic": "Something went wrong; please try again"
+    },
+    "card": {
+      "verified": "Verified mobile: {phone}",
+      "missing": "No mobile number added",
+      "why": "If you forget your password, you can get a code on this number by SMS and set a new one.",
+      "change": "Change number",
+      "add": "Add a mobile number"
+    },
+    "reset": {
+      "via": "Where to get the code",
+      "tabs": {
+        "email": "By email",
+        "sms": "By SMS"
+      },
+      "intro": "Enter the mobile number verified on your account. A 6-digit code will be sent to it.",
+      "label": "Mobile number",
+      "send": "Send the code",
+      "sending": "Sending…",
+      "sent": "If {phone} has an account, a 6-digit code is on its way. It works for 10 minutes.",
+      "code": "6-digit code",
+      "verify": "Verify",
+      "checking": "Checking…",
+      "resend": "Send a new code",
+      "resendIn": "New code in {s}s",
+      "otherNumber": "Use another number",
+      "newPassword": "New password",
+      "confirm": "Type the new password again",
+      "save": "Save and sign in",
+      "saving": "Saving…",
+      "afterNote": "Changing the password signs out every other device, and an alert goes to your email.",
+      "errors": {
+        "INVALID_PHONE": "Enter a Bangladeshi mobile number, e.g. 01712-345678",
+        "TOO_MANY": "Too many attempts; try again in a minute",
+        "INCORRECT": "That code didn't match. {n} tries left.",
+        "EXPIRED": "The code has expired; get a new one",
+        "TOO_MANY_TRIES": "Too many wrong tries; get a new code",
+        "INVALID": "That code didn't match; get a new one",
+        "generic": "Something went wrong; please try again"
+      }
+    }
+  },
+  "sms": {
+    "title": "SMS and notices",
+    "subtitle": "Payment texts and notices to groups of pilgrims",
+    "off": {
+      "title": "SMS isn't on yet",
+      "body": "No SMS provider is connected to the server, so nothing is being sent. Anything that would have gone out is listed below as not sent. It starts working as soon as a provider account is connected."
+    },
+    "quota": {
+      "title": "SMS this month",
+      "unlimited": "Unlimited plan",
+      "of": "of {n}",
+      "left": "{n} left",
+      "hint": "A Bangla SMS counts once per 70 characters, or per 67 when longer. The full allowance comes back each month."
+    },
+    "receipts": {
+      "title": "Payment texts",
+      "hint": "When money is taken, the pilgrim's phone gets the amount, the receipt number, what's still due and a link to check the receipt."
+    },
+    "notice": {
+      "title": "Send a notice to pilgrims",
+      "to": "Send to",
+      "groups": {
+        "all": "All pilgrims (not cancelled)",
+        "package": "Pilgrims on one package",
+        "status": "Pilgrims at one stage"
+      },
+      "package": "Package",
+      "status": "Stage",
+      "recipients": "Goes to {n} numbers",
+      "templates": {
+        "flight": "Assalamu alaikum. Your flight is on [date] at [time]. Please reach the airport 3 hours early with your passport.",
+        "meeting": "Assalamu alaikum. The Hajj preparation meeting is on [date] at [time] at our office. Please come.",
+        "papers": "Assalamu alaikum. Please bring copies of your passport, photo and NID to the office by [date]."
+      },
+      "templateNames": {
+        "flight": "Flight",
+        "meeting": "Meeting",
+        "papers": "Papers due"
+      },
+      "text": "Notice text",
+      "size": "{chars} characters, {parts} SMS per person, {total} SMS in all",
+      "over": "This month's allowance has {n} left.",
+      "confirm": "The notice goes to {n} numbers and uses {parts} SMS. Send it?",
+      "done": "{n} SMS are queued and will go within seconds.",
+      "sending": "Sending…",
+      "send": "Send notice"
+    },
+    "history": {
+      "notices": "Notices sent",
+      "noNotices": "No notices sent yet",
+      "to": "{n} people",
+      "sent": "{n} delivered",
+      "waiting": "{n} queued",
+      "failed": "{n} failed",
+      "skipped": "{n} not sent",
+      "receipts": "Recent payment texts",
+      "noReceipts": "No payment texts yet"
+    },
+    "status": {
+      "sent": "Delivered",
+      "queued": "Queued",
+      "sending": "Sending",
+      "failed": "Failed",
+      "expired": "Too late",
+      "skipped": "Not sent"
     }
   }
 }

@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { dateText, digits, money, words, type Locale } from "@/lib/format";
 import { UNIT_THEME } from "@/lib/units";
 import { deviceCheckEnabled } from "@/server/device-otp";
+import { smsConfigured } from "@/server/sms";
 import { ThemeDemo } from "./theme-demo";
 
 const TZ = "Asia/Dhaka";
@@ -427,7 +428,8 @@ export async function Landing({ locale }: { locale: Locale }) {
                   <ul className={`flex flex-col gap-2 border-t border-dashed pt-4 text-left text-[15px] ${featured ? "border-[#2a6a64]" : "border-line-strong"}`}>
                     <li>{t("pricing.pilgrims", { n: limit(p.limits.pilgrimsPerYear) })}</li>
                     <li>{t("pricing.staff", { n: limit(p.limits.staffSeats) })}</li>
-                    <li>{t("pricing.sms", { n: limit(p.limits.smsPerMonth) })}</li>
+                    {/* Only promised once the server can actually send SMS. */}
+                    {smsConfigured() ? <li>{t("pricing.sms", { n: limit(p.limits.smsPerMonth) })}</li> : null}
                   </ul>
                   <Link href="/sign-up" className={featured ? buttonClass("saffron", "mt-auto w-full") : buttonClass("outline", "mt-auto w-full")}>
                     {t("pricing.cta")}

@@ -2,9 +2,10 @@ import { randomUUID } from "node:crypto";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, isNull, lte, sql } from "drizzle-orm";
 import { z } from "zod";
-import { outstanding, parseAmount } from "@hajj/core";
+import { outstanding, parseAmount, receiptSms } from "@hajj/core";
 import { ledgerEntries, payments, pilgrims, tenantSettings, travelPackages } from "@hajj/db/schema";
 import { randomToken } from "../crypto";
+import { enqueueSms } from "../services/sms";
 import { businessDate, getSettings, nextReference } from "../services/tenant";
 import { router, tenantProcedure, withRoles } from "../trpc";
 import { amountInput, optionalText } from "./shared";
@@ -37,6 +38,7 @@ export const paymentsRouter = router({
           discount: pilgrims.discount,
           currency: pilgrims.currency,
           status: pilgrims.status,
+          phone: pilgrims.phone,
         })
         .from(pilgrims)
         .where(eq(pilgrims.id, input.pilgrimId))
@@ -95,14 +97,30 @@ export const paymentsRouter = router({
           ledgerEntryId: entry!.id,
           verifyToken: randomToken(),
         })
-        .returning({ id: payments.id, receiptNo: payments.receiptNo });
+        .returning({ id: payments.id, receiptNo: payments.receiptNo, verifyToken: payments.verifyToken });
 
       if (pilgrim.status === "registered" && before.paid === 0) {
         await ctx.tx.update(pilgrims).set({ status: "documents" }).where(eq(pilgrims.id, pilgrim.id));
       }
 
       const after = outstanding(pilgrim.price, [...previous.map((p) => p.amount), amount], [pilgrim.discount]);
-      return { ...payment!, totals: after };
+
+      // The pilgrim gets a text with the amount and a link that proves the receipt is real.
+      let sms: "queued" | "skipped" | "off" = "off";
+      if (settings.smsReceipts && pilgrim.phone && pilgrim.currency === "BDT") {
+        const origin = new URL(process.env.BETTER_AUTH_URL ?? "http://localhost:3100").origin;
+        const body = receiptSms({
+          agency: settings.legalName,
+          amount,
+          receiptNo,
+          due: after.due,
+          verifyUrl: `${origin}/verify/${payment!.verifyToken}`,
+        });
+        const result = await enqueueSms(ctx.tx, [{ kind: "receipt", toPhone: pilgrim.phone, body, sourceId: payment!.id }]);
+        sms = result.queued ? "queued" : "skipped";
+      }
+      const { verifyToken: _token, ...shown } = payment!;
+      return { ...shown, totals: after, sms };
     }),
 
   /** Cancel a receipt. Keeps the row, posts a reversing ledger entry. Accountants and admins only. */

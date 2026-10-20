@@ -23,12 +23,12 @@ export function ReceivePayment({ pilgrimId, due }: { pilgrimId: string; due: num
   const form = useRef<HTMLFormElement>(null);
   const [method, setMethod] = useState<(typeof METHODS)[number]>("cash");
   const [amount, setAmount] = useState("");
-  const [last, setLast] = useState<{ id: string; receiptNo: string } | null>(null);
+  const [last, setLast] = useState<{ id: string; receiptNo: string; sms: "queued" | "skipped" | "off" } | null>(null);
   const [allowOver, setAllowOver] = useState(false);
   const receive = useMutation(
     trpc.payments.receive.mutationOptions({
       onSuccess: (row) => {
-        setLast({ id: row.id, receiptNo: row.receiptNo });
+        setLast({ id: row.id, receiptNo: row.receiptNo, sms: row.sms });
         setAmount("");
         setAllowOver(false);
         form.current?.reset();
@@ -114,9 +114,12 @@ export function ReceivePayment({ pilgrimId, due }: { pilgrimId: string; due: num
       </Button>
       {last ? (
         <div className="flex animate-rise flex-wrap items-center justify-between gap-3 rounded-md bg-paid-tint px-4 py-3">
-          <span className="flex items-center gap-2 font-semibold text-paid">
-            <CheckIcon size={18} />
-            {t("payment.success", { receipt: last.receiptNo })}
+          <span className="flex flex-col gap-0.5">
+            <span className="flex items-center gap-2 font-semibold text-paid">
+              <CheckIcon size={18} />
+              {t("payment.success", { receipt: last.receiptNo })}
+            </span>
+            {last.sms !== "off" ? <span className="pl-[26px] text-[13px] text-ink-2">{t(`payment.sms.${last.sms}`)}</span> : null}
           </span>
           <Link href={`/app/receipts/${last.id}`} className={buttonClass("outline", "h-10 border-paid text-paid")}>
             {t("payment.viewReceipt")}

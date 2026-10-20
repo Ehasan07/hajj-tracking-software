@@ -8,3 +8,4 @@ export * from "./commerce";
 export * from "./office";
 export * from "./security";
 export * from "./website";
+export * from "./messaging";

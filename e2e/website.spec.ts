@@ -1,4 +1,4 @@
-import { clientAddress, expect, test } from "./fixtures";
+import { clientAddress, expect, mobileNumber, passPhoneStep, test } from "./fixtures";
 
 const shots = process.env.E2E_SCREENSHOTS;
 async function snap(page: import("@playwright/test").Page, name: string) {
@@ -20,7 +20,11 @@ test("an agency arranges its own website, and a visitor's review shows once appr
   await page.locator("#name").fill("Nadia Islam");
   await page.locator("#email").fill(`site-${stamp}@example.com`);
   await page.locator("#password").fill("Correct-Horse-Battery-7");
+  const phone = mobileNumber();
+  await page.locator("#phone").fill(phone);
+  const since = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passPhoneStep(page, phone, since);
   await page.waitForURL("**/onboarding");
   await page.locator("#agencyName").fill("Noor Travels");
   await page.locator("#prefix").fill("NR");

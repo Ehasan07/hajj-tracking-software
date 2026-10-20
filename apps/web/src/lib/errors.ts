@@ -58,6 +58,9 @@ export function errorKey(error: unknown): { key: string; arg?: string } {
     "BAD_IMAGE",
     "INVALID_LINK",
     "GALLERY_FULL",
+    "SMS_OFF",
+    "NO_RECIPIENTS",
+    "PACKAGE_REQUIRED",
   ];
   /** Codes that carry a value after the colon, e.g. "OUT_OF_STOCK:Napa 500". */
   const withArg = [
@@ -68,6 +71,7 @@ export function errorKey(error: unknown): { key: string; arg?: string } {
     "ADVANCE_EXCEEDS",
     "PILGRIM_DOUBLE_BOOKED",
     "SEAT_LIMIT",
+    "SMS_LIMIT",
   ];
   if (known.includes(code)) return { key: code, arg };
   if (withArg.includes(code)) return { key: code, arg: message.slice(code.length + 1) || arg };

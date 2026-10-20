@@ -47,6 +47,7 @@ jobs:
       # Emails go to files the browser tests read the sign-in codes from.
       MAIL_TRANSPORT: file
       MAIL_OUTBOX_DIR: /tmp/hajj-mail
+      SMS_TRANSPORT: file
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

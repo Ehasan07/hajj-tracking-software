@@ -14,6 +14,7 @@ import {
   LogoutIcon,
   PaymentIcon,
   PayrollIcon,
+  PhoneIcon,
   PilgrimIcon,
   StatementIcon,
   KaabaIcon,
@@ -134,6 +135,12 @@ export function AppShell({
         },
         ...(MANAGER_ROLES.includes(role)
           ? [
+              {
+                href: "/app/sms",
+                label: t("nav.sms"),
+                icon: PhoneIcon,
+                tint: "var(--color-saffron-tint)",
+              },
               {
                 href: "/app/website",
                 label: t("nav.website"),

@@ -1,14 +1,17 @@
-import { clientAddress, expect, test } from "./fixtures";
+import { clientAddress, expect, mobileNumber, passPhoneStep, test } from "./fixtures";
 import { waitForCode, waitForMail } from "./mail";
 
 const PASSWORD = "Correct-Horse-Battery-7";
 
-async function signUp(page: import("@playwright/test").Page, email: string) {
+async function signUp(page: import("@playwright/test").Page, email: string, phone = mobileNumber()) {
   await page.goto("/sign-up");
   await page.locator("#name").fill("Nadia Islam");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill(PASSWORD);
+  await page.locator("#phone").fill(phone);
+  const since = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passPhoneStep(page, phone, since);
   await page.waitForURL("**/onboarding");
   await page.locator("#agencyName").fill("Noor Travels");
   await page.locator("#prefix").fill("NT");
@@ -124,6 +127,7 @@ test("sign-up shows the password rules, can reveal the password, and the server 
   await page.locator("#email").fill(email);
   await expect(page.getByText("পাসওয়ার্ডে যা থাকতে হবে")).toBeVisible();
 
+  await page.locator("#phone").fill(mobileNumber());
   await page.locator("#password").fill("nadia12345");
   await expect(page.getByText("শক্তি: খুব দুর্বল")).toBeVisible();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();

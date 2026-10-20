@@ -38,9 +38,11 @@ export const trustedDevices = pgTable(
 );
 
 /**
- * One-time codes sent by email. `device`: a sign-in from a browser that isn't
- * trusted yet. `reset`: a password-reset request, logged only to enforce the
- * resend wait and the daily limit (Better Auth keeps that code itself).
+ * One-time codes. By email: `device`, a sign-in from a browser that isn't
+ * trusted yet; `reset`, a password-reset request, logged only to enforce the
+ * resend wait and the daily limit (Better Auth keeps that code itself). By
+ * SMS: `phone`, proving a mobile number belongs to the account; `phone_reset`,
+ * a password reset by mobile. The number is in `meta.phone`.
  */
 export const emailOtps = pgTable(
   "email_otps",
@@ -59,7 +61,7 @@ export const emailOtps = pgTable(
   },
   (t) => [
     index("email_otps_user_idx").on(t.userId, t.purpose, t.requestedAt),
-    check("email_otps_purpose", sql`${t.purpose} in ('device', 'reset')`),
+    check("email_otps_purpose", sql`${t.purpose} in ('device', 'reset', 'phone', 'phone_reset')`),
   ],
 );
 

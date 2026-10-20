@@ -3,7 +3,9 @@ import { AuthShell } from "@/components/auth-shell";
 import { redirect } from "@/i18n/navigation";
 import { getSession } from "@/server/session";
 import { api } from "@/trpc/server";
+import { smsConfigured, verifiedPhone } from "@/server/phone-otp";
 import { OnboardingForm } from "./onboarding-form";
+import { PhoneStep } from "./phone-step";
 
 export default async function OnboardingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -16,6 +18,15 @@ export default async function OnboardingPage({ params }: { params: Promise<{ loc
   if (existingOrgId) {
     const settings = await (await api()).tenant.settings().catch(() => null);
     if (settings) return redirect({ href: "/app", locale });
+  }
+  // With SMS working, the owner proves a mobile number first (it is how a forgotten password comes back).
+  if (smsConfigured() && !(await verifiedPhone(session.user.id))) {
+    const tp = await getTranslations("phone");
+    return (
+      <AuthShell title={tp("title")}>
+        <PhoneStep why={tp("why")} />
+      </AuthShell>
+    );
   }
   const t = await getTranslations("onboarding");
   return (

@@ -1,4 +1,4 @@
-import { expect, test } from "./fixtures";
+import { expect, mobileNumber, passPhoneStep, test } from "./fixtures";
 import { waitForCode } from "./mail";
 
 const shots = process.env.E2E_SCREENSHOTS;
@@ -18,7 +18,11 @@ test("side businesses: zamzam route on credit, statements, and a medicine-only l
   await page.locator("#name").fill("Karim Mia");
   await page.locator("#email").fill(`shops-${stamp}@example.com`);
   await page.locator("#password").fill("Correct-Horse-Battery-7");
+  const phone = mobileNumber();
+  await page.locator("#phone").fill(phone);
+  const signedUpAt = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passPhoneStep(page, phone, signedUpAt);
   await page.waitForURL("**/onboarding");
   await page.locator("#agencyName").fill("Safa Travels");
   await page.locator("#prefix").fill("SF");

@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
-import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 import { describeDevice, maskEmail, periodKey } from "@hajj/core";
 import { db } from "@hajj/db";
 import { emailOtps, trustedDevices, user } from "@hajj/db/schema";
@@ -61,11 +61,11 @@ export function unsign(signed: string | undefined | null): string | null {
   return given.length === expected.length && timingSafeEqual(given, expected) ? value : null;
 }
 
-const codeHash = (id: string, code: string) => createHmac("sha256", secret()).update(`${id}:${code}`).digest("hex");
+export const codeHash = (id: string, code: string) => createHmac("sha256", secret()).update(`${id}:${code}`).digest("hex");
 export const tokenHash = (token: string) => createHash("sha256").update(token).digest("hex");
-const newCode = () => String(randomInt(0, 1_000_000)).padStart(6, "0");
+export const newCode = () => String(randomInt(0, 1_000_000)).padStart(6, "0");
 
-function sameCode(id: string, code: string, stored: string | null) {
+export function sameCode(id: string, code: string, stored: string | null) {
   if (!stored) return false;
   const a = Buffer.from(codeHash(id, code));
   const b = Buffer.from(stored);
@@ -286,7 +286,8 @@ export async function allowPasswordReset(email: string): Promise<boolean> {
   const recent = await db
     .select({ requestedAt: emailOtps.requestedAt })
     .from(emailOtps)
-    .where(and(eq(emailOtps.userId, u.id), eq(emailOtps.purpose, "reset"), gt(emailOtps.requestedAt, new Date(Date.now() - 2 * 864e5))))
+    // Resets by email and by SMS share the wait and the daily limit.
+    .where(and(eq(emailOtps.userId, u.id), inArray(emailOtps.purpose, ["reset", "phone_reset"]), gt(emailOtps.requestedAt, new Date(Date.now() - 2 * 864e5))))
     .orderBy(desc(emailOtps.requestedAt));
   if (recent[0] && Date.now() - recent[0].requestedAt.getTime() < OTP_RESEND_COOLDOWN * 1000) return false;
   const today = periodKey(new Date(), "day");

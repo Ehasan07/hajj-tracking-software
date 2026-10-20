@@ -1,4 +1,5 @@
-import { expect, test } from "./fixtures";
+import { expect, mobileNumber, passPhoneStep, test } from "./fixtures";
+import { waitForSms } from "./mail";
 
 // ICAO 9303 specimen passport, with valid check digits.
 const MRZ = "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10";
@@ -15,7 +16,11 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await page.locator("#name").fill("Rahim Uddin");
   await page.locator("#email").fill(email);
   await page.locator("#password").fill("Correct-Horse-Battery-7");
+  const phone = mobileNumber();
+  await page.locator("#phone").fill(phone);
+  const since = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passPhoneStep(page, phone, since);
 
   await page.waitForURL("**/onboarding");
   await page.locator("#agencyName").fill("Al Madina Travels");
@@ -59,9 +64,13 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await expect(page.getByText("AM-26-000001")).toBeVisible();
   await expect(page.getByText("L8•••••C3")).toBeVisible();
 
+  const paidAt = new Date();
   await page.locator("#amount").fill("2,00,000");
   await page.getByRole("button", { name: "টাকা গ্রহণ ও রসিদ তৈরি" }).click();
   await expect(page.getByText("রসিদ MR-26-000001 তৈরি হয়েছে")).toBeVisible();
+  // The pilgrim's phone gets the amount, the receipt number and what's still due.
+  const text = await waitForSms("01712-345678", paidAt, /MR-26-000001/);
+  expect(text.text).toContain("৳২,০০,০০০ জমা হয়েছে");
 
   await page.locator("#amount").fill("500000");
   await page.getByRole("button", { name: "টাকা গ্রহণ ও রসিদ তৈরি" }).click();

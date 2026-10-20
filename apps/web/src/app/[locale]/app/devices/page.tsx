@@ -6,7 +6,10 @@ import { Card } from "@/components/ui";
 import { dateText, digits, type Locale } from "@/lib/format";
 import { deviceCheckEnabled, TRUST_COOKIE, TRUST_DAYS, unsign } from "@/server/device-otp";
 import { api } from "@/trpc/server";
+import { getSession } from "@/server/session";
+import { maskPhone, smsConfigured, verifiedPhone } from "@/server/phone-otp";
 import { RevokeDevice, SignOutOthers } from "./device-actions";
+import { PhoneCard } from "./phone-card";
 
 export default async function DevicesPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
@@ -16,6 +19,8 @@ export default async function DevicesPage({ params }: { params: Promise<{ locale
   const current = unsign((await cookies()).get(TRUST_COOKIE)?.value) ?? undefined;
   const { devices, openSessions } = await (await api()).account.devices({ current });
   const enabled = deviceCheckEnabled();
+  const session = await getSession();
+  const phone = session ? await verifiedPhone(session.user.id) : null;
 
   return (
     <PageBody>
@@ -36,6 +41,8 @@ export default async function DevicesPage({ params }: { params: Promise<{ locale
           </ul>
         </div>
       </Card>
+
+      {smsConfigured() ? <PhoneCard masked={phone ? maskPhone(phone) : null} /> : null}
 
       <Card className="overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5 pb-3">
