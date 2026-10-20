@@ -58,3 +58,19 @@ export const paymentMethods = [
   "card",
   "other",
 ] as const;
+
+const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+
+/**
+ * A storage key exactly as the upload route makes it:
+ * tenants/<agency>/pilgrims/<pilgrim>/<kind>-<uuid>.<ext>.enc. Nothing else
+ * passes, so a key with "..", another folder or another agency can't be saved.
+ */
+export function isPilgrimFileKey(key: string, tenantId: string, pilgrimId: string, kind: string): boolean {
+  const prefix = `tenants/${tenantId}/pilgrims/${pilgrimId}/`;
+  if (!/^[a-z_]{2,40}$/.test(kind) || !key.startsWith(prefix)) return false;
+  return new RegExp(`^${kind}-${UUID}\\.(jpg|png|webp|pdf)\\.enc$`).test(key.slice(prefix.length));
+}
+
+/** A LIKE pattern matching the text anywhere, with %, _ and backslash taken literally. */
+export const containing = (q: string) => `%${q.replace(/[\\%_]/g, "\\$&")}%`;

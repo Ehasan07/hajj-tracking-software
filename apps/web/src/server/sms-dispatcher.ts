@@ -1,5 +1,6 @@
 import "server-only";
 import { sql } from "drizzle-orm";
+import { describeError } from "@hajj/api/errors";
 import { db } from "@hajj/db";
 import { sendSms, smsConfigured } from "./sms";
 
@@ -23,7 +24,7 @@ async function tick() {
       await db.execute(sql`select sms_finish(${row.id}::uuid, ${result.ok}, ${result.ref ?? null}, ${result.error ?? null})`);
     }
   } catch (error) {
-    console.error("[sms] dispatcher", error);
+    console.error(`[sms] dispatcher ${describeError(error)}`);
   } finally {
     g.__hajjSmsBusy = false;
   }

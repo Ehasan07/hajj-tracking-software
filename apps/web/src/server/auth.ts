@@ -3,8 +3,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP, organization, twoFactor } from "better-auth/plugins";
-import { asc, eq } from "drizzle-orm";
-import { checkPassword, PASSWORD_MAX, PASSWORD_MIN } from "@hajj/core";
+import { and, asc, eq } from "drizzle-orm";
+import { checkPassword, PASSWORD_MAX, PASSWORD_MIN, siteSlugError } from "@hajj/core";
 import { db, schema } from "@hajj/db";
 import {
   allowPasswordReset,
@@ -27,11 +27,12 @@ import {
   trustedDeviceFor,
   unsign,
 } from "./device-otp";
-import { clientIp } from "./client-ip";
+import { clientIp, limitKey } from "./client-ip";
 
 type HookContext = Parameters<Parameters<typeof createAuthMiddleware>[0]>[0];
 
-const hookIp = (ctx: HookContext) => clientIp(ctx.headers) ?? "unknown";
+/** The address the sign-in lockout counts (IPv6 by its /64). */
+const hookIp = (ctx: HookContext) => limitKey(clientIp(ctx.headers));
 
 const cookieAttrs = (o: typeof trustCookieOptions) => ({ httpOnly: o.httpOnly, secure: o.secure, sameSite: o.sameSite, path: o.path, maxAge: o.maxAge });
 
@@ -83,7 +84,8 @@ const afterHook = createAuthMiddleware(async (ctx) => {
     const ip = hookIp(ctx);
     const returned = ctx.context.returned;
     if (returned instanceof APIError) {
-      if (returned.status === "UNAUTHORIZED") recordFailure(ip, email);
+      // The fifth wrong password says so at once: the per-address limit would hide a sixth try.
+      if (returned.status === "UNAUTHORIZED" && recordFailure(ip, email)) throw new APIError("TOO_MANY_REQUESTS", { message: "LOCKED" });
       return;
     }
     clearFailures(ip, email);
@@ -162,21 +164,80 @@ export const auth = betterAuth({
     // it or resetting the password ends its session at once, not minutes later.
     cookieCache: { enabled: false },
   },
+  /**
+   * Endpoints the plugins add that this app doesn't use. Each one is a way
+   * around a rule the app enforces elsewhere, so they answer 404:
+   * - email-code sign-in and its senders would sign in with a 6-digit code
+   *   alone, skipping the password and the new-device check, and the extra
+   *   reset-code senders skip the reset wait and daily limit;
+   * - the organization routes would let an admin change roles, remove or
+   *   invite people past the team page's rules and seat limit, rename the
+   *   agency's address past the reserved list, delete the agency with its
+   *   books, or read every colleague's email.
+   * Team changes go through the team page; the address through the website page.
+   */
+  disabledPaths: [
+    "/sign-in/email-otp",
+    "/email-otp/send-verification-otp",
+    "/forget-password/email-otp",
+    "/email-otp/verify-email",
+    "/email-otp/request-email-change",
+    "/email-otp/change-email",
+    "/organization/update",
+    "/organization/delete",
+    "/organization/invite-member",
+    "/organization/accept-invitation",
+    "/organization/reject-invitation",
+    "/organization/cancel-invitation",
+    "/organization/get-invitation",
+    "/organization/list-invitations",
+    "/organization/list-user-invitations",
+    "/organization/remove-member",
+    "/organization/update-member-role",
+    "/organization/leave",
+    "/organization/list-members",
+    "/organization/get-full-organization",
+  ],
   rateLimit: {
     enabled: true,
     window: 60,
     max: 100,
+    // Per address. The lockout (5 wrong passwords per email and address) and the
+    // per-account reset limits sit on top of these.
     customRules: {
-      "/sign-in/email": { window: 60, max: 10 },
-      "/phone-number/send-otp": { window: 60, max: 3 },
-      "/phone-number/verify": { window: 60, max: 5 },
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 60 * 60, max: 5 },
+      "/organization/create": { window: 60 * 60, max: 3 },
+      "/email-otp/request-password-reset": { window: 60 * 60, max: 3 },
+      "/email-otp/check-verification-otp": { window: 10 * 60, max: 10 },
+      "/email-otp/reset-password": { window: 10 * 60, max: 10 },
+      "/change-password": { window: 10 * 60, max: 5 },
     },
   },
   plugins: [
     organization({
       allowUserToCreateOrganization: true,
+      // One agency per owner: each new agency starts a free trial.
+      organizationLimit: async (user) => {
+        const owned = await db
+          .select({ id: schema.member.id })
+          .from(schema.member)
+          .where(and(eq(schema.member.userId, user.id), eq(schema.member.role, "owner")))
+          .limit(1);
+        return owned.length > 0;
+      },
+      disableOrganizationDeletion: true,
       creatorRole: "owner",
       membershipLimit: 500,
+      organizationHooks: {
+        // The same address rules as the website page, so the API can't take a reserved
+        // name or the one the main domain shows.
+        beforeCreateOrganization: async ({ organization: org }) => {
+          const slug = String(org.slug ?? "");
+          const problem = siteSlugError(slug) ?? (slug === process.env.PUBLIC_TENANT_SLUG ? "SLUG_RESERVED" : null);
+          if (problem) throw new APIError("BAD_REQUEST", { message: problem, code: problem });
+        },
+      },
     }),
     twoFactor({ issuer: "Hajj Tracking" }),
     emailOTP({
@@ -185,8 +246,8 @@ export const auth = betterAuth({
       allowedAttempts: OTP_MAX_ATTEMPTS,
       storeOTP: "hashed",
       disableSignUp: true,
-      // The 45-second wait and the daily limit are enforced in the before hook.
-      rateLimit: { window: 60, max: 12 },
+      // Per-address limits are in rateLimit.customRules; the 45-second wait and the
+      // daily limit per account are enforced in the before hook.
       sendVerificationOTP: async ({ email, otp, type }) => {
         if (type === "forget-password") await sendResetCode(email, otp);
       },

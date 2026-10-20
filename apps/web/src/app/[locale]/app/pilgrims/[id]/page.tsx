@@ -201,7 +201,7 @@ export default async function PilgrimPage({
                 hasExpiry: d.hasExpiry,
               }))}
               documents={documents}
-              canReview={me.role !== "shop_operator"}
+              canReview={!["shop_operator", "alim"].includes(me.role)}
             />
           </Card>
 

@@ -7,9 +7,10 @@ import { db, withTenant } from "@hajj/db";
 import { inquiries, siteReviews, travelPackages } from "@hajj/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getSettings, nextReference } from "@hajj/api/services/tenant";
+import { describeError, errorRef } from "@hajj/api/errors";
 import { allow } from "@/server/rate-limit";
 import { PUBLIC_ACTOR, resolvePublicTenant, resolveSiteSlug } from "@/server/site";
-import { clientIp } from "@/server/client-ip";
+import { clientIp, limitKey } from "@/server/client-ip";
 
 type Values = Partial<Record<"name" | "phone" | "interest" | "packageId" | "partySize" | "notes", string>>;
 
@@ -58,7 +59,7 @@ const schema = z.object({
 /** Public inquiry form. Lands in the agency's inquiry log with status "new". */
 export async function submitInquiry(_prev: InquiryState, form: FormData): Promise<InquiryState> {
   const h = await headers();
-  const ip = clientIp(h) ?? "unknown";
+  const ip = limitKey(clientIp(h));
   const values = echo(form);
   if (!allow(`inquiry:${ip}`, 5, 10 * 60_000)) return { status: "error", code: "TOO_MANY", values };
 
@@ -101,7 +102,7 @@ export async function submitInquiry(_prev: InquiryState, form: FormData): Promis
     });
     return { status: "ok", ref };
   } catch (error) {
-    console.error("[site] inquiry failed", error);
+    console.error(`[site] inquiry failed ref=${errorRef(error)} ${describeError(error)}`);
     return { status: "error", code: "generic", values };
   }
 }
@@ -131,7 +132,7 @@ const reviewSchema = z.object({
  */
 export async function submitReview(_prev: ReviewState, form: FormData): Promise<ReviewState> {
   const h = await headers();
-  const ip = clientIp(h) ?? "unknown";
+  const ip = limitKey(clientIp(h));
   const pick = (k: string) => {
     const v = form.get(k);
     return typeof v === "string" ? v.slice(0, 1000) : undefined;
@@ -155,7 +156,7 @@ export async function submitReview(_prev: ReviewState, form: FormData): Promise<
     );
     return { status: "ok" };
   } catch (error) {
-    console.error("[site] review failed", error);
+    console.error(`[site] review failed ref=${errorRef(error)} ${describeError(error)}`);
     return { status: "error", code: "generic", values };
   }
 }

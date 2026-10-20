@@ -5,7 +5,7 @@ import { normalizeBdPhone } from "@hajj/core";
 import { inquiries, travelPackages } from "@hajj/db/schema";
 import { getSettings, nextReference } from "../services/tenant";
 import { router, tenantProcedure } from "../trpc";
-import { optionalText, phoneInput } from "./shared";
+import { containing, optionalText, phoneInput } from "./shared";
 
 const statuses = ["new", "follow_up", "converted", "closed"] as const;
 
@@ -27,7 +27,7 @@ export const inquiriesRouter = router({
         const phone = normalizeBdPhone(input.q);
         filters.push(
           or(
-            ilike(inquiries.name, `%${input.q}%`),
+            ilike(inquiries.name, containing(input.q)),
             eq(inquiries.ref, input.q.toUpperCase()),
             phone ? eq(inquiries.phone, phone) : undefined,
           )!,

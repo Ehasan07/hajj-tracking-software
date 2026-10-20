@@ -112,11 +112,12 @@ test("an unknown email gets the same answer, and five wrong passwords lock sign-
   await expect(page.getByText("কোড মেলেনি। আবার চেষ্টা করুন।")).toBeVisible();
 
   const email = `locked-${Date.now()}@example.com`;
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 4; i++) {
     await submitPassword(page, email, `wrong-password-${i}`);
     await expect(page.getByRole("alert").first()).toBeVisible();
+    await expect(page.getByText(/১৫ মিনিট/)).toHaveCount(0);
   }
-  await submitPassword(page, email, "still-wrong-password");
+  await submitPassword(page, email, "fifth-wrong-password");
   await expect(page.getByText(/১৫ মিনিট/)).toBeVisible();
 });
 
@@ -149,4 +150,47 @@ test("sign-up shows the password rules, can reveal the password, and the server 
   });
   expect(res.status()).toBe(400);
   expect((await res.json()).code).toBe("WEAK_PASSWORD");
+});
+
+test("auth routes the app doesn't use are closed, and sign-in is limited per address", async ({ request, baseURL }) => {
+  const headers = { origin: new URL(baseURL!).origin };
+  // Code-only sign-in (would skip the password and the new-device check), extra reset-code
+  // senders, and organization routes that would get round the team and website pages.
+  for (const path of [
+    "/api/auth/sign-in/email-otp",
+    "/api/auth/email-otp/send-verification-otp",
+    "/api/auth/forget-password/email-otp",
+    "/api/auth/organization/update-member-role",
+    "/api/auth/organization/remove-member",
+    "/api/auth/organization/invite-member",
+    "/api/auth/organization/update",
+    "/api/auth/organization/delete",
+    "/api/auth/organization/list-members",
+  ]) {
+    expect((await request.post(path, { headers, data: {} })).status(), path).toBe(404);
+  }
+
+  // Five tries a minute from one address; the sixth is refused before any password is checked.
+  const statuses: number[] = [];
+  for (let i = 0; i < 6; i++) {
+    const res = await request.post("/api/auth/sign-in/email", { headers, data: { email: `rate-${Date.now()}-${i}@example.com`, password: "Wrong-password-71" } });
+    statuses.push(res.status());
+  }
+  expect(statuses).toEqual([401, 401, 401, 401, 401, 429]);
+});
+
+test("an account makes one agency, never with a reserved web address", async ({ request, baseURL }) => {
+  const headers = { origin: new URL(baseURL!).origin };
+  const email = `org-${Date.now()}@example.com`;
+  const signUp = await request.post("/api/auth/sign-up/email", { headers, data: { name: "Karim Uddin", email, password: PASSWORD } });
+  expect(signUp.status()).toBe(200);
+
+  const reserved = await request.post("/api/auth/organization/create", { headers, data: { name: "Admin", slug: "admin" } });
+  expect(reserved.status()).toBe(400);
+  expect((await reserved.json()).code).toBe("SLUG_RESERVED");
+
+  const first = await request.post("/api/auth/organization/create", { headers, data: { name: "Karim Travels", slug: `karim-${Date.now()}` } });
+  expect(first.status()).toBe(200);
+  const second = await request.post("/api/auth/organization/create", { headers, data: { name: "Karim Two", slug: `karim-two-${Date.now()}` } });
+  expect(second.status()).toBe(403);
 });

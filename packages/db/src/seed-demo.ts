@@ -102,6 +102,12 @@ async function codeFromOutbox(to: string, after: Date): Promise<string> {
 
 const ownerUrl = process.env.DATABASE_OWNER_URL;
 if (!ownerUrl) throw new Error("DATABASE_OWNER_URL is not set");
+// The demo logins have published passwords (one is a platform admin), so they are only
+// ever made on this machine: never against a server's app or database.
+const LOCAL = ["localhost", "127.0.0.1", "[::1]", "::1"];
+if (!LOCAL.includes(new URL(BASE).hostname) || !LOCAL.includes(new URL(ownerUrl).hostname)) {
+  throw new Error("seed:demo only runs against a local app and database (DEMO_BASE_URL and DATABASE_OWNER_URL must be localhost)");
+}
 const sql = postgres(ownerUrl, { max: 1 });
 
 // 1. A login for the demo agency's owner.

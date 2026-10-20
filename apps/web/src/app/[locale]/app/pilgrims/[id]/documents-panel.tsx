@@ -193,7 +193,7 @@ export function DocumentsPanel({
               <Badge tone={status ? TONE[status] : "neutral"}>{status ? t(status) : t("missing")}</Badge>
             </div>
 
-            {latest ? (
+            {latest && canReview ? (
               <div className="flex flex-wrap items-center gap-3 ps-10">
                 {latest.contentType.startsWith("image/") ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -235,7 +235,7 @@ export function DocumentsPanel({
               ) : null}
             </div>
 
-            {all.length > 1 ? (
+            {all.length > 1 && canReview ? (
               <details className="ps-10 text-[13px] text-ink-3">
                 <summary className="cursor-pointer">
                   {t("history")} ({all.length - 1})

@@ -221,7 +221,7 @@ describe("hajj flow", () => {
     ]);
     await expect(staff().pilgrims.setStatus({ id: p.id, status: "ready" })).rejects.toThrow(/NOT_READY:4/);
 
-    const key = (n: string) => `tenants/${tenantId}/pilgrims/${p.id}/${n}.enc`;
+    const key = (n: string) => `tenants/${tenantId}/pilgrims/${p.id}/${n}-${randomUUID()}.jpg.enc`;
     await expect(
       staff().documents.attach({ pilgrimId: p.id, type: "photo", key: key("x"), contentType: "application/pdf", sizeBytes: 10 }),
     ).rejects.toThrow(/UNSUPPORTED_TYPE/);

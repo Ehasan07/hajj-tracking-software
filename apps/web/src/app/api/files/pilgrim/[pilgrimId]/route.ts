@@ -4,7 +4,7 @@ import { documentType } from "@hajj/core";
 import { getSession } from "@/server/session";
 import { putObject, sniffImageOrPdf } from "@/server/storage";
 import { api } from "@/trpc/server";
-import { fail } from "../../_shared";
+import { fail, uploadRefused } from "../../_shared";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "application/pdf": "pdf" } as const;
@@ -15,10 +15,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ pil
     const { pilgrimId } = await params;
     const session = await getSession();
     const tenantId = session?.session.activeOrganizationId;
-    if (!tenantId) return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
+    if (!session || !tenantId) return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
-    const length = Number(request.headers.get("content-length") ?? 0);
-    if (length > MAX_BYTES + 64 * 1024) return Response.json({ error: "TOO_LARGE" }, { status: 413 });
+    const refused = uploadRefused(request, session.user.id, MAX_BYTES);
+    if (refused) return refused;
 
     const form = await request.formData();
     const type = String(form.get("type") ?? "");

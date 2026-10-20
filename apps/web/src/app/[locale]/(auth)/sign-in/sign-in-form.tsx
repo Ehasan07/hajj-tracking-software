@@ -42,7 +42,8 @@ export function SignInForm({ canReset }: { canReset: boolean }) {
   async function signIn(email: string, password: string) {
     const { data, error: failure } = await authClient.signIn.email({ email, password });
     if (failure) {
-      if (failure.status === 429) setError(failure.message === "LOCKED" ? t("auth.locked") : t("auth.tooMany"));
+      if (failure.message === "LOCKED") setError(t("auth.locked"));
+      else if (failure.status === 429) setError(t("auth.tooMany"));
       else setError(t("auth.invalid"));
       return;
     }

@@ -203,6 +203,8 @@ export const websiteRouter = router({
     if (problem) throw new TRPCError({ code: "BAD_REQUEST", message: problem });
     const [taken] = await ctx.tx.select({ id: organization.id }).from(organization).where(eq(organization.slug, input.slug));
     if (taken && taken.id !== ctx.tenantId) throw new TRPCError({ code: "CONFLICT", message: "SLUG_TAKEN" });
+    // The address the main domain shows can't be claimed by whoever asks first.
+    if (!taken && input.slug === process.env.PUBLIC_TENANT_SLUG) throw new TRPCError({ code: "BAD_REQUEST", message: "SLUG_RESERVED" });
     await ctx.tx.update(organization).set({ slug: input.slug }).where(eq(organization.id, ctx.tenantId));
     return { slug: input.slug };
   }),

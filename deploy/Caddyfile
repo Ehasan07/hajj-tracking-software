@@ -1,6 +1,10 @@
 {$DOMAIN} {
 	encode zstd gzip
-	reverse_proxy web:3100
+	# The app trusts X-Real-IP for rate limits and the sign-in lockout, so it must be
+	# the real peer address, overwriting anything the client sent.
+	reverse_proxy web:3100 {
+		header_up X-Real-IP {remote_host}
+	}
 	header {
 		-Server
 	}

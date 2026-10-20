@@ -9,12 +9,13 @@ import { useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 import { useTRPC } from "@/trpc/react";
 
+/** Within the website-address rules (3–40 characters, no double hyphen), which the server checks. */
 function slugify(name: string) {
   const base = name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40);
+    .slice(0, 33)
+    .replace(/^-+|-+$/g, "");
   return `${base || "agency"}-${crypto.randomUUID().slice(0, 6)}`;
 }
 

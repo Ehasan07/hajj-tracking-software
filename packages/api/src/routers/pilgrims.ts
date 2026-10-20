@@ -23,7 +23,7 @@ import { pilgrimReadiness } from "../services/pilgrim";
 import { blindIndex, decryptField, encryptField } from "../crypto";
 import { getSettings, nextReference } from "../services/tenant";
 import { router, tenantProcedure, withRoles } from "../trpc";
-import { optionalText, phoneInput } from "./shared";
+import { containing, isPilgrimFileKey, optionalText, phoneInput } from "./shared";
 
 const pilgrimStatuses = [
   "registered",
@@ -153,7 +153,7 @@ export const pilgrimsRouter = router({
       if (/^(\d{10}|\d{13}|\d{17})$/.test(digitsOnly)) {
         conditions.push(eq(pilgrims.nidIndex, blindIndex(ctx.tenantId, `nid:${digitsOnly}`)));
       }
-      if (!ref && q.length >= 2) conditions.push(ilike(pilgrims.fullName, `%${q}%`));
+      if (!ref && q.length >= 2) conditions.push(ilike(pilgrims.fullName, containing(q)));
       if (conditions.length === 0) return [];
       return ctx.tx
         .select(listColumns)
@@ -433,7 +433,7 @@ export const pilgrimsRouter = router({
   attachPassportScan: tenantProcedure
     .input(z.object({ id: z.uuid(), key: z.string().min(10).max(300) }))
     .mutation(async ({ ctx, input }) => {
-      if (!input.key.startsWith(`tenants/${ctx.tenantId}/pilgrims/${input.id}/`)) {
+      if (!isPilgrimFileKey(input.key, ctx.tenantId, input.id, "passport")) {
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
       const [row] = await ctx.tx
@@ -445,13 +445,15 @@ export const pilgrimsRouter = router({
       return row;
     }),
 
-  passportScanKey: tenantProcedure
+  /** Storage key of the passport scan, for the office people who handle papers. Each view is audited. */
+  passportScanKey: withRoles("admin", "accountant", "staff")
     .input(z.object({ id: z.uuid() }))
     .query(async ({ ctx, input }) => {
       const [row] = await ctx.tx
         .select({ key: pilgrims.passportScanKey })
         .from(pilgrims)
         .where(eq(pilgrims.id, input.id));
+      if (row?.key) await ctx.tx.execute(sql`select record_access('pilgrims', ${input.id}, 'VIEW_PASSPORT_SCAN')`);
       return row?.key ?? null;
     }),
 

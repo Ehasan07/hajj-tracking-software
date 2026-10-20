@@ -40,6 +40,12 @@ function localOnly(): boolean {
 
 let fileRefusedLogged = false;
 
+/** "r***@example.com": enough to tell messages apart in the log, not enough to collect addresses. */
+function masked(address: string) {
+  const [name = "", domain = ""] = address.split("@");
+  return `${name.slice(0, 1)}***@${domain}`;
+}
+
 function transport(): "zeptomail" | "file" | null {
   if (process.env.MAIL_TRANSPORT === "file") {
     if (localOnly()) return "file";
@@ -90,16 +96,16 @@ export async function sendMail(mail: Mail): Promise<{ ok: boolean; error?: strin
         signal: AbortSignal.timeout(15_000),
       });
       if (!res.ok) {
-        console.warn(`ZeptoMail returned ${res.status} for ${mail.to}: ${(await res.text()).slice(0, 200)}`);
+        console.warn(`ZeptoMail returned ${res.status} for ${masked(mail.to)}: ${(await res.text()).slice(0, 200)}`);
         return { ok: false, error: `email service returned ${res.status}` };
       }
       return { ok: true };
     } catch (error) {
-      console.warn(`ZeptoMail send failed for ${mail.to}:`, error);
+      console.warn(`ZeptoMail send failed for ${masked(mail.to)}: ${error instanceof Error ? error.name : "error"}`);
       return { ok: false, error: "email service unavailable" };
     }
   }
-  console.warn(`No mail transport configured; email to ${mail.to} not sent`);
+  console.warn(`No mail transport configured; email to ${masked(mail.to)} not sent`);
   return { ok: false, error: "email not configured" };
 }
 

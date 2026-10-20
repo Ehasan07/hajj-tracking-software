@@ -332,13 +332,17 @@ export function isLocked(ip: string, email: string): boolean {
   return entry.count >= LOGIN_MAX_FAILS;
 }
 
-export function recordFailure(ip: string, email: string) {
+/** Count a wrong password; true when this one locks the pair. */
+export function recordFailure(ip: string, email: string): boolean {
   const key = lockKey(ip, email);
-  const entry = fails.get(key);
+  let entry = fails.get(key);
   const now = Date.now();
-  if (!entry || entry.until < now) fails.set(key, { count: 1, until: now + LOGIN_LOCK_MS });
-  else entry.count += 1;
+  if (!entry || entry.until < now) {
+    entry = { count: 1, until: now + LOGIN_LOCK_MS };
+    fails.set(key, entry);
+  } else entry.count += 1;
   if (fails.size > 20_000) for (const [k, v] of fails) if (v.until < now) fails.delete(k);
+  return entry.count >= LOGIN_MAX_FAILS;
 }
 
 export function clearFailures(ip: string, email: string) {

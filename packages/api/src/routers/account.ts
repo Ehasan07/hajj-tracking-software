@@ -4,6 +4,7 @@ import { and, desc, eq, gt, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { session, trustedDevices, user } from "@hajj/db/schema";
 import { platformProcedure, protectedProcedure, router } from "../trpc";
+import { containing } from "./shared";
 
 /** The browser cookie holds a random token; the table holds its SHA-256. */
 const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -55,7 +56,7 @@ export const accountRouter = router({
   /* ------------------------------------------------------ platform owner */
 
   allDevices: platformProcedure.input(z.object({ q: z.string().trim().max(120).optional() }).optional()).query(async ({ ctx, input }) => {
-    const needle = input?.q ? `%${input.q.replace(/[%_]/g, "")}%` : null;
+    const needle = input?.q ? containing(input.q) : null;
     return ctx.tx
       .select({
         id: trustedDevices.id,

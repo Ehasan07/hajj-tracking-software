@@ -4,6 +4,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { db, withActor, withTenant, type Database, type Transaction } from "@hajj/db";
 import { member, subscriptions } from "@hajj/db/schema";
+import { errorRef, publicReason } from "./errors";
 
 /** "alim" is the agency's scholar, who approves religious content. */
 export const ROLES = ["owner", "admin", "accountant", "staff", "shop_operator", "alim"] as const;
@@ -28,13 +29,18 @@ export function createContext(input: { session: SessionInfo | null; ip?: string 
 const t = initTRPC.context<Context>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
+    // An unexpected error's message can hold SQL and the values bound to it: the client gets
+    // a code (a trigger's, like PAYMENT_IMMUTABLE, or INTERNAL) and a reference for the log.
+    const internal = error.code === "INTERNAL_SERVER_ERROR";
+    // Never send stack traces to clients.
+    const { stack: _stack, ...data } = shape.data;
     return {
       ...shape,
+      message: internal ? (publicReason(error) ?? "INTERNAL") : shape.message,
       data: {
-        ...shape.data,
+        ...data,
         zod: error.cause instanceof ZodError ? error.cause.flatten() : null,
-        // Never send stack traces to clients.
-        stack: undefined,
+        ...(internal ? { ref: errorRef(error) } : {}),
       },
     };
   },
@@ -53,12 +59,16 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
  * Resolves the caller's membership in their active agency and runs the whole
  * procedure inside one tenant-scoped transaction. Any error rolls back.
  */
-/** A subscription that no longer allows changes: suspended, cancelled, unpaid, or a trial past its end. */
+/**
+ * A subscription that no longer allows changes: suspended, cancelled, unpaid,
+ * a trial past its end, or none at all (an agency set up outside onboarding,
+ * which would otherwise have no limits and never expire).
+ */
 export function subscriptionInactive(
   sub: { status: string; trialEndsAt: Date | null } | undefined,
   now = new Date(),
 ) {
-  if (!sub) return false;
+  if (!sub) return true;
   if (sub.status === "trial") return sub.trialEndsAt !== null && sub.trialEndsAt < now;
   return sub.status !== "active";
 }

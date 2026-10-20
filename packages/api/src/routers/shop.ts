@@ -29,7 +29,7 @@ import { recordExpense, voidExpense } from "../services/money-out";
 import { businessDate, entryDate, getSettings, nextReference } from "../services/tenant";
 import { assertShop, unitAccess } from "../services/units";
 import { router, tenantProcedure } from "../trpc";
-import { amountInput, amountOrZero, dateKey, optionalText, paymentMethods } from "./shared";
+import { amountInput, amountOrZero, containing, dateKey, optionalText, paymentMethods } from "./shared";
 
 /** Every shop procedure names its unit; access to that shop is checked before anything runs. */
 const shopProcedure = tenantProcedure
@@ -193,7 +193,7 @@ export const shopRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const needle = input.q ? `%${input.q.replace(/[%_]/g, "")}%` : null;
+      const needle = input.q ? containing(input.q) : null;
       const rows = await ctx.tx
         .select({
           product: products,
@@ -459,7 +459,7 @@ export const shopRouter = router({
   customers: shopProcedure
     .input(z.object({ routeId: z.uuid().optional(), q: z.string().trim().max(80).optional() }))
     .query(async ({ ctx, input }) => {
-      const needle = input.q ? `%${input.q.replace(/[%_]/g, "")}%` : null;
+      const needle = input.q ? containing(input.q) : null;
       return ctx.tx
         .select({
           id: customers.id,

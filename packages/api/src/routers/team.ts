@@ -10,6 +10,7 @@ import {
   member,
   memberUnits,
   plans,
+  session,
   subscriptions,
   tenantSettings,
   user,
@@ -150,7 +151,7 @@ export const teamRouter = router({
       return { ok: true };
     }),
 
-  /** Take away a colleague's access to this agency. Their sessions stop working on the next request. */
+  /** Take away a colleague's access to this agency. They are signed out of it at once. */
   remove: managers
     .input(z.object({ memberId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -165,6 +166,7 @@ export const teamRouter = router({
         throw new TRPCError({ code: "FORBIDDEN" });
       await ctx.tx.delete(memberUnits).where(eq(memberUnits.userId, target.userId));
       await ctx.tx.delete(member).where(eq(member.id, target.id));
+      await ctx.tx.delete(session).where(and(eq(session.userId, target.userId), eq(session.activeOrganizationId, ctx.tenantId)));
       return { ok: true };
     }),
 
