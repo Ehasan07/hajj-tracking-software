@@ -570,6 +570,9 @@ export async function AgencySite({
                 {navLabels[id]}
               </a>
             ))}
+            <Link href="/guide" className="rounded-md px-3.5 py-2.5 font-semibold text-haram-deep hover:bg-haram-tint">
+              {t("nav.book")}
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link href={base || "/"} locale={locale === "bn" ? "en" : "bn"} className="rounded-md px-3 py-2.5 text-[15px] font-semibold text-ink-2 hover:bg-ground">
@@ -671,6 +674,9 @@ export async function AgencySite({
               <span>
                 © {digits(new Date().getFullYear(), locale)} · {t("footer.rights")}
               </span>
+              <Link href="/guide" className="underline underline-offset-4">
+                {t("nav.book")}
+              </Link>
               <Link href="/sign-in" className="underline underline-offset-4">
                 {tc("signIn")}
               </Link>

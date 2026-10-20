@@ -24,17 +24,25 @@ const AYAT = [
   "22:26", "22:27", "22:28", "22:29", "22:32",
   "109:1", "109:2", "109:3", "109:4", "109:5", "109:6",
   "112:1", "112:2", "112:3", "112:4",
+  // The guide book: Ayat al-Kursi, the close of al-Baqarah, and the short surahs recited in prayer.
+  "2:255", "2:285", "2:286",
+  ...surah(102, 8), ...surah(103, 3), ...surah(104, 9), ...surah(105, 5), ...surah(106, 4), ...surah(107, 7),
+  ...surah(108, 3), ...surah(110, 3), ...surah(111, 5), ...surah(113, 5), ...surah(114, 6),
 ];
 
-type Book = "bukhari" | "muslim" | "abudawud" | "tirmidhi";
+function surah(n: number, ayat: number): string[] {
+  return Array.from({ length: ayat }, (_, i) => `${n}:${i + 1}`);
+}
+
+type Book = "bukhari" | "muslim" | "abudawud" | "tirmidhi" | "ibnmajah";
 
 interface HadithSpec {
   id: string;
   book: Book;
   /** Standard hadith number (Bukhari/Abu Dawud/Tirmidhi numbering; Muslim by Fuad Abd al-Baqi). */
   number: string;
-  /** In-book reference as shown on sunnah.com, for checking. */
-  inBook: string;
+  /** In-book reference as shown on sunnah.com. Read from the source; when given here it is checked against it. */
+  inBook?: string;
   /** Phrase that identifies the narration. */
   key: string;
   /** Start and end of the quoted words, matched without diacritics. */
@@ -67,6 +75,45 @@ const HADITH: HadithSpec[] = [
   { id: "rukn_yamani", book: "abudawud", number: "1892", inBook: "11:172", key: "ما بين الركنين", start: "ربنا اتنا في الدنيا", end: "عذاب النار" },
   { id: "hajj_mabrur", book: "bukhari", number: "1773", inBook: "26:1", key: "العمرة الى العمرة كفارة", start: "العمرة الى العمرة", end: "الا الجنة" },
   { id: "hajj_reward", book: "bukhari", number: "1521", inBook: "25:9", key: "فلم يرفث ولم يفسق", start: "من حج لله", end: "كيوم ولدته امه" },
+
+  // ------------------------------------------------- the guide book: prayer
+  { id: "takbir", book: "abudawud", number: "730", key: "الله اكبر", start: "الله اكبر", end: "الله اكبر" },
+  { id: "sana", book: "tirmidhi", number: "242", key: "وتعالى جدك ولا اله غيرك", start: "سبحانك اللهم", end: "ولا اله غيرك" },
+  { id: "taawwuz", book: "bukhari", number: "6115", key: "اعوذ بالله من الشيطان الرجيم", start: "اعوذ بالله من الشيطان الرجيم", end: "اعوذ بالله من الشيطان الرجيم" },
+  { id: "ruku", book: "muslim", number: "772", key: "سبحان ربي العظيم", start: "سبحان ربي العظيم", end: "سبحان ربي العظيم" },
+  { id: "tasmi", book: "bukhari", number: "796", key: "فقولوا اللهم ربنا لك الحمد", start: "سمع الله لمن حمده", end: "سمع الله لمن حمده" },
+  { id: "tahmid", book: "bukhari", number: "796", key: "فقولوا اللهم ربنا لك الحمد", start: "اللهم ربنا لك الحمد", end: "اللهم ربنا لك الحمد" },
+  { id: "sujud", book: "muslim", number: "772", key: "سبحان ربي العظيم", start: "سبحان ربي الاعلى", end: "سبحان ربي الاعلى" },
+  { id: "jalsa", book: "abudawud", number: "850", key: "اللهم اغفر لي وارحمني وعافني واهدني وارزقني", start: "اللهم اغفر لي", end: "وارزقني" },
+  { id: "tashahhud", book: "bukhari", number: "1202", key: "التحيات لله والصلوات والطيبات", start: "التحيات لله", end: "عبده ورسوله" },
+  { id: "durud", book: "bukhari", number: "3370", key: "كما صليت على ابراهيم", start: "اللهم صل على محمد", end: "باركت على ابراهيم، وعلى ال ابراهيم، انك حميد مجيد" },
+  { id: "masura", book: "bukhari", number: "6326", key: "ظلمت نفسي ظلما كثيرا", start: "اللهم اني ظلمت نفسي", end: "الغفور الرحيم" },
+  { id: "salam", book: "abudawud", number: "996", key: "السلام عليكم ورحمة الله", start: "السلام عليكم ورحمة الله", end: "السلام عليكم ورحمة الله" },
+  { id: "qunut", book: "abudawud", number: "1425", key: "اللهم اهدني فيمن هديت", start: "اللهم اهدني فيمن هديت", end: "تباركت ربنا وتعاليت" },
+  { id: "after_salah", book: "muslim", number: "591", key: "اللهم انت السلام ومنك السلام", start: "اللهم انت السلام", end: "والاكرام" },
+  { id: "tasbih_fatimah", book: "muslim", number: "597", key: "من سبح الله في دبر كل صلاة", start: "من سبح الله", end: "زبد البحر" },
+  { id: "adhan_dua", book: "bukhari", number: "614", key: "رب هذه الدعوة التامة", start: "اللهم رب هذه الدعوة", end: "الذي وعدته" },
+  { id: "wudu_after", book: "muslim", number: "234", key: "اشهد ان لا اله الا الله وحده لا شريك له واشهد ان محمدا عبده ورسوله", start: "اشهد ان لا اله الا الله وحده", end: "عبده ورسوله" },
+  { id: "wudu_after_extra", book: "tirmidhi", number: "55", key: "اللهم اجعلني من التوابين", start: "اللهم اجعلني من التوابين", end: "المتطهرين" },
+  { id: "ayatul_kursi_virtue", book: "bukhari", number: "5010", key: "اذا اويت الى فراشك فاقرا اية الكرسي", start: "اذا اويت الى فراشك", end: "حتى تصبح" },
+
+  // ---------------------------------------------- the guide book: every day
+  { id: "eat_start", book: "abudawud", number: "3767", key: "بسم الله اوله واخره", start: "بسم الله", end: "بسم الله" },
+  { id: "eat_forgot", book: "abudawud", number: "3767", key: "بسم الله اوله واخره", start: "بسم الله اوله", end: "واخره" },
+  { id: "eat_end", book: "abudawud", number: "4023", key: "ورزقنيه من غير حول مني", start: "الحمد لله الذي", end: "ولا قوة" },
+  { id: "sleep", book: "bukhari", number: "6324", key: "باسمك اللهم اموت واحيا", start: "باسمك اللهم اموت واحيا", end: "باسمك اللهم اموت واحيا" },
+  { id: "wake", book: "bukhari", number: "6324", key: "باسمك اللهم اموت واحيا", start: "الحمد لله الذي احيانا", end: "النشور" },
+  { id: "home_leave", book: "abudawud", number: "5095", key: "توكلت على الله لا حول ولا قوة الا بالله", start: "بسم الله توكلت", end: "الا بالله" },
+  { id: "toilet_enter", book: "bukhari", number: "142", key: "اعوذ بك من الخبث والخبائث", start: "اللهم اني اعوذ بك", end: "والخبائث" },
+  { id: "toilet_exit", book: "abudawud", number: "30", key: "غفرانك", start: "غفرانك", end: "غفرانك" },
+
+  // -------------------------------------- the guide book: Hajj and Madinah
+  { id: "maqam", book: "muslim", number: "1218", key: "انجز وعده", start: "واتخذوا من مقام ابراهيم", end: "مصلى" },
+  { id: "zamzam", book: "ibnmajah", number: "3062", key: "ماء زمزم لما شرب له", start: "ماء زمزم لما شرب له", end: "ماء زمزم لما شرب له" },
+  { id: "sacrifice", book: "muslim", number: "1966", key: "والله اكبر", start: "باسم الله والله اكبر", end: "باسم الله والله اكبر" },
+  { id: "halq", book: "bukhari", number: "1727", key: "اللهم ارحم المحلقين", start: "اللهم ارحم المحلقين", end: "اللهم ارحم المحلقين" },
+  { id: "salam_prophet", book: "bukhari", number: "1202", key: "التحيات لله والصلوات والطيبات", start: "السلام عليك ايها النبي", end: "وبركاته" },
+  { id: "baqi", book: "muslim", number: "975", key: "السلام عليكم اهل الديار", start: "السلام عليكم اهل الديار", end: "العافية" },
 ];
 
 const HARAKAT = /[ً-ْٰـ]/;
@@ -144,18 +191,22 @@ async function main() {
 
   // Hadith (two independent copies must agree)
   const books = [...new Set(HADITH.map((h) => h.book))];
-  const A = new Map<Book, { hadithnumber: number; text: string }[]>();
+  const A = new Map<Book, { hadithnumber: number; arabicnumber?: string | number; text: string; reference?: { book: number; hadith: number } }[]>();
   const B = new Map<Book, { arabic: string }[]>();
   for (const book of books) {
-    A.set(book, (await json<{ hadiths: { hadithnumber: number; text: string }[] }>(HADITH_A(book))).hadiths);
+    A.set(book, (await json<{ hadiths: { hadithnumber: number; arabicnumber?: string | number; text: string; reference?: { book: number; hadith: number } }[] }>(HADITH_A(book))).hadiths);
     B.set(book, (await json<{ hadiths: { arabic: string }[] }>(HADITH_B(book))).hadiths);
   }
   const hadith: Record<string, { text: string; book: Book; number: string; inBook: string; corrections: { from: string; to: string; note: string }[] }> = {};
   for (const spec of HADITH) {
     const key = letters(spec.key);
-    const fromA = A.get(spec.book)!.find((h) => skeleton(h.text).text.includes(key));
-    const fromB = B.get(spec.book)!.find((h) => skeleton(h.arabic).text.includes(key));
+    // The hadith with the cited number (Muslim by Fuad Abd al-Baqi's numbering), so the citation is exact.
+    const number = (h: { hadithnumber: number; arabicnumber?: string | number }) =>
+      spec.book === "muslim" ? String(Math.floor(Number(h.arabicnumber))) : String(h.hadithnumber);
+    const fromA = A.get(spec.book)!.find((h) => number(h) === spec.number && skeleton(h.text).text.includes(key));
     const a = fromA && cut(fromA.text, spec.start, spec.end);
+    // The second copy is numbered differently; any narration in it with the same words letter for letter will do.
+    const fromB = B.get(spec.book)!.find((h) => skeleton(h.arabic).text.includes(key) && cut(h.arabic, spec.start, spec.end) === a);
     const b = fromB && cut(fromB.arabic, spec.start, spec.end);
     if (!a || !b) throw new Error(`${spec.id}: not found in both sources`);
     if (a !== b) throw new Error(`${spec.id}: sources differ\nA: ${a}\nB: ${b}`);
@@ -164,12 +215,14 @@ async function main() {
       if (!text.includes(c.from)) throw new Error(`${spec.id}: correction target missing`);
       text = text.replace(c.from, c.to);
     }
-    hadith[spec.id] = { text, book: spec.book, number: spec.number, inBook: spec.inBook, corrections: spec.corrections ?? [] };
+    const inBook = fromA!.reference ? `${fromA!.reference.book}:${fromA!.reference.hadith}` : (spec.inBook ?? "");
+    if (spec.inBook && spec.inBook !== inBook) console.warn(`${spec.id}: in-book reference ${spec.inBook} here, ${inBook} in the source`);
+    hadith[spec.id] = { text, book: spec.book, number: spec.number, inBook, corrections: spec.corrections ?? [] };
   }
   writeFileSync(
     out("hadith.ts"),
     `/* eslint-disable */\n// GENERATED by scripts/generate.ts. Do not edit by hand.\n// Cut from two independent copies of the collections (fawazahmed0/hadith-api and\n// AhmedBaset/hadith-json, both from sunnah.com); every phrase matched letter for letter.\n\n` +
-      `export type HadithBook = "bukhari" | "muslim" | "abudawud" | "tirmidhi";\n\n` +
+      `export type HadithBook = "bukhari" | "muslim" | "abudawud" | "tirmidhi" | "ibnmajah";\n\n` +
       `export const HADITH: Record<string, { text: string; book: HadithBook; number: string; inBook: string; corrections: { from: string; to: string; note: string }[] }> = ${JSON.stringify(hadith, null, 2)};\n`,
   );
   console.info(`Wrote ${Object.keys(ayat).length} ayat and ${Object.keys(hadith).length} hadith phrases`);

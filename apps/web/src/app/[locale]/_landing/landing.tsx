@@ -238,6 +238,9 @@ export async function Landing({ locale }: { locale: Locale }) {
                 {t(`nav.${id}`)}
               </a>
             ))}
+            <Link href="/guide" className="rounded-md px-3.5 py-2.5 font-semibold text-haram-deep hover:bg-haram-tint">
+              {t("nav.book")}
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link href="/" locale={locale === "bn" ? "en" : "bn"} className="rounded-md px-3 py-2.5 text-[15px] font-semibold text-ink-2 hover:bg-paper">
@@ -476,6 +479,9 @@ export async function Landing({ locale }: { locale: Locale }) {
           </span>
           <span className="flex flex-wrap items-center gap-4">
             <span>© {digits(new Date().getFullYear(), locale)}</span>
+            <Link href="/guide" className="underline underline-offset-4">
+              {t("nav.book")}
+            </Link>
             <Link href="/sign-in" className="underline underline-offset-4">
               {t("signIn")}
             </Link>

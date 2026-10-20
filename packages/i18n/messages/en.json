@@ -478,7 +478,8 @@
       "posts": "News",
       "gallery": "Photos",
       "reviews": "Reviews",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "book": "Guide book"
     },
     "badge": "Hajj 1448 · Registration open",
     "hero": {
@@ -1594,7 +1595,8 @@
       "journey": "How it works",
       "businesses": "Other businesses",
       "website": "Website",
-      "pricing": "Pricing"
+      "pricing": "Pricing",
+      "book": "Guide book"
     },
     "signIn": "Sign in",
     "start": "Start free",
@@ -1877,5 +1879,48 @@
       "expired": "Too late",
       "skipped": "Not sent"
     }
+  },
+  "book": {
+    "brand": "Hajj Tracking",
+    "title": "A guide to Hajj, Umrah and prayer",
+    "subtitle": "Surahs of the Quran, every word of the prayer, everyday duas, and what to say at each step of Umrah and Hajj: in Arabic, with Bangla pronunciation, Bangla meaning and English. Read it any time, on any phone.",
+    "sources": {
+      "arabicTitle": "Arabic:",
+      "arabic": "Every ayah is taken verbatim from the verified Uthmani text of the Tanzil Project. The Arabic of every dua and hadith is matched letter for letter across two independent copies of Sahih al-Bukhari, Sahih Muslim, Abu Dawud, at-Tirmidhi and Ibn Majah; none of it is typed by hand.",
+      "draftTitle": "Pronunciation and meanings:",
+      "draft": "The Bangla pronunciation and the Bangla and English meanings are plain-language drafts not yet checked by a scholar. Bangla letters cannot show every Arabic sound exactly, so learn correct recitation from a teacher.",
+      "fiqhTitle": "Rulings:",
+      "fiqh": "The lists of fard, wajib and sunnah follow the Hanafi school, the one followed in Bangladesh. Ask your group's scholar about your own situation.",
+      "hadithCredit": "Hadith Arabic: fawazahmed0/hadith-api and AhmedBaset/hadith-json (both from sunnah.com), matched letter for letter."
+    },
+    "controls": {
+      "search": "Search the book",
+      "searchPlaceholder": "Search: e.g. tashahhud, tawaf, sleep…",
+      "found": "{n} found",
+      "nothing": "Nothing found; try another word",
+      "size": "Text size",
+      "sizes": {
+        "s": "Small text",
+        "m": "Medium text",
+        "l": "Large text"
+      },
+      "show": "What to show",
+      "parts": {
+        "ar": "Arabic",
+        "pr": "Pronunciation",
+        "bn": "Bangla",
+        "en": "English"
+      }
+    },
+    "contents": "Contents",
+    "chapter": "Chapter {n}",
+    "when": "When",
+    "pronunciation": "Pronunciation",
+    "basmalah": "Bismillahir Rahmanir Rahim",
+    "order": "Order of prayer",
+    "total": "{n} rak'ahs in all",
+    "sunnah": "Sunnah at this step",
+    "print": "Print",
+    "forAgencies": "See the full software for Hajj agencies"
   }
 }

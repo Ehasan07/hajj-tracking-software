@@ -7,6 +7,8 @@
  * agency approves it in the app; unapproved text is never shown publicly.
  */
 
+import { BOOK_ITEMS } from "./book-items";
+
 export interface Text {
   bn: string;
   en: string;
@@ -40,8 +42,19 @@ export const SURAH_NAMES: Record<number, Text> = {
   3: { bn: "আলে ইমরান", en: "Al Imran" },
   14: { bn: "ইবরাহিম", en: "Ibrahim" },
   22: { bn: "আল-হজ", en: "Al-Hajj" },
+  102: { bn: "আত-তাকাসুর", en: "At-Takathur" },
+  103: { bn: "আল-আসর", en: "Al-Asr" },
+  104: { bn: "আল-হুমাযাহ", en: "Al-Humazah" },
+  105: { bn: "আল-ফীল", en: "Al-Fil" },
+  106: { bn: "কুরাইশ", en: "Quraysh" },
+  107: { bn: "আল-মাউন", en: "Al-Ma'un" },
+  108: { bn: "আল-কাওসার", en: "Al-Kawthar" },
   109: { bn: "আল-কাফিরুন", en: "Al-Kafirun" },
+  110: { bn: "আন-নাসর", en: "An-Nasr" },
+  111: { bn: "আল-মাসাদ", en: "Al-Masad" },
   112: { bn: "আল-ইখলাস", en: "Al-Ikhlas" },
+  113: { bn: "আল-ফালাক", en: "Al-Falaq" },
+  114: { bn: "আন-নাস", en: "An-Nas" },
 };
 
 export const HADITH_BOOK_NAMES: Record<string, Text> = {
@@ -49,9 +62,10 @@ export const HADITH_BOOK_NAMES: Record<string, Text> = {
   muslim: { bn: "সহিহ মুসলিম", en: "Sahih Muslim" },
   abudawud: { bn: "সুনানে আবু দাউদ", en: "Sunan Abi Dawud" },
   tirmidhi: { bn: "জামে তিরমিযি", en: "Jami at-Tirmidhi" },
+  ibnmajah: { bn: "সুনানে ইবনে মাজাহ", en: "Sunan Ibn Majah" },
 };
 
-export const ITEMS: SacredItem[] = [
+const CORE_ITEMS: SacredItem[] = [
   // ---------------------------------------------------------------- surahs
   {
     id: "surah_fatihah",
@@ -507,6 +521,9 @@ export const ITEMS: SacredItem[] = [
   },
 ];
 
+/** Everything above plus the guide book's surahs, prayer words, daily duas and rites. */
+export const ITEMS: SacredItem[] = [...CORE_ITEMS, ...BOOK_ITEMS];
+
 // ----------------------------------------------------------------- sunnah
 
 export interface SunnahPractice {
@@ -646,7 +663,7 @@ export const STEPS: GuideStep[] = [
       bn: "দোয়া পড়ে ডান পা দিয়ে মসজিদে প্রবেশ করবেন। হাজরে আসওয়াদ থেকে শুরু করে কাবাকে বাম দিকে রেখে সাত চক্কর তাওয়াফ করবেন। প্রতি চক্করে হাজরে আসওয়াদের দিকে ইশারা করে তাকবির বলবেন, আর রুকনে ইয়ামানি থেকে হাজরে আসওয়াদ পর্যন্ত 'রব্বানা আতিনা...' পড়বেন। বাকি সময় নিজের ভাষায় যেকোনো দোয়া করা যায়।",
       en: "Enter the mosque with the right foot, saying the dua. Starting at the Black Stone, walk seven rounds with the Kaabah on your left. Each round, point to the Black Stone and say the takbir, and say 'Rabbana atina...' between the Yemeni Corner and the Black Stone. At other times, make any dua in your own words.",
     },
-    items: ["dua_masjid_enter", "dua_rukn_yamani"],
+    items: ["dua_masjid_enter", "dua_rukn_yamani", "dua_takbir"],
     sunnah: ["idtiba", "ramal", "black_stone", "rukn_dua"],
   },
   {
@@ -658,7 +675,7 @@ export const STEPS: GuideStep[] = [
       bn: "তাওয়াফ শেষে সম্ভব হলে মাকামে ইবরাহিমের পেছনে, না হলে মসজিদের যেকোনো জায়গায় দুই রাকাত নামাজ পড়বেন। তারপর জমজমের পানি পান করবেন।",
       en: "After tawaf, pray two rak'ahs behind Maqam Ibrahim if possible, otherwise anywhere in the mosque. Then drink Zamzam water.",
     },
-    items: ["surah_kafirun", "surah_ikhlas"],
+    items: ["surah_kafirun", "surah_ikhlas", "dua_maqam", "hadith_zamzam"],
     sunnah: ["maqam_prayer", "zamzam"],
   },
   {
@@ -682,7 +699,7 @@ export const STEPS: GuideStep[] = [
       bn: "পুরুষেরা মাথা মুণ্ডন করবেন বা পুরো মাথার চুল ছোট করবেন, নারীরা চুলের আগা থেকে আঙুলের এক কর পরিমাণ কাটবেন। এর মাধ্যমে ওমরা পূর্ণ হয় এবং ইহরামের নিষেধাজ্ঞা উঠে যায়।",
       en: "Men shave the head or shorten the hair all over; women cut about a fingertip's length from the ends. This completes the Umrah and lifts the restrictions of ihram.",
     },
-    items: ["ayah_complete_hajj"],
+    items: ["ayah_complete_hajj", "hadith_halq"],
     sunnah: [],
   },
   {
@@ -718,7 +735,7 @@ export const STEPS: GuideStep[] = [
       bn: "জামরাতুল আকাবায় সাতটি কঙ্কর মারবেন, প্রতিটির সাথে তাকবির। তামাত্তু ও কিরান হজকারীরা কুরবানি দেবেন। তারপর মাথা মুণ্ডন বা চুল ছোট করবেন। এরপর মক্কায় গিয়ে তাওয়াফে যিয়ারত (ইফাদা) ও সাঈ করবেন। এই কাজগুলোর ক্রম মাযহাব অনুযায়ী আলেমের কাছ থেকে জেনে নিন।",
       en: "Throw seven pebbles at Jamrat al-Aqabah with a takbir for each. Those doing tamattu or qiran offer the sacrifice, then shave or shorten the hair, then go to Makkah for tawaf al-ifadah and sa'i. Confirm the order of these acts with your scholar according to your madhhab.",
     },
-    items: ["ayah_proclaim"],
+    items: ["ayah_proclaim", "dua_takbir", "dua_sacrifice", "hadith_halq"],
     sunnah: ["jamarat"],
   },
   {
@@ -730,7 +747,7 @@ export const STEPS: GuideStep[] = [
       bn: "মিনায় রাত কাটাবেন। প্রতিদিন দুপুরের পর ছোট, মাঝারি ও বড় জামরায় সাতটি করে কঙ্কর মারবেন। কেউ চাইলে ১২ তারিখ সূর্যাস্তের আগে মিনা ছাড়তে পারেন, অথবা ১৩ তারিখ পর্যন্ত থাকতে পারেন।",
       en: "Spend the nights at Mina. Each day after noon, throw seven pebbles at the small, middle and large jamrah. You may leave Mina before sunset on the 12th, or stay until the 13th.",
     },
-    items: ["ayah_counted_days"],
+    items: ["ayah_counted_days", "dua_takbir"],
     sunnah: ["jamarat"],
   },
   {

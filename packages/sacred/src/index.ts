@@ -12,6 +12,7 @@ import {
 } from "./content";
 
 export * from "./content";
+export * from "./book";
 
 /** The basmalah as it opens every surah except al-Fatihah and at-Tawbah in the Tanzil text. */
 const BASMALAH_PREFIX = AYAT["1:1"]! + " ";

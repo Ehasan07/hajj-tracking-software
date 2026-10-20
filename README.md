@@ -62,6 +62,12 @@ Hajj and Umrah agency management, built as a multi-tenant SaaS. Bangla and Engli
   - notices to all pilgrims, one package or one stage of the journey, with the SMS count shown before sending
   - each plan's monthly SMS allowance is counted in parts; messages past it, or with no gateway set up, are kept as not sent
   - the owner verifies a mobile number at sign-up; a forgotten password can come back by SMS as well as by email
+- A public guide book at `/guide` for anyone to read, in Bangla and English:
+  - the short surahs recited in prayer, Ayat al-Kursi and the end of al-Baqarah, ayah by ayah
+  - the prayer from takbir to salam, Witr and qunut, what comes after the prayer, wudu and the call to prayer
+  - the fard, wajib and sunnah of prayer, wudu, Umrah and Hajj (Hanafi), the rak'ahs of the five prayers and prayer while travelling
+  - everyday duas, every step of Umrah and Hajj with what is said there, and the visit to Madinah
+  - Arabic only from the Tanzil text and from hadith matched across two copies of the collections; text size and which languages show can be set, and it can be searched and printed
 - Sign-in security:
   - A new browser has to enter a 6-digit code sent to the account's email; after that it is trusted for 90 days and listed under "My devices", where it can be removed
   - Password reset by emailed code, with the same answer whether or not the account exists

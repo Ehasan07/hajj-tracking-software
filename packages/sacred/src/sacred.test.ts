@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { AYAT } from "./generated/quran";
-import { allItems, arabicNumber, getItem, ITEMS, itemOfTheDay, receiptItem, STEPS, SUNNAH } from "./index";
+import { allItems, arabicNumber, BOOK, getItem, ITEMS, itemOfTheDay, receiptItem, STEPS, SUNNAH } from "./index";
 
 const ARABIC = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
 
 describe("sacred content", () => {
   it("contains no hand-typed Arabic: every Arabic letter comes from generated sources", () => {
-    for (const file of ["content.ts", "index.ts"]) {
+    for (const file of ["content.ts", "index.ts", "book-items.ts", "book.ts"]) {
       const text = readFileSync(new URL(`./${file}`, import.meta.url), "utf8");
       expect(ARABIC.test(text), file).toBe(false);
     }
@@ -80,5 +80,39 @@ describe("sacred content", () => {
   it("prints a whole ayah on receipts", () => {
     expect(receiptItem().verses.map((v) => v.ref)).toEqual(["2:127"]);
     expect(arabicNumber(127)).toBe("١٢٧");
+  });
+
+  it("builds the guide book only from items that exist, each used where it belongs", () => {
+    const ids = new Set(ITEMS.map((i) => i.id));
+    const chapters = new Set<string>();
+    for (const chapter of BOOK) {
+      expect(chapters.has(chapter.id), chapter.id).toBe(false);
+      chapters.add(chapter.id);
+      for (const block of chapter.blocks) {
+        const used = block.kind === "items" ? block.items : block.kind === "sequence" ? block.steps.flatMap((s) => s.items) : [];
+        for (const id of used) expect(ids.has(id), `${chapter.id}/${block.id} → ${id}`).toBe(true);
+        if (block.kind === "list") expect(block.points.length, block.id).toBeGreaterThan(0);
+        if (block.kind === "journey") expect(STEPS.some((s) => s.phase === block.phase)).toBe(true);
+      }
+    }
+    // The counts in the titles match the lists.
+    const list = (chapter: string, id: string) => BOOK.find((c) => c.id === chapter)!.blocks.find((b) => b.id === id) as { points: unknown[] };
+    expect(list("salah", "salah_conditions").points).toHaveLength(7);
+    expect(list("salah", "salah_fard").points).toHaveLength(6);
+    expect(list("salah", "salah_wajib").points).toHaveLength(14);
+    expect(list("salah", "wudu").points).toHaveLength(4);
+    expect(list("hajj", "hajj_fard").points).toHaveLength(3);
+    expect(list("hajj", "hajj_wajib").points).toHaveLength(6);
+    expect(list("umrah", "umrah_fard").points).toHaveLength(2);
+  });
+
+  it("puts every prayer word, surah and rite dua somewhere in the book", () => {
+    const placed = new Set<string>();
+    for (const chapter of BOOK) for (const block of chapter.blocks) {
+      if (block.kind === "items") block.items.forEach((id) => placed.add(id));
+      if (block.kind === "sequence") block.steps.forEach((s) => s.items.forEach((id) => placed.add(id)));
+      if (block.kind === "journey") STEPS.filter((s) => s.phase === block.phase).forEach((s) => s.items.forEach((id) => placed.add(id)));
+    }
+    for (const item of ITEMS.filter((i) => i.tags.includes("book"))) expect(placed.has(item.id), item.id).toBe(true);
   });
 });
