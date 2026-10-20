@@ -12,7 +12,8 @@
  * when there is none.
  */
 
-const VERSION = "hajj-v1";
+// Bumped whenever what is kept changes: activating a new version deletes the old copies.
+const VERSION = "hajj-v2";
 const PAGES = ["/start", "/guide", "/en/start", "/en/guide", "/offline", "/en/offline"];
 const PUBLIC_PAGE = /^\/(en\/)?(start|guide|offline)?\/?$/;
 const PRIVATE = /^\/(en\/)?(app|admin|onboarding|sign-in|sign-up|forgot-password|dev)(\/|$)|^\/api\//;
@@ -32,7 +33,9 @@ self.addEventListener("install", (event) => {
       for (const page of PAGES) {
         try {
           const res = await fetch(page, { credentials: "omit" });
-          if (!res.ok) continue;
+          // A redirect (e.g. to another language) is never kept: browsers refuse to show
+          // a stored redirect for a page, which leaves the page unopenable.
+          if (!res.ok || res.redirected) continue;
           await cache.put(page, res.clone());
           const assets = await assetsOf(await res.text());
           await Promise.allSettled(assets.map((a) => cache.add(a)));
@@ -57,7 +60,8 @@ self.addEventListener("activate", (event) => {
 async function offline(request) {
   const cache = await caches.open(VERSION);
   const english = new URL(request.url).pathname.startsWith("/en");
-  return (await cache.match(english ? "/en/offline" : "/offline")) ?? new Response("Offline", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } });
+  const page = await cache.match(english ? "/en/offline" : "/offline");
+  return page && !page.redirected ? page : new Response("Offline", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } });
 }
 
 self.addEventListener("fetch", (event) => {
@@ -78,9 +82,9 @@ self.addEventListener("fetch", (event) => {
       (async () => {
         const cache = await caches.open(VERSION);
         const hit = await cache.match(request);
-        if (hit) return hit;
+        if (hit && !hit.redirected) return hit;
         const res = await fetch(request);
-        if (res.ok) cache.put(request, res.clone());
+        if (res.ok && !res.redirected) cache.put(request, res.clone());
         return res;
       })(),
     );
@@ -97,7 +101,7 @@ self.addEventListener("fetch", (event) => {
         const cached = await cache.match(key);
         const refresh = fetch(request)
           .then(async (res) => {
-            if (res.ok && res.headers.get("content-type")?.includes("text/html")) {
+            if (res.ok && !res.redirected && res.headers.get("content-type")?.includes("text/html")) {
               await cache.put(key, res.clone());
               const assets = await assetsOf(await res.clone().text());
               await Promise.allSettled(assets.map((a) => cache.match(a).then((hit) => hit ?? cache.add(a))));
@@ -105,7 +109,7 @@ self.addEventListener("fetch", (event) => {
             return res;
           })
           .catch(() => null);
-        if (cached) {
+        if (cached && !cached.redirected) {
           event.waitUntil(refresh);
           return cached;
         }

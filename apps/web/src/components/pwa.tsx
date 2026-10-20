@@ -7,7 +7,12 @@ import { useEffect, useState } from "react";
 export function ServiceWorker() {
   useEffect(() => {
     if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
-    const register = () => void navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => undefined);
+    // Checking for a new worker on every page load means a fix reaches phones on their next visit.
+    const register = () =>
+      void navigator.serviceWorker
+        .register("/sw.js", { scope: "/" })
+        .then((reg) => reg.update())
+        .catch(() => undefined);
     if (document.readyState === "complete") register();
     else window.addEventListener("load", register, { once: true });
   }, []);
