@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { redirect } from "@/i18n/navigation";
 import { getSession } from "@/server/session";
 import { api } from "@/trpc/server";
+import { smsConfigured } from "@/server/sms";
 
 export default async function AppLayout({
   children,
@@ -39,6 +40,7 @@ export default async function AppLayout({
       shops={me.shops}
       openInquiries={counts ? (counts.new ?? 0) + (counts.follow_up ?? 0) : 0}
       pendingReviews={pendingReviews}
+      sms={smsConfigured()}
       subscription={
         subscription
           ? {

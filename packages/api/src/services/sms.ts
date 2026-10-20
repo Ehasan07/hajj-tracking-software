@@ -45,17 +45,16 @@ export interface OutgoingSms {
 
 /**
  * Record messages to send. Each is queued while the month's allowance lasts;
- * past it, or with no SMS set up on the server, it is kept as "skipped" so
- * the agency can see what didn't go.
+ * past it, it is kept as "skipped" so the agency can see what didn't go.
+ * With no SMS set up on the server nothing is recorded at all.
  */
 export async function enqueueSms(tx: Transaction, messages: OutgoingSms[]) {
-  if (messages.length === 0) return { queued: 0, skipped: 0 };
-  const available = smsAvailable();
-  let remaining = available ? (await smsQuota(tx)).remaining : 0;
+  if (messages.length === 0 || !smsAvailable()) return { queued: 0, skipped: messages.length };
+  let remaining = (await smsQuota(tx)).remaining;
   let queued = 0;
   const rows = messages.map((m) => {
     const parts = Math.min(10, Math.max(1, smsSize(m.body).parts));
-    const fits = available && (remaining == null || remaining >= parts);
+    const fits = remaining == null || remaining >= parts;
     if (fits) {
       if (remaining != null) remaining -= parts;
       queued++;
@@ -64,7 +63,7 @@ export async function enqueueSms(tx: Transaction, messages: OutgoingSms[]) {
       ...m,
       parts,
       status: fits ? "queued" : "skipped",
-      error: fits ? null : available ? "monthly SMS allowance used up" : "SMS is not set up on this server",
+      error: fits ? null : "monthly SMS allowance used up",
     };
   });
   for (let i = 0; i < rows.length; i += 500) await tx.insert(smsMessages).values(rows.slice(i, i + 500));

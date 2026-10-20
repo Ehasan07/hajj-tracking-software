@@ -40,6 +40,8 @@ interface ShellProps {
   openInquiries: number;
   /** Website reviews waiting for a decision (managers only). */
   pendingReviews?: number;
+  /** SMS works on this server; without it the SMS page isn't offered. */
+  sms?: boolean;
   children: ReactNode;
 }
 
@@ -50,6 +52,7 @@ export function AppShell({
   shops,
   openInquiries,
   pendingReviews = 0,
+  sms = false,
   subscription,
   children,
 }: ShellProps) {
@@ -135,12 +138,16 @@ export function AppShell({
         },
         ...(MANAGER_ROLES.includes(role)
           ? [
-              {
-                href: "/app/sms",
-                label: t("nav.sms"),
-                icon: PhoneIcon,
-                tint: "var(--color-saffron-tint)",
-              },
+              ...(sms
+                ? [
+                    {
+                      href: "/app/sms",
+                      label: t("nav.sms"),
+                      icon: PhoneIcon,
+                      tint: "var(--color-saffron-tint)",
+                    },
+                  ]
+                : []),
               {
                 href: "/app/website",
                 label: t("nav.website"),

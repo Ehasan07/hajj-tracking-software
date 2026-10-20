@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { NoAccess } from "@/components/no-access";
 import { PageBody, PageHeader } from "@/components/page-header";
@@ -17,19 +18,14 @@ export default async function SmsPage({ params }: { params: Promise<{ locale: Lo
   const me = await caller.tenant.me();
   if (!MANAGER_ROLES.includes(me.role)) return <NoAccess />;
   const [overview, packages] = await Promise.all([caller.sms.overview(), caller.packages.list()]);
+  // No SMS provider on this server: the page isn't offered at all.
+  if (!overview.available) notFound();
   const { quota } = overview;
   const pct = quota.limit ? Math.min(100, Math.round((quota.used / quota.limit) * 100)) : 0;
 
   return (
     <PageBody>
       <PageHeader title={t("title")} subtitle={t("subtitle")} />
-
-      {!overview.available ? (
-        <Card className="border-l-[6px] border-l-saffron p-5">
-          <b className="text-[16px]">{t("off.title")}</b>
-          <p className="mt-1 text-[14px] leading-relaxed text-ink-2">{t("off.body")}</p>
-        </Card>
-      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-12">
         <Card className="flex flex-col gap-4 p-6 lg:col-span-5">
@@ -51,7 +47,7 @@ export default async function SmsPage({ params }: { params: Promise<{ locale: Lo
 
         <Card className="p-6 lg:col-span-7">
           <h2 className="mb-4 text-lg font-bold">{t("notice.title")}</h2>
-          <NoticeForm packages={packages.filter((p) => p.active).map((p) => ({ id: p.id, name: p.name }))} available={overview.available} remaining={quota.remaining} />
+          <NoticeForm packages={packages.filter((p) => p.active).map((p) => ({ id: p.id, name: p.name }))} remaining={quota.remaining} />
         </Card>
       </div>
 

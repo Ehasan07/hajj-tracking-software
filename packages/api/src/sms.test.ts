@@ -73,12 +73,13 @@ describe("payment texts", () => {
     await ownerA().sms.setReceipts({ on: true });
   });
 
-  it("keeps a message as not sent when SMS isn't set up on the server", async () => {
+  it("records nothing and refuses notices when SMS isn't set up on the server", async () => {
     delete process.env.SMS_TRANSPORT;
     try {
       const pilgrim = await staffA().pilgrims.create({ fullName: "Karim Mia", phone: "01912345678", packageId, passportNumber: `C${Date.now().toString().slice(-8)}` });
-      expect((await staffA().payments.receive({ pilgrimId: pilgrim.id, amount: "1,000", method: "cash" })).sms).toBe("skipped");
-      expect((await ownerA().sms.overview()).receipts[0]).toMatchObject({ status: "skipped", error: "SMS is not set up on this server" });
+      const before = (await ownerA().sms.overview()).receipts.length;
+      expect((await staffA().payments.receive({ pilgrimId: pilgrim.id, amount: "1,000", method: "cash" })).sms).toBe("off");
+      expect((await ownerA().sms.overview()).receipts).toHaveLength(before);
       await expect(ownerA().sms.sendNotice({ group: "all", text: "মিটিং শুক্রবার" })).rejects.toThrow(/SMS_OFF/);
     } finally {
       process.env.SMS_TRANSPORT = "file";
@@ -104,7 +105,7 @@ describe("notices", () => {
     await sql`update subscriptions set plan_id = (select id from plans where code = ${planCode}) where tenant_id = ${a.tenant}`;
     await sql.end();
     const quota = (await ownerA().sms.overview()).quota;
-    // The payment text is two Bangla parts, the notice one part to each of three numbers; skipped ones don't count.
+    // The payment text is two Bangla parts, the notice one part to each of three numbers.
     expect(quota).toMatchObject({ limit: 8, used: 5, remaining: 3 });
     // Two parts each for three numbers is 6, more than the 3 left.
     await expect(ownerA().sms.sendNotice({ group: "all", text: "ক".repeat(100) })).rejects.toThrow(/SMS_LIMIT:3/);

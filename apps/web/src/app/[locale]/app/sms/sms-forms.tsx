@@ -44,7 +44,7 @@ export function ReceiptToggle({ on }: { on: boolean }) {
   );
 }
 
-export function NoticeForm({ packages, available, remaining }: { packages: { id: string; name: string }[]; available: boolean; remaining: number | null }) {
+export function NoticeForm({ packages, remaining }: { packages: { id: string; name: string }[]; remaining: number | null }) {
   const t = useTranslations("sms.notice");
   const ts = useTranslations("pilgrimStatus");
   const locale = useLocale() as Locale;
@@ -131,7 +131,7 @@ export function NoticeForm({ packages, available, remaining }: { packages: { id:
           {t("done", { n: digits(done.queued, locale) })}
         </p>
       ) : null}
-      <Button type="submit" disabled={!available || send.isPending || recipients === 0 || text.trim().length < 5 || over} className="self-start">
+      <Button type="submit" disabled={send.isPending || recipients === 0 || text.trim().length < 5 || over} className="self-start">
         {send.isPending ? t("sending") : t("send")}
       </Button>
     </form>

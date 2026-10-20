@@ -271,7 +271,7 @@
     "fullDue": "Full due",
     "sms": {
       "queued": "A text is on its way to the pilgrim's phone",
-      "skipped": "No text sent: this month's allowance is used up, or SMS isn't set up yet"
+      "skipped": "No text sent: this month's SMS allowance is used up"
     }
   },
   "receipt": {
@@ -1818,10 +1818,6 @@
   "sms": {
     "title": "SMS and notices",
     "subtitle": "Payment texts and notices to groups of pilgrims",
-    "off": {
-      "title": "SMS isn't on yet",
-      "body": "No SMS provider is connected to the server, so nothing is being sent. Anything that would have gone out is listed below as not sent. It starts working as soon as a provider account is connected."
-    },
     "quota": {
       "title": "SMS this month",
       "unlimited": "Unlimited plan",

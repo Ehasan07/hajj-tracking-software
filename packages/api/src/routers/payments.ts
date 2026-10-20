@@ -5,7 +5,7 @@ import { z } from "zod";
 import { outstanding, parseAmount, receiptSms } from "@hajj/core";
 import { ledgerEntries, payments, pilgrims, tenantSettings, travelPackages } from "@hajj/db/schema";
 import { randomToken } from "../crypto";
-import { enqueueSms } from "../services/sms";
+import { enqueueSms, smsAvailable } from "../services/sms";
 import { businessDate, getSettings, nextReference } from "../services/tenant";
 import { router, tenantProcedure, withRoles } from "../trpc";
 import { amountInput, optionalText } from "./shared";
@@ -107,7 +107,7 @@ export const paymentsRouter = router({
 
       // The pilgrim gets a text with the amount and a link that proves the receipt is real.
       let sms: "queued" | "skipped" | "off" = "off";
-      if (settings.smsReceipts && pilgrim.phone && pilgrim.currency === "BDT") {
+      if (settings.smsReceipts && pilgrim.phone && pilgrim.currency === "BDT" && smsAvailable()) {
         const origin = new URL(process.env.BETTER_AUTH_URL ?? "http://localhost:3100").origin;
         const body = receiptSms({
           agency: settings.legalName,
