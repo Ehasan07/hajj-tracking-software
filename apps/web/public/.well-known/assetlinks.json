@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.takatracker.hajj",
+      "sha256_cert_fingerprints": ["AE:AE:F5:B4:EE:D8:7E:48:03:8A:FD:B8:38:11:5C:D5:4D:31:74:7E:BE:83:31:C8:77:E8:8B:A5:71:21:41:21"]
+    }
+  }
+]

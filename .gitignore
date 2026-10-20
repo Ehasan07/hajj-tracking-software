@@ -17,3 +17,14 @@ test-results
 /e2e-output
 deploy/backups/
 .mail-outbox/
+
+# Android build output and signing material (the keystore lives outside the repo)
+apps/android/app/build/
+apps/android/build/
+apps/android/.gradle/
+apps/android/*.apk
+apps/android/*.aab
+apps/android/*.idsig
+apps/android/local.properties
+*.keystore
+*.jks
