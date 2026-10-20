@@ -22,8 +22,8 @@ import {
   ShieldIcon,
   TeamIcon,
 } from "./icons";
-import { Khatam } from "./ui";
 import { UnitIcon } from "./unit-icon";
+import { BrandMark } from "./brand-mark";
 
 interface ShellProps {
   subscription: {
@@ -178,9 +178,7 @@ export function AppShell({
   const sidebar = (
     <nav aria-label={t("nav.menu")} className="flex h-full flex-col gap-6 px-4 py-6">
       <Link href="/app" className="flex items-center gap-3 px-2" onClick={() => setOpen(false)}>
-        <span className="flex h-12 w-11 items-center justify-center rounded-[22px_22px_8px_8px] bg-haram">
-          <Khatam className="h-7 w-7 text-saffron" strokeWidth={7} />
-        </span>
+        <BrandMark className="h-12 w-12" />
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-[17px] leading-tight font-bold">{agency}</span>
           {licence ? <span className="truncate text-xs text-ink-3">{licence}</span> : null}
@@ -283,9 +281,7 @@ export function AppShell({
 
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-paper/95 px-4 backdrop-blur lg:hidden">
         <Link href="/app" className="flex items-center gap-2 font-bold">
-          <span className="flex h-9 w-8 items-center justify-center rounded-[16px_16px_6px_6px] bg-haram">
-            <Khatam className="h-5 w-5 text-saffron" strokeWidth={8} />
-          </span>
+          <BrandMark className="h-9 w-9" />
           <span className="max-w-[60vw] truncate">{agency}</span>
         </Link>
         <button

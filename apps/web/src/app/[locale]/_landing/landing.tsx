@@ -6,31 +6,17 @@ import { plans } from "@hajj/db/schema";
 import { getItem } from "@hajj/sacred";
 import { HotelIcon, PaymentIcon, PayrollIcon, ReceiptIcon, ShieldIcon } from "@/components/icons";
 import { DraftChip, LabbaikOrnament, QuranAttribution, ReadingLines, StarDivider, Verses } from "@/components/sacred";
-import { buttonClass, Khatam } from "@/components/ui";
+import { buttonClass } from "@/components/ui";
 import { UnitIcon } from "@/components/unit-icon";
 import { Link } from "@/i18n/navigation";
 import { dateText, digits, money, words, type Locale } from "@/lib/format";
 import { UNIT_THEME } from "@/lib/units";
 import { deviceCheckEnabled } from "@/server/device-otp";
 import { smsConfigured } from "@/server/sms";
+import { hijriDate, nextArafah } from "@/lib/hijri";
 import { ThemeDemo } from "./theme-demo";
-
-const TZ = "Asia/Dhaka";
-
-/**
- * The next Day of Arafah (9 Dhul Hijjah) by the Umm al-Qura calendar, and how
- * many days away it is. Moon sighting can move it by a day or two.
- */
-function nextArafah(now = new Date()) {
-  const fmt = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", { timeZone: TZ, day: "numeric", month: "numeric", year: "numeric" });
-  for (let i = 0; i < 400; i++) {
-    const date = new Date(now.getTime() + i * 864e5);
-    const parts = fmt.formatToParts(date);
-    const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
-    if (get("month") === 12 && get("day") === 9) return { date, days: i, year: get("year") };
-  }
-  return null;
-}
+import { BrandMark } from "@/components/brand-mark";
+import { InstallApp } from "@/components/pwa";
 
 /** The step marker: an arch, like the doorways of the Haram, holding the step's number. */
 function Arch({ n, locale }: { n: number; locale: Locale }) {
@@ -194,13 +180,7 @@ export async function Landing({ locale }: { locale: Locale }) {
   const trialPlan = process.env.TRIAL_PLAN ?? "premium";
   const trialName = plansList.find((p) => p.code === trialPlan);
   const house = getItem("ayah_first_house");
-  const hijri = arafah
-    ? new Intl.DateTimeFormat(locale === "bn" ? "bn-BD-u-ca-islamic-umalqura" : "en-GB-u-ca-islamic-umalqura", { timeZone: TZ, day: "numeric", month: "long", year: "numeric" })
-        .formatToParts(arafah.date)
-        .filter((p) => p.type !== "era" && p.type !== "literal")
-        .map((p) => p.value)
-        .join(" ")
-    : "";
+  const hijri = arafah ? hijriDate(arafah.date, locale) : "";
 
   const steps = [
     { key: "inquiry", snippet: <InquirySlip locale={locale} /> },
@@ -227,9 +207,7 @@ export async function Landing({ locale }: { locale: Locale }) {
       <header className="sticky top-0 z-30 border-b border-line/70 bg-ground/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-8">
           <a href="#top" className="flex items-center gap-2.5">
-            <span className="flex h-11 w-10 items-center justify-center rounded-[20px_20px_8px_8px] bg-haram">
-              <Khatam className="h-6 w-6 text-saffron" strokeWidth={7} />
-            </span>
+            <BrandMark className="h-11 w-11" />
             <b className="text-lg whitespace-nowrap">{t("brand")}</b>
           </a>
           <nav aria-label={t("nav.label")} className="hidden items-center gap-1 text-[15px] lg:flex">
@@ -271,6 +249,7 @@ export async function Landing({ locale }: { locale: Locale }) {
             </Link>
           </div>
           <p className="animate-rise font-hand text-xl text-ink-3 [animation-delay:240ms]">{t("hero.note")}</p>
+          <InstallApp className="w-fit" />
         </div>
 
         {arafah ? (
@@ -474,7 +453,7 @@ export async function Landing({ locale }: { locale: Locale }) {
       <footer className="border-t border-line bg-paper">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-[14px] text-ink-3 sm:px-8">
           <span className="flex items-center gap-2">
-            <Khatam className="h-5 w-5 text-haram" strokeWidth={7} />
+            <BrandMark className="h-7 w-7" />
             <b className="text-ink">{t("brand")}</b>
           </span>
           <span className="flex flex-wrap items-center gap-4">

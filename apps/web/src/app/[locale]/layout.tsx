@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { routing } from "@/i18n/routing";
 import { TRPCReactProvider } from "@/trpc/react";
 import "../globals.css";
+import { ServiceWorker } from "@/components/pwa";
 
 const anek = Anek_Bangla({ subsets: ["bengali", "latin"], variable: "--font-anek", display: "swap" });
 const tiro = Tiro_Bangla({ subsets: ["bengali", "latin"], weight: "400", variable: "--font-tiro", display: "swap" });
@@ -29,8 +30,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     metadataBase: new URL(process.env.BETTER_AUTH_URL ?? "http://localhost:3100"),
     title: { default: t("title"), template: `%s · ${t("title")}` },
     description: t("description"),
+    // Installed on an iPhone's home screen it opens full screen, like an app.
+    appleWebApp: { capable: true, title: "হজ ট্র্যাকিং", statusBarStyle: "default" },
   };
 }
+
+export const viewport = { themeColor: "#0b4f4a" };
 
 export default async function LocaleLayout({
   children,
@@ -48,6 +53,7 @@ export default async function LocaleLayout({
       <body className="min-h-dvh antialiased">
         <NextIntlClientProvider>
           <TRPCReactProvider>{children}</TRPCReactProvider>
+          <ServiceWorker />
         </NextIntlClientProvider>
       </body>
     </html>

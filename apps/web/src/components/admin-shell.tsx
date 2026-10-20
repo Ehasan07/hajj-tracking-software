@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 import { KaabaIcon, LogoutIcon, PilgrimIcon, ShieldIcon, StatementIcon } from "./icons";
-import { Khatam } from "./ui";
+import { BrandMark } from "./brand-mark";
 
 /** The platform owner's console. Deliberately dark, so it is never mistaken for an agency's app. */
 export function AdminShell({ email, children }: { email: string; children: ReactNode }) {
@@ -25,9 +25,7 @@ export function AdminShell({ email, children }: { email: string; children: React
     <div className="min-h-dvh lg:grid lg:grid-cols-[256px_minmax(0,1fr)]">
       <aside className="flex flex-col gap-6 bg-ink px-4 py-6 text-ground lg:sticky lg:top-0 lg:h-dvh">
         <div className="flex items-center gap-3 px-2">
-          <span className="flex h-12 w-11 items-center justify-center rounded-[22px_22px_8px_8px] bg-saffron">
-            <Khatam className="h-7 w-7 text-ink" strokeWidth={8} />
-          </span>
+          <BrandMark className="h-12 w-12" />
           <span className="flex flex-col">
             <b className="text-[17px] leading-tight">{t("title")}</b>
             <span className="w-fit rounded-full bg-[#1c4744] px-2 py-0.5 text-[11px] font-bold tracking-wide text-saffron">{t("badge")}</span>

@@ -44,7 +44,11 @@ const config: NextConfig = {
   // bundling it twice breaks parameter mapping between copies.
   serverExternalPackages: ["postgres", "drizzle-orm"],
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // The offline worker must always be fetched fresh, or an old copy keeps serving old pages.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }, { key: "Service-Worker-Allowed", value: "/" }] },
+    ];
   },
 };
 

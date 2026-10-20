@@ -4,6 +4,7 @@ import { getItem } from "@hajj/sacred";
 import type { Locale } from "@/lib/format";
 import { DraftChip, LabbaikOrnament, StarDivider } from "./sacred";
 import { Khatam } from "./ui";
+import { BrandMark } from "./brand-mark";
 
 export async function AuthShell({ title, children }: { title: string; children: ReactNode }) {
   const locale = (await getLocale()) as Locale;
@@ -12,9 +13,7 @@ export async function AuthShell({ title, children }: { title: string; children: 
   return (
     <main className="grid min-h-dvh lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <aside className="relative hidden overflow-hidden bg-haram-night p-12 text-ground lg:flex lg:flex-col lg:justify-between">
-        <span className="flex h-14 w-12 items-center justify-center rounded-[24px_24px_10px_10px] bg-haram">
-          <Khatam className="h-8 w-8 text-saffron" strokeWidth={7} />
-        </span>
+        <BrandMark className="h-14 w-14" />
         <Khatam
           className="absolute -right-32 -bottom-32 h-[520px] w-[520px] animate-turn text-[#14635d]"
           strokeWidth={0.8}

@@ -17,10 +17,12 @@ import {
 } from "@hajj/sacred";
 import { PrintButton } from "@/components/print-button";
 import { ArabicText, LabbaikOrnament, StarDivider } from "@/components/sacred";
-import { buttonClass, Khatam } from "@/components/ui";
+import { buttonClass } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { digits, type Locale } from "@/lib/format";
 import { BookControls } from "./book-controls";
+import { BrandMark } from "@/components/brand-mark";
+import { InstallApp } from "@/components/pwa";
 
 type Params = Promise<{ locale: Locale }>;
 
@@ -326,9 +328,7 @@ export default async function GuideBook({ params }: { params: Params }) {
       <header className="sticky top-0 z-30 border-b border-line/70 bg-ground/90 backdrop-blur print:static">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-10 w-9 items-center justify-center rounded-[18px_18px_7px_7px] bg-haram">
-              <Khatam className="h-5 w-5 text-saffron" strokeWidth={7} />
-            </span>
+            <BrandMark className="h-10 w-10" />
             <b className="whitespace-nowrap">{t("brand")}</b>
           </Link>
           <div className="flex items-center gap-2 print:hidden">
@@ -367,6 +367,7 @@ export default async function GuideBook({ params }: { params: Params }) {
             </p>
           </div>
           <BookControls />
+          <InstallApp className="relative print:hidden" />
         </section>
 
         <nav aria-label={t("contents")} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 print:hidden">

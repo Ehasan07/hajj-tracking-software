@@ -1922,5 +1922,59 @@
     "sunnah": "Sunnah at this step",
     "print": "Print",
     "forAgencies": "See the full software for Hajj agencies"
+  },
+  "pwa": {
+    "install": "Install the app",
+    "ios": "On iPhone: in Safari tap the Share button (□↑), then choose \"Add to Home Screen\".",
+    "offline": {
+      "title": "No internet",
+      "body": "This page needs the internet. The guide book is kept on your phone and can be read without it.",
+      "guide": "Open the guide book",
+      "home": "Back to the app's home"
+    },
+    "home": {
+      "title": "Hajj Tracking",
+      "brand": "Hajj Tracking",
+      "arafah": "The Day of Arafah, Hajj {year}",
+      "guideTitle": "Guide book",
+      "offline": "Once opened, the guide book stays on your phone and can be read without the internet.",
+      "tiles": {
+        "guide": {
+          "title": "Guide book",
+          "body": "Surahs, prayer, duas, Umrah and Hajj: Arabic with Bangla pronunciation and meaning"
+        },
+        "quran": {
+          "title": "Surahs",
+          "body": "Short surahs for prayer"
+        },
+        "salah": {
+          "title": "Prayer",
+          "body": "From takbir to salam"
+        },
+        "umrah": {
+          "title": "Umrah",
+          "body": "Step by step"
+        },
+        "hajj": {
+          "title": "Hajj",
+          "body": "8th to 13th Dhul Hijjah"
+        },
+        "daily": {
+          "title": "Everyday duas",
+          "body": "Food, sleep, travel"
+        },
+        "madinah": {
+          "title": "Madinah",
+          "body": "The Prophet's Mosque, al-Baqi"
+        }
+      },
+      "staff": {
+        "title": "Agency staff?",
+        "body": "Sign in to run pilgrims, payments, receipts, hotels and the shops from your phone.",
+        "open": "Open the software",
+        "new": "New agency"
+      },
+      "daysLeft": "days to go"
+    }
   }
 }
