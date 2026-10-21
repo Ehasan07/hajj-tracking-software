@@ -1,4 +1,4 @@
-import { expect, mobileNumber, passEmailStep, passPhoneStep, test } from "./fixtures";
+import { expect, mobileNumber, passEmailStep, passPhoneStep, printed, test } from "./fixtures";
 import { waitForSms } from "./mail";
 
 // ICAO 9303 specimen passport, with valid check digits.
@@ -104,6 +104,12 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await expect(page.getByText("Fifty Thousand Taka Only", { exact: false })).toBeVisible();
   await page.waitForTimeout(1200);
   await snap(page, "05-receipt");
+  // On paper: the receipt alone, one A5 landscape sheet.
+  await page.emulateMedia({ media: "print" });
+  await expect(page.locator(".print-area")).toBeVisible();
+  await expect(page.getByRole("button", { name: "প্রিন্ট" })).toBeHidden();
+  expect(await printed(page)).toEqual({ sheets: 1, width: 595, height: 420 });
+  await page.emulateMedia({ media: "screen" });
 
   const qrLink = await page.evaluate(() => document.querySelector("article svg path") !== null);
   expect(qrLink).toBe(true);

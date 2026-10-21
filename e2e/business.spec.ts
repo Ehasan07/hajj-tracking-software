@@ -1,4 +1,4 @@
-import { expect, mobileNumber, passEmailStep, passPhoneStep, test } from "./fixtures";
+import { expect, mobileNumber, passEmailStep, passPhoneStep, printed, test } from "./fixtures";
 import { waitForCode } from "./mail";
 
 const shots = process.env.E2E_SCREENSHOTS;
@@ -70,6 +70,13 @@ test("side businesses: zamzam route on credit, statements, and a medicine-only l
   await page.goto("/app/statements?unit=zamzam");
   await expect(page.getByText("৳১,৫০০").first()).toBeVisible();
   await snap(page, "21-statement");
+  // On paper: only the statement, on A4.
+  await page.emulateMedia({ media: "print" });
+  await expect(page.locator(".print-doc")).toBeVisible();
+  await expect(page.locator(".print-doc").getByText("৳১,৫০০").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "প্রিন্ট" })).toBeHidden();
+  expect(await printed(page)).toMatchObject({ width: 595, height: 842 });
+  await page.emulateMedia({ media: "screen" });
 
   // A login that opens only the medicine shop.
   await page.goto("/app/team");

@@ -99,7 +99,7 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
       {perAyah ? (
         <ol className="flex flex-col divide-y divide-dashed divide-line">
           {item.verses.map((v, i) => (
-            <li key={v.ref} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
+            <li key={v.ref} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 print:break-inside-avoid">
               <ArabicText source="quran" className={`${show.ar} ${arabicSize}`}>
                 {v.arabic}
                 {v.part ? null : (
@@ -354,7 +354,7 @@ export default async function GuideBook({ params }: { params: Params }) {
 
       <main className="mx-auto flex max-w-6xl flex-col gap-12 px-4 pt-10 pb-20 sm:px-8">
         <section className="relative flex flex-col gap-5">
-          <LabbaikOrnament className="pointer-events-none absolute -top-6 -right-6 text-[200px] text-haram-tint/80 sm:text-[280px]" />
+          <LabbaikOrnament className="pointer-events-none absolute -top-6 -right-6 text-[200px] text-haram-tint/80 sm:text-[280px] print:hidden" />
           <h1 className="relative max-w-3xl font-display text-[40px] leading-[1.12] sm:text-6xl">{t("title")}</h1>
           <p className="relative max-w-2xl text-[18px] leading-relaxed text-ink-2">{t("subtitle")}</p>
           <div className="relative flex flex-col gap-2 rounded-[20px] border-l-[6px] border-l-saffron bg-paper px-5 py-4 text-[14px] leading-relaxed text-ink-2">

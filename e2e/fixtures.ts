@@ -18,6 +18,13 @@ export function mobileNumber() {
   return `017${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`;
 }
 
+/** The page as printed: how many sheets, and the sheet size in points (A4 595×842, A5 landscape 595×420). */
+export async function printed(page: import("@playwright/test").Page) {
+  const pdf = (await page.pdf({ preferCSSPageSize: true })).toString("latin1");
+  const box = pdf.match(/\/MediaBox\s*\[\s*0 0 ([\d.]+) ([\d.]+)\s*\]/);
+  return { sheets: (pdf.match(/\/Type\s*\/Page[^s]/g) ?? []).length, width: Math.round(Number(box?.[1])), height: Math.round(Number(box?.[2])) };
+}
+
 /** Sign-up first confirms the email: type the code it was sent, and wait for the next step. */
 export async function passEmailStep(page: import("@playwright/test").Page, email: string, since: Date) {
   const { waitForCode } = await import("./mail");

@@ -1,4 +1,4 @@
-import { expect, test } from "./fixtures";
+import { expect, printed, test } from "./fixtures";
 
 test("the guide book reads in Bangla and English, with search and reading settings", async ({ page }) => {
   await page.goto("/guide");
@@ -37,6 +37,16 @@ test("the guide book reads in Bangla and English, with search and reading settin
   await expect(falaq.getByText("Say: I seek refuge with the Lord of daybreak")).toBeHidden();
   await page.reload();
   await expect(page.getByRole("button", { name: "English", pressed: false })).toBeVisible();
+
+  // On paper: the whole book on A4, text showing (not hidden by the receipt-only print rules), no buttons.
+  await page.emulateMedia({ media: "print" });
+  await expect(page.locator("#item-kalima_tayyibah")).toBeVisible();
+  await expect(page.locator("#item-surah_falaq")).toBeVisible();
+  await expect(page.getByRole("button", { name: "প্রিন্ট" })).toBeHidden();
+  const sheets = await printed(page);
+  expect(sheets).toMatchObject({ width: 595, height: 842 });
+  expect(sheets.sheets).toBeGreaterThan(20);
+  await page.emulateMedia({ media: "screen" });
 
   await page.goto("/en/guide");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("A guide to Hajj, Umrah and prayer");

@@ -192,13 +192,26 @@
   }
 }
 
-/* Printing: only the document itself, edge to edge on its own page size. */
+/*
+ * Printing. A long page (the guide book) prints as it is, on A4 with margins.
+ * A page that holds a document (a receipt, a statement, a salary sheet)
+ * prints only that document: a receipt edge to edge on A5 landscape, other
+ * documents on A4.
+ */
 @media print {
   @page {
+    size: A4;
+    margin: 12mm;
+  }
+  @page receipt {
     size: A5 landscape;
     margin: 0;
   }
-  body * {
+  body:has(.print-area) {
+    page: receipt;
+  }
+  /* :where() keeps this as weak as "body *", so the document's own rule below wins. */
+  body:where(:has(.print-area, .print-doc)) * {
     visibility: hidden;
   }
   .print-area,
@@ -224,9 +237,15 @@
     box-shadow: none !important;
     border-radius: 0 !important;
   }
+  /* Nothing waits for an animation on paper: entrance effects would leave text invisible. */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
   .print-doc *,
   .print-area * {
-    animation: none !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
