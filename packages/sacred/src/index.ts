@@ -1,4 +1,4 @@
-import { AYAT } from "./generated/quran";
+import { AYAH_PARTS, AYAT } from "./generated/quran";
 import { HADITH } from "./generated/hadith";
 import {
   HADITH_BOOK_NAMES,
@@ -37,9 +37,11 @@ export function arabicNumber(n: number): string {
 export interface ResolvedVerse {
   ref: string;
   surah: number;
+  /** 0 for words cut from an ayah: shown without the end-of-ayah sign, with `part` as their source. */
   ayah: number;
   arabic: string;
   meaning: Text;
+  part?: Text;
 }
 
 export interface ResolvedItem extends Omit<SacredItem, "arabic" | "meaning"> {
@@ -48,6 +50,14 @@ export interface ResolvedItem extends Omit<SacredItem, "arabic" | "meaning"> {
   verses: ResolvedVerse[];
   citation: Text;
   hadithCorrections: { from: string; to: string; note: string }[];
+}
+
+const bnDigits = (s: string) => s.replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]!);
+
+function partCitation(ref: string): Text {
+  const [s] = ref.split(":").map(Number);
+  const name = SURAH_NAMES[s!]!;
+  return { bn: `সূরা ${name.bn} ${bnDigits(ref)}`, en: `Surah ${name.en} ${ref}` };
 }
 
 function quranCitation(refs: string[]): Text {
@@ -75,6 +85,17 @@ export function resolve(item: SacredItem): ResolvedItem {
       return { ref, surah, ayah, arabic: text, meaning: { bn: meaning.bn[i] ?? "", en: meaning.en[i] ?? "" } };
     });
     return { ...rest, basmalah, verses, citation: quranCitation(arabic.refs), hadithCorrections: [] };
+  }
+  if (arabic.type === "quranParts") {
+    const verses = arabic.ids.map((id, i) => {
+      const part = AYAH_PARTS[id];
+      if (!part) throw new Error(`Unknown ayah part ${id}`);
+      const [surah] = part.ref.split(":").map(Number) as [number];
+      return { ref: id, surah, ayah: 0, arabic: part.text, meaning: { bn: meaning.bn[i] ?? "", en: meaning.en[i] ?? "" }, part: partCitation(part.ref) };
+    });
+    const refs = verses.map((v) => AYAH_PARTS[v.ref]!.ref);
+    const citation = { bn: `কুরআন ${refs.map(bnDigits).join(" ও ")}`, en: `Quran ${refs.join(" and ")}` };
+    return { ...rest, basmalah: false, verses, citation, hadithCorrections: [] };
   }
   const h = HADITH[arabic.id];
   if (!h) throw new Error(`Unknown hadith ${arabic.id}`);

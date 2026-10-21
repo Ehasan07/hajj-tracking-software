@@ -102,6 +102,36 @@ export const BOOK: BookChapter[] = [
     ],
   },
 
+  /* ---------------------------------------------------- kalimah and salawat */
+  {
+    id: "kalima",
+    title: t("কালিমা ও দরুদ শরিফ", "Kalimah and salawat"),
+    summary: t(
+      "ঈমানের কালিমা আর নবী (সা.)-এর ওপর দরুদ: আরবি, উচ্চারণ ও অর্থসহ, কুরআন ও হাদিসের উৎস দিয়ে।",
+      "The words of faith and the blessings on the Prophet: Arabic, pronunciation and meaning, with their source in the Quran and hadith.",
+    ),
+    blocks: [
+      { kind: "items", id: "kalimas", title: t("কালিমা", "Kalimah"), items: ["kalima_tayyibah", "kalima_shahadah", "kalima_tamjid"] },
+      {
+        kind: "list",
+        id: "kalima_other",
+        title: t("অন্য কালিমাগুলো কেন নেই", "Why the other kalimahs are not here"),
+        ordered: false,
+        points: [
+          t(
+            "প্রচলিত \"ছয় কালিমা\"-র বাকিগুলো (তাওহিদ, ইস্তিগফার, রদ্দে কুফর) এই নামে ও এই শব্দে একসাথে কুরআন বা হাদিসের কিতাবে পাওয়া যায় না; এগুলো শেখানোর জন্য পরে সাজানো।",
+            "The rest of the familiar \"six kalimahs\" (Tawhid, Istighfar, Radd al-Kufr) are not found under these names and in these words in the Quran or the hadith collections; they were arranged later for teaching.",
+          ),
+          t(
+            "এই বইয়ে প্রতিটি আরবি পাঠ কুরআন বা হাদিসের কিতাব থেকে হুবহু নেওয়া, তাই সেগুলো এখানে রাখা হয়নি। শিখতে চাইলে আপনার আলেমের কাছ থেকে শুদ্ধ পাঠ নিন।",
+            "Every Arabic text in this book is taken word for word from the Quran or the hadith collections, so they are not included. To learn them, take the correct text from your scholar.",
+          ),
+        ],
+      },
+      { kind: "items", id: "durud", title: t("দরুদ শরিফ", "Salawat on the Prophet"), items: ["durud_ayah", "dua_durud", "durud_virtue"] },
+    ],
+  },
+
   /* ------------------------------------------------------------ prayer */
   {
     id: "salah",
@@ -216,8 +246,8 @@ export const BOOK: BookChapter[] = [
           t("রুকুতে কমপক্ষে তিনবার 'সুবহানা রাব্বিয়াল আযিম' বলা", "'Subhana rabbiyal azim' at least three times in bowing"),
           t("রুকু থেকে ওঠার সময় 'সামিআল্লাহু লিমান হামিদাহ' আর দাঁড়িয়ে 'রাব্বানা লাকাল হামদ' বলা", "'Sami Allahu liman hamidah' while rising, and 'Rabbana lakal hamd' once standing"),
           t("সিজদায় কমপক্ষে তিনবার 'সুবহানা রাব্বিয়াল আ'লা' বলা", "'Subhana rabbiyal a'la' at least three times in prostration"),
-          t("শেষ বৈঠকে দুরুদ শরিফ পড়া", "The salawat in the final sitting"),
-          t("দুরুদের পর দোয়া মাসুরা পড়া", "A supplication after the salawat"),
+          t("শেষ বৈঠকে দরুদ শরিফ পড়া", "The salawat in the final sitting"),
+          t("দরুদের পর দোয়া মাসুরা পড়া", "A supplication after the salawat"),
           t("সালামের সময় ডানে ও বামে মুখ ফেরানো", "Turning the face right and left with the salam"),
         ],
         note: t("সুন্নত ছুটে গেলে নামাজ হয়ে যায়, তবে সওয়াব কম হয়।", "Missing a sunnah does not invalidate the prayer, but its reward is less."),
@@ -268,7 +298,7 @@ export const BOOK: BookChapter[] = [
           {
             title: t("বৈঠক", "The sitting"),
             body: t(
-              "দুই সিজদার পর বসে আত্তাহিয়্যাতু, দুরুদ শরিফ ও দোয়া মাসুরা পড়বেন। তিন বা চার রাকাতের নামাজে দ্বিতীয় রাকাতের এই প্রথম বৈঠকে শুধু আত্তাহিয়্যাতু পড়ে দাঁড়িয়ে যাবেন।",
+              "দুই সিজদার পর বসে আত্তাহিয়্যাতু, দরুদ শরিফ ও দোয়া মাসুরা পড়বেন। তিন বা চার রাকাতের নামাজে দ্বিতীয় রাকাতের এই প্রথম বৈঠকে শুধু আত্তাহিয়্যাতু পড়ে দাঁড়িয়ে যাবেন।",
               "After the two prostrations, sit and recite the tashahhud, the salawat and the supplication. In a prayer of three or four rak'ahs, this first sitting after the second rak'ah has only the tashahhud, then you stand up.",
             ),
             items: ["dua_tashahhud", "dua_durud", "dua_masura"],

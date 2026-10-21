@@ -222,6 +222,20 @@ export const HADITH: Record<string, { text: string; book: HadithBook; number: st
     "inBook": "66:32",
     "corrections": []
   },
+  "tamjid": {
+    "text": "سُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ وَلاَ إِلَهَ إِلاَّ اللَّهُ وَاللَّهُ أَكْبَرُ وَلاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ الْعَلِيِّ الْعَظِيمِ",
+    "book": "ibnmajah",
+    "number": "3878",
+    "inBook": "34:52",
+    "corrections": []
+  },
+  "durud_virtue": {
+    "text": "مَنْ صَلَّى عَلَىَّ وَاحِدَةً صَلَّى اللَّهُ عَلَيْهِ عَشْرًا",
+    "book": "muslim",
+    "number": "408",
+    "inBook": "4:74",
+    "corrections": []
+  },
   "eat_start": {
     "text": "بِسْمِ اللَّهِ",
     "book": "abudawud",

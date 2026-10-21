@@ -102,14 +102,18 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
             <li key={v.ref} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
               <ArabicText source="quran" className={`${show.ar} ${arabicSize}`}>
                 {v.arabic}
-                <span className="mx-1 text-saffron-deep">
-                  {" "}
-                  {AYAH_END}
-                  {arabicNumber(v.ayah)}
-                </span>
+                {v.part ? null : (
+                  <span className="mx-1 text-saffron-deep">
+                    {" "}
+                    {AYAH_END}
+                    {arabicNumber(v.ayah)}
+                  </span>
+                )}
               </ArabicText>
               <p className={`${show.pr} ${body} font-semibold text-haram-deep`}>
-                <span className="mr-2 inline-grid h-6 min-w-6 place-items-center rounded-full bg-haram-tint px-1.5 text-[12px] font-bold">{digits(v.ayah, locale)}</span>
+                <span className="mr-2 inline-grid h-6 min-w-6 place-items-center rounded-full bg-haram-tint px-1.5 text-[12px] font-bold">
+                  {v.part ? pick(v.part, locale) : digits(v.ayah, locale)}
+                </span>
                 {lines[i]}
               </p>
               <Meanings bn={v.meaning.bn} en={v.meaning.en} locale={locale} />

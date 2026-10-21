@@ -3,7 +3,7 @@ import { expect, test } from "./fixtures";
 test("the guide book reads in Bangla and English, with search and reading settings", async ({ page }) => {
   await page.goto("/guide");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("হজ, ওমরা ও নামাজের গাইড বই");
-  for (const chapter of ["কুরআনের সূরা ও আয়াত", "নামাজ", "দৈনন্দিন দোয়া", "ওমরা", "হজ", "মদিনা জিয়ারত"]) {
+  for (const chapter of ["কুরআনের সূরা ও আয়াত", "কালিমা ও দরুদ শরিফ", "নামাজ", "দৈনন্দিন দোয়া", "ওমরা", "হজ", "মদিনা জিয়ারত"]) {
     await expect(page.getByRole("heading", { level: 2, name: chapter })).toBeVisible();
   }
 
@@ -22,6 +22,16 @@ test("the guide book reads in Bangla and English, with search and reading settin
   await page.getByPlaceholder(/খুঁজুন/).fill("জমজম");
   await expect(page.getByRole("status")).toContainText("পাওয়া গেছে");
   await expect(page.locator("#item-surah_falaq")).toBeHidden();
+  // Either spelling finds the salawat; the kalimah shows both Quranic halves with their source.
+  await page.getByPlaceholder(/খুঁজুন/).fill("দুরুদ");
+  await expect(page.locator("#item-durud_virtue")).toBeVisible();
+  await expect(page.locator("#item-dua_durud").first()).toBeVisible();
+  await page.getByPlaceholder(/খুঁজুন/).fill("কলেমা");
+  const kalima = page.locator("#item-kalima_tayyibah");
+  await expect(kalima).toBeVisible();
+  await expect(kalima.getByText("কুরআন ৪৭:১৯ ও ৪৮:২৯")).toBeVisible();
+  await expect(kalima.getByText("সূরা আল-ফাতহ ৪৮:২৯", { exact: true })).toBeVisible();
+  await expect(page.locator("#item-kalima_tamjid").getByText("সুনানে ইবনে মাজাহ ৩৮৭৮")).toBeVisible();
   await page.getByPlaceholder(/খুঁজুন/).fill("");
   await page.getByRole("button", { name: "English", pressed: true }).click();
   await expect(falaq.getByText("Say: I seek refuge with the Lord of daybreak")).toBeHidden();

@@ -6,7 +6,7 @@ import { router, tenantProcedure, withRoles } from "../trpc";
 
 /** Every reviewable piece of content, with how many text entries it has. */
 const CONTENT = new Map<string, number>([
-  ...ITEMS.map((i) => [`item:${i.id}`, i.arabic.type === "quran" ? i.arabic.refs.length : 1] as const),
+  ...ITEMS.map((i) => [`item:${i.id}`, i.arabic.type === "quran" ? i.arabic.refs.length : i.arabic.type === "quranParts" ? i.arabic.ids.length : 1] as const),
   ...STEPS.map((s) => [`step:${s.id}`, 1] as const),
   ...SUNNAH.map((s) => [`sunnah:${s.id}`, 1] as const),
 ]);

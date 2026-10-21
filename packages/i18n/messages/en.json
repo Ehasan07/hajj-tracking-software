@@ -1897,7 +1897,7 @@
   "book": {
     "brand": "Hajj Tracking",
     "title": "A guide to Hajj, Umrah and prayer",
-    "subtitle": "Surahs of the Quran, every word of the prayer, everyday duas, and what to say at each step of Umrah and Hajj: in Arabic, with Bangla pronunciation, Bangla meaning and English. Read it any time, on any phone.",
+    "subtitle": "Surahs of the Quran, the kalimah and salawat, every word of the prayer, everyday duas, and what to say at each step of Umrah and Hajj: in Arabic, with Bangla pronunciation, Bangla meaning and English. Read it any time, on any phone.",
     "sources": {
       "arabicTitle": "Arabic:",
       "arabic": "Every ayah is taken verbatim from the verified Uthmani text of the Tanzil Project. The Arabic of every dua and hadith is matched letter for letter across two independent copies of Sahih al-Bukhari, Sahih Muslim, Abu Dawud, at-Tirmidhi and Ibn Majah; none of it is typed by hand.",
@@ -1955,11 +1955,15 @@
       "tiles": {
         "guide": {
           "title": "Guide book",
-          "body": "Surahs, prayer, duas, Umrah and Hajj: Arabic with Bangla pronunciation and meaning"
+          "body": "Surahs, kalimah, salawat, prayer, duas, Umrah and Hajj: Arabic with Bangla pronunciation and meaning"
         },
         "quran": {
           "title": "Surahs",
           "body": "Short surahs for prayer"
+        },
+        "kalima": {
+          "title": "Kalimah and salawat",
+          "body": "The words of faith, Durud Ibrahim"
         },
         "salah": {
           "title": "Prayer",

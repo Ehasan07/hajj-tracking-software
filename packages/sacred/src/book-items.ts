@@ -12,6 +12,7 @@ import type { SacredItem } from "./content";
 
 const quran = (refs: string[]) => ({ type: "quran" as const, refs });
 const hadith = (id: string) => ({ type: "hadith" as const, id });
+const quranParts = (ids: string[]) => ({ type: "quranParts" as const, ids });
 const ayat = (surah: number, count: number) => Array.from({ length: count }, (_, i) => `${surah}:${i + 1}`);
 
 /* ---------------------------------------------------------------- Quran */
@@ -514,7 +515,7 @@ const PRAYER: SacredItem[] = [
   {
     id: "dua_durud",
     kind: "dua",
-    title: { bn: "দুরুদ শরিফ (দুরুদে ইবরাহিম)", en: "Salawat (Durud Ibrahim)" },
+    title: { bn: "দরুদ শরিফ (দরুদে ইবরাহিম)", en: "Salawat (Durud Ibrahim)" },
     arabic: hadith("durud"),
     pronunciation:
       "আল্লা-হুম্মা সাল্লি 'আলা মুহাম্মাদিঁও ওয়া 'আলা আ-লি মুহাম্মাদ, কামা সাল্লাইতা 'আলা ইবরা-হীমা ওয়া 'আলা আ-লি ইবরা-হীম, ইন্নাকা হামীদুম মাজীদ। আল্লা-হুম্মা বা-রিক 'আলা মুহাম্মাদিঁও ওয়া 'আলা আ-লি মুহাম্মাদ, কামা বা-রাকতা 'আলা ইবরা-হীমা ওয়া 'আলা আ-লি ইবরা-হীম, ইন্নাকা হামীদুম মাজীদ।",
@@ -544,7 +545,7 @@ const PRAYER: SacredItem[] = [
         "O Allah, I have wronged myself greatly, and none forgives sins but You. So forgive me with forgiveness from You, and have mercy on me. You are the Forgiving, the Merciful.",
       ],
     },
-    when: { bn: "শেষ বৈঠকে দুরুদের পর, সালাম ফেরানোর আগে।", en: "In the final sitting, after the salawat and before the salam." },
+    when: { bn: "শেষ বৈঠকে দরুদের পর, সালাম ফেরানোর আগে।", en: "In the final sitting, after the salawat and before the salam." },
     note: {
       bn: "আবু বকর (রা.) নামাজে পড়ার মতো একটি দোয়া শিখতে চাইলে নবী (সা.) এটি শিখিয়েছিলেন।",
       en: "Taught by the Prophet when Abu Bakr asked for a dua to say in his prayer.",
@@ -865,4 +866,86 @@ const RITES: SacredItem[] = [
   },
 ];
 
-export const BOOK_ITEMS: SacredItem[] = [...SURAHS, ...PRAYER, ...DAILY, ...RITES];
+/* ------------------------------------------------- kalimah and salawat */
+
+const KALIMAH: SacredItem[] = [
+  {
+    id: "kalima_tayyibah",
+    kind: "ayah",
+    title: { bn: "প্রথম কালিমা: কালিমা তাইয়্যিবা", en: "The first kalimah: Kalimah Tayyibah" },
+    arabic: quranParts(["tayyibah_tawhid", "tayyibah_risalah"]),
+    pronunciation: ["লা ইলা-হা ইল্লাল্লা-হু", "মুহাম্মাদুর রাসূলুল্লা-হ্‌"].join("\n"),
+    meaning: {
+      bn: ["আল্লাহ ছাড়া কোনো উপাস্য নেই,", "মুহাম্মাদ আল্লাহর রাসূল।"],
+      en: ["There is no god but Allah;", "Muhammad is the Messenger of Allah."],
+    },
+    note: {
+      bn: "ঈমানের মূল কথা। দুই অংশই কুরআন থেকে হুবহু নেওয়া: প্রথম অংশ সূরা মুহাম্মাদ ৪৭:১৯, দ্বিতীয় অংশ সূরা আল-ফাতহ ৪৮:২৯। দ্বিতীয় অংশের শুরুর মীমে তাশদিদ আয়াতের আগের শব্দের সাথে মিলিয়ে পড়ার চিহ্ন; কালিমা হিসেবে পড়ার সময় \"মুহাম্মাদুর রাসূলুল্লাহ\" পড়ুন। নবী (সা.) বলেছেন, সর্বোত্তম জিকির \"লা ইলাহা ইল্লাল্লাহ\" (তিরমিযী ৩৩৮৩, হাসান)।",
+      en: "The heart of faith. Both halves are taken word for word from the Quran: the first from Surah Muhammad 47:19, the second from Surah Al-Fath 48:29. The shaddah on the first mim of the second half joins it to the end of the previous ayah; as a kalimah it is read \"Muhammadur Rasulullah\". The Prophet said the best remembrance is \"La ilaha illallah\" (Tirmidhi 3383, hasan).",
+    },
+    tags: ["book", "kalimah"],
+  },
+  {
+    id: "kalima_shahadah",
+    kind: "dua",
+    title: { bn: "দ্বিতীয় কালিমা: কালিমা শাহাদাত", en: "The second kalimah: Kalimah Shahadah" },
+    arabic: hadith("wudu_after"),
+    pronunciation: "আশহাদু আল লা ইলা-হা ইল্লাল্লা-হু ওয়াহদাহূ লা শারীকা লাহূ, ওয়া আশহাদু আন্না মুহাম্মাদান 'আবদুহূ ওয়া রাসূলুহ্‌।",
+    meaning: {
+      bn: ["আমি সাক্ষ্য দিচ্ছি, আল্লাহ ছাড়া কোনো উপাস্য নেই, তিনি এক, তাঁর কোনো শরিক নেই; আর সাক্ষ্য দিচ্ছি, মুহাম্মাদ তাঁর বান্দা ও রাসূল।"],
+      en: ["I bear witness that there is no god but Allah alone, without partner, and I bear witness that Muhammad is His servant and messenger."],
+    },
+    note: {
+      bn: "এই শব্দে সাক্ষ্যটি নবী (সা.) ওজুর পর পড়তে শিখিয়েছেন; যে ভালোভাবে ওজু করে এটি পড়ে, তার জন্য জান্নাতের আটটি দরজা খুলে দেওয়া হয়।",
+      en: "In these words the Prophet taught this testimony to be said after wudu; for whoever performs wudu well and says it, the eight gates of Paradise are opened.",
+    },
+    tags: ["book", "kalimah"],
+  },
+  {
+    id: "kalima_tamjid",
+    kind: "dua",
+    title: { bn: "তৃতীয় কালিমা: কালিমা তামজিদ", en: "The third kalimah: Kalimah Tamjid" },
+    arabic: hadith("tamjid"),
+    pronunciation:
+      "সুবহা-নাল্লা-হি ওয়াল হামদু লিল্লা-হি ওয়া লা ইলা-হা ইল্লাল্লা-হু ওয়াল্লা-হু আকবার, ওয়া লা হাওলা ওয়া লা কুওয়্যাতা ইল্লা বিল্লা-হিল 'আলিয়্যিল 'আযীম।",
+    meaning: {
+      bn: ["আল্লাহ পবিত্র, সব প্রশংসা আল্লাহর, আল্লাহ ছাড়া কোনো উপাস্য নেই, আল্লাহ সবচেয়ে বড়; সর্বোচ্চ, মহান আল্লাহর সাহায্য ছাড়া পাপ থেকে বাঁচার ক্ষমতা আর ভালো কাজের শক্তি নেই।"],
+      en: ["Glory be to Allah, all praise is Allah's, there is no god but Allah, Allah is the Greatest; there is no power and no strength except through Allah, the Most High, the Supreme."],
+    },
+    note: {
+      bn: "নবী (সা.) বলেছেন, রাতে ঘুম ভাঙলে যে এ কথাগুলো বলে, তারপর ক্ষমা চায় তাকে ক্ষমা করা হয়, দোয়া করলে কবুল হয় (ইবনে মাজাহ ৩৮৭৮; প্রায় একই শব্দে বুখারী ১১৫৪)। প্রথম চারটি বাক্যকে আল্লাহর কাছে সবচেয়ে প্রিয় কথা বলা হয়েছে (মুসলিম ২১৩৭)।",
+      en: "The Prophet said that whoever wakes at night and says these words, then asks forgiveness, is forgiven, and if he makes dua it is answered (Ibn Majah 3878; nearly the same words in Bukhari 1154). The first four phrases are called the words most beloved to Allah (Muslim 2137).",
+    },
+    tags: ["book", "kalimah", "daily"],
+  },
+  {
+    id: "durud_ayah",
+    kind: "ayah",
+    title: { bn: "দরুদ পড়ার আদেশ", en: "The command to send blessings" },
+    arabic: quran(["33:56"]),
+    pronunciation: "ইন্নাল্লা-হা ওয়া মালা-ইকাতাহূ ইউসাল্লূনা 'আলান নাবিয়্যি, ইয়া-আইয়্যুহাল্লাযীনা আ-মানূ সাল্লূ 'আলাইহি ওয়া সাল্লিমূ তাসলীমা।",
+    meaning: {
+      bn: ["নিশ্চয়ই আল্লাহ ও তাঁর ফেরেশতারা নবীর ওপর দরুদ পাঠান। হে মুমিনগণ, তোমরাও তাঁর ওপর দরুদ পাঠাও এবং যথাযথভাবে সালাম জানাও।"],
+      en: ["Allah and His angels send blessings on the Prophet. O you who believe, send blessings on him and greet him with peace."],
+    },
+    tags: ["book", "durud"],
+  },
+  {
+    id: "durud_virtue",
+    kind: "hadith",
+    title: { bn: "দরুদ শরিফের ফজিলত", en: "The reward of sending blessings" },
+    arabic: hadith("durud_virtue"),
+    pronunciation: "মান সাল্লা 'আলাইয়্যা ওয়া-হিদাতান সাল্লাল্লা-হু 'আলাইহি 'আশরা।",
+    meaning: {
+      bn: ["যে আমার ওপর একবার দরুদ পাঠায়, আল্লাহ তার ওপর দশবার রহমত পাঠান।"],
+      en: ["Whoever sends blessings on me once, Allah sends blessings on him ten times."],
+    },
+    note: {
+      bn: "নবী (সা.)-এর নাম বললে বা শুনলে ছোট করে \"সাল্লাল্লাহু আলাইহি ওয়া সাল্লাম\" বলাও দরুদ। নামাজে শেষ বৈঠকে পড়া হয় ওপরের দরুদে ইবরাহিম।",
+      en: "Saying \"sallallahu alayhi wa sallam\" on saying or hearing the Prophet's name is also a salawat. In prayer, the Durud Ibrahim above is recited in the final sitting.",
+    },
+    tags: ["book", "durud"],
+  },
+];
+
+export const BOOK_ITEMS: SacredItem[] = [...SURAHS, ...KALIMAH, ...PRAYER, ...DAILY, ...RITES];

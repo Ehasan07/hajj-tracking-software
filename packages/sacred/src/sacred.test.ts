@@ -27,7 +27,7 @@ describe("sacred content", () => {
 
   it("has exactly as many meanings as verses", () => {
     for (const item of ITEMS) {
-      const count = item.arabic.type === "quran" ? item.arabic.refs.length : 1;
+      const count = item.arabic.type === "quran" ? item.arabic.refs.length : item.arabic.type === "quranParts" ? item.arabic.ids.length : 1;
       expect(item.meaning.bn, item.id).toHaveLength(count);
       expect(item.meaning.en, item.id).toHaveLength(count);
     }
@@ -39,8 +39,9 @@ describe("sacred content", () => {
 
   it("gives Quran pronunciation one line per ayah", () => {
     for (const item of ITEMS) {
-      if (item.arabic.type !== "quran" || !item.pronunciation) continue;
-      expect(item.pronunciation.split("\n"), item.id).toHaveLength(item.arabic.refs.length);
+      if (item.arabic.type === "hadith" || !item.pronunciation) continue;
+      const count = item.arabic.type === "quran" ? item.arabic.refs.length : item.arabic.ids.length;
+      expect(item.pronunciation.split("\n"), item.id).toHaveLength(count);
     }
   });
 

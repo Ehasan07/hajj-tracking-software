@@ -16,14 +16,18 @@ export interface Text {
 
 export type ItemKind = "ayah" | "surah" | "dua" | "hadith";
 
-export type ArabicSource = { type: "quran"; refs: string[] } | { type: "hadith"; id: string };
+export type ArabicSource =
+  | { type: "quran"; refs: string[] }
+  | { type: "hadith"; id: string }
+  /** Words cut verbatim from ayat (AYAH_PARTS), e.g. the two halves of the kalimah tayyibah. */
+  | { type: "quranParts"; ids: string[] };
 
 export interface SacredItem {
   id: string;
   kind: ItemKind;
   title: Text;
   arabic: ArabicSource;
-  /** One entry per ayah for Quran sources; one entry for hadith. */
+  /** One entry per ayah (or ayah part) for Quran sources; one entry for hadith. */
   meaning: { bn: string[]; en: string[] };
   /**
    * Bangla pronunciation. For Quran items, one line per ayah separated by "\n",
@@ -42,6 +46,9 @@ export const SURAH_NAMES: Record<number, Text> = {
   3: { bn: "আলে ইমরান", en: "Al Imran" },
   14: { bn: "ইবরাহিম", en: "Ibrahim" },
   22: { bn: "আল-হজ", en: "Al-Hajj" },
+  33: { bn: "আল-আহযাব", en: "Al-Ahzab" },
+  47: { bn: "মুহাম্মাদ", en: "Muhammad" },
+  48: { bn: "আল-ফাতহ", en: "Al-Fath" },
   102: { bn: "আত-তাকাসুর", en: "At-Takathur" },
   103: { bn: "আল-আসর", en: "Al-Asr" },
   104: { bn: "আল-হুমাযাহ", en: "Al-Humazah" },

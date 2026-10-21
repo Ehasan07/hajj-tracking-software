@@ -10,6 +10,16 @@ const SIZES = { s: { body: "15px", ar: "24px" }, m: { body: "17px", ar: "28px" }
 type Size = keyof typeof SIZES;
 const KEY = "hajj.book.reading";
 
+/** One spelling for words written several ways, so "দুরুদ" finds "দরুদ" and "কলেমা" finds "কালিমা". */
+const canon = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/দুরুদ/g, "দরুদ")
+    .replace(/কালেমা|কলেমা|কলিমা/g, "কালিমা")
+    .replace(/শরীফ/g, "শরিফ")
+    .replace(/durood|darood|durud/g, "salawat")
+    .replace(/kalema|kalimah/g, "kalima");
+
 interface Prefs {
   size: Size;
   hidden: Part[];
@@ -59,10 +69,10 @@ export function BookControls() {
 
   function search(text: string) {
     setQuery(text);
-    const q = text.trim().toLowerCase();
+    const q = canon(text.trim());
     let shown = 0;
     document.querySelectorAll<HTMLElement>("#book [data-search]").forEach((el) => {
-      const hit = !q || (el.dataset.search ?? "").includes(q);
+      const hit = !q || canon(el.dataset.search ?? "").includes(q);
       el.hidden = !hit;
       if (hit) shown++;
     });

@@ -16,6 +16,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 const TILES = [
   { id: "guide", href: "", tint: "bg-haram text-white", sub: "text-white/80" },
   { id: "quran", href: "#quran", tint: "bg-paper", sub: "text-ink-3" },
+  { id: "kalima", href: "#kalima", tint: "bg-paper", sub: "text-ink-3" },
   { id: "salah", href: "#salah", tint: "bg-paper", sub: "text-ink-3" },
   { id: "umrah", href: "#umrah", tint: "bg-paper", sub: "text-ink-3" },
   { id: "hajj", href: "#hajj", tint: "bg-paper", sub: "text-ink-3" },
@@ -66,7 +67,7 @@ export default async function AppHome({ params }: { params: Params }) {
           <a
             key={tile.id}
             href={`${prefix}/guide${tile.href}`}
-            className={`flex flex-col gap-1 rounded-[24px] p-5 transition-transform active:scale-[0.98] ${tile.tint} ${i === 0 ? "col-span-2" : ""}`}
+            className={`flex flex-col gap-1 rounded-[24px] p-5 transition-transform active:scale-[0.98] ${tile.tint} ${i === 0 || (i === TILES.length - 1 && i % 2 === 1) ? "col-span-2" : ""}`}
           >
             <b className={i === 0 ? "font-display text-[26px] leading-tight" : "text-[18px]"}>{t(`tiles.${tile.id}.title`)}</b>
             <span className={`text-[14px] leading-snug ${tile.sub}`}>{t(`tiles.${tile.id}.body`)}</span>

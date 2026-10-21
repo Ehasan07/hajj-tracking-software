@@ -34,13 +34,13 @@ export function Verses({ item, className = "text-[26px]" }: { item: ResolvedItem
         {item.verses.map((v) => (
           <span key={v.ref}>
             {v.arabic}
-            {quran ? (
+            {quran && !v.part ? (
               <span className="mx-1 text-saffron-deep">
                 {" "}
                 {AYAH_END}
                 {arabicNumber(v.ayah)}{" "}
               </span>
-            ) : null}
+            ) : " "}
           </span>
         ))}
       </ArabicText>
