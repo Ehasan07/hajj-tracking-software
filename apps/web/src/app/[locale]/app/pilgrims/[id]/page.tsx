@@ -10,6 +10,7 @@ import { PILGRIM_STATUS_TONE } from "@/lib/status";
 import { api } from "@/trpc/server";
 import { ReceivePayment, RevealPassport, SetPassport, StatusSelect, VoidPayment } from "./actions";
 import { DocumentsPanel } from "./documents-panel";
+import { ErasePilgrim } from "./erase-pilgrim";
 import { ProfileForm } from "./profile-form";
 
 export default async function PilgrimPage({
@@ -25,6 +26,48 @@ export default async function PilgrimPage({
     await Promise.all([caller.pilgrims.get({ id }), caller.tenant.me()]);
   const stays = me.role === "alim" ? [] : await caller.hotels.forPilgrim({ pilgrimId: id });
   const canManageMoney = ["owner", "admin", "accountant"].includes(me.role);
+  if (p.erasedAt) {
+    return (
+      <PageBody>
+        <div className="flex animate-rise flex-col gap-3">
+          <h1 className="text-3xl font-bold tracking-tight">{p.fullName}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <RefChip>{p.ref}</RefChip>
+            {packageName ? <span className="text-[15px] text-ink-2">{packageName}</span> : null}
+          </div>
+          <p role="status" className="rounded-md bg-ground px-4 py-3 text-[15px] text-ink-2">
+            {t("erase.pilgrim.banner", { date: dateText(p.erasedAt, locale) })}
+          </p>
+        </div>
+        <Card className="animate-rise overflow-hidden">
+          <h2 className="px-6 pt-5 pb-3 text-lg font-bold">{t("pilgrim.payments")}</h2>
+          <dl className="flex flex-wrap gap-x-8 gap-y-2 px-6 pb-4 text-[15px]">
+            <div>
+              <dt className="text-[13px] text-ink-3">{t("pilgrim.paid")}</dt>
+              <dd className="tabular font-bold">{money(totals.paid, locale, p.currency)}</dd>
+            </div>
+            <div>
+              <dt className="text-[13px] text-ink-3">{t("pilgrim.due")}</dt>
+              <dd className="tabular font-bold">{money(totals.due, locale, p.currency)}</dd>
+            </div>
+          </dl>
+          <ul>
+            {payments.map((pay) => (
+              <li key={pay.id} className="flex flex-wrap items-center gap-3 border-t border-[#eef3f2] px-6 py-3">
+                <Link href={`/app/receipts/${pay.id}`} className="font-mono text-sm text-haram hover:underline">
+                  {pay.receiptNo}
+                </Link>
+                <span className="flex-1 text-[13px] text-ink-3">{dateText(pay.receivedAt, locale, true)}</span>
+                <span className={`tabular font-bold ${pay.voidedAt ? "text-ink-3 line-through" : ""}`}>
+                  {money(pay.amount, locale, pay.currency)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </PageBody>
+    );
+  }
   const payable = p.packagePrice - p.discount;
   const pct = payable > 0 ? Math.min(totals.paid / payable, 1) : 0;
   const circumference = 2 * Math.PI * 52;
@@ -181,7 +224,7 @@ export default async function PilgrimPage({
           {p.status !== "cancelled" ? (
             <Card className="animate-rise p-6 [animation-delay:120ms]">
               <h2 className="mb-5 text-lg font-bold">{t("payment.title")}</h2>
-              <ReceivePayment pilgrimId={p.id} due={totals.due} />
+              <ReceivePayment pilgrimId={p.id} due={totals.due} canOverpay={canManageMoney} />
             </Card>
           ) : null}
 
@@ -403,6 +446,12 @@ export default async function PilgrimPage({
                   </li>
                 ))}
               </ul>
+            </Card>
+          ) : null}
+
+          {me.role === "owner" || me.role === "admin" ? (
+            <Card className="animate-rise p-6">
+              <ErasePilgrim id={p.id} reference={p.ref} />
             </Card>
           ) : null}
         </div>

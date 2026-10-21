@@ -29,6 +29,7 @@ import { recordExpense, voidExpense } from "../services/money-out";
 import { businessDate, entryDate, getSettings, nextReference } from "../services/tenant";
 import { assertShop, unitAccess } from "../services/units";
 import { router, tenantProcedure } from "../trpc";
+import { ERASED_NAME, eraseAudit, eraseLedgerMemos, recordErase } from "../services/erase";
 import { amountInput, amountOrZero, containing, dateKey, optionalText, paymentMethods } from "./shared";
 
 /** Every shop procedure names its unit; access to that shop is checked before anything runs. */
@@ -219,7 +220,9 @@ export const shopRouter = router({
       return rows.map((r) => ({ ...r.product, nextExpiry: r.nextExpiry }));
     }),
 
+  /** Products and their prices are set by owners, admins and accountants; the counter sells at those prices. */
   saveProduct: shopProcedure.input(productInput).mutation(async ({ ctx, input }) => {
+    assertManager(ctx.role);
     const values = {
       unit: input.unit,
       name: input.name,
@@ -577,6 +580,34 @@ export const shopRouter = router({
     }),
 
   /** A shop pays off some of what it owes. */
+  /**
+   * Erase a customer's name and contact at their request. Sales, payments and
+   * dues stay for the books (as "—"); ledger notes and audit copies lose the
+   * name. Owners and admins only.
+   */
+  eraseCustomer: shopProcedure.input(z.object({ id: z.uuid() })).mutation(async ({ ctx, input }) => {
+    if (ctx.role !== "owner" && ctx.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+    const [c] = await ctx.tx
+      .select({ id: customers.id, name: customers.name, erasedAt: customers.erasedAt })
+      .from(customers)
+      .where(and(eq(customers.id, input.id), eq(customers.unit, input.unit)));
+    if (!c) throw new TRPCError({ code: "NOT_FOUND" });
+    if (c.erasedAt) return { ok: true };
+    await ctx.tx
+      .update(customers)
+      .set({ name: ERASED_NAME, phone: null, address: null, area: null, active: false, erasedAt: new Date() })
+      .where(eq(customers.id, c.id));
+    const saleIds = (await ctx.tx.select({ id: sales.id }).from(sales).where(eq(sales.customerId, c.id))).map((r) => r.id);
+    const paymentIds = (
+      await ctx.tx.select({ id: customerPayments.id }).from(customerPayments).where(eq(customerPayments.customerId, c.id))
+    ).map((r) => r.id);
+    await eraseLedgerMemos(ctx.tx, "pos_sale", saleIds, c.name);
+    await eraseLedgerMemos(ctx.tx, "customer_payment", paymentIds, c.name);
+    await eraseAudit(ctx.tx, "customers", [c.id]);
+    await recordErase(ctx.tx, "customers", c.id);
+    return { ok: true };
+  }),
+
   collect: shopProcedure
     .input(
       z.object({
@@ -887,6 +918,11 @@ export const shopRouter = router({
           unitPrice: i.unitPrice !== undefined ? parseAmount(i.unitPrice) : product.price,
         };
       });
+      // A different price or a discount is money given away: only managers decide it.
+      if (!MANAGERS.includes(ctx.role)) {
+        if (lines.some((l) => l.unitPrice !== l.product.price)) throw new TRPCError({ code: "FORBIDDEN", message: "PRICE_LOCKED" });
+        if (input.discount && parseAmount(input.discount) > 0) throw new TRPCError({ code: "FORBIDDEN", message: "DISCOUNT_NOT_ALLOWED" });
+      }
 
       let totals;
       try {

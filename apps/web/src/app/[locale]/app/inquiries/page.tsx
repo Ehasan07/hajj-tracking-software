@@ -5,7 +5,7 @@ import { Badge, buttonClass, Card, EmptyState, RefChip } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { dateText, digits, phoneText, type Locale } from "@/lib/format";
 import { api } from "@/trpc/server";
-import { InquiryActions, InquiryForm } from "./inquiry-form";
+import { EraseInquiry, InquiryActions, InquiryForm } from "./inquiry-form";
 
 const TONE = { new: "pending", follow_up: "info", converted: "paid", closed: "neutral" } as const;
 const FILTERS = ["all", "new", "follow_up", "converted", "closed"] as const;
@@ -23,11 +23,13 @@ export default async function InquiriesPage({
   const filter = FILTERS.includes(status as (typeof FILTERS)[number]) && status !== "all" ? (status as "new") : undefined;
   const t = await getTranslations();
   const caller = await api();
-  const [list, packages, counts] = await Promise.all([
+  const [list, packages, counts, me] = await Promise.all([
     caller.inquiries.list({ status: filter }),
     caller.packages.list({ activeOnly: true }),
     caller.inquiries.counts(),
+    caller.tenant.me(),
   ]);
+  const canErase = me.role === "owner" || me.role === "admin";
 
   return (
     <PageBody>
@@ -89,6 +91,7 @@ export default async function InquiriesPage({
                   <span className="text-[13px] text-ink-3">{dateText(iq.createdAt, locale, true)}</span>
                   <div className="flex flex-wrap gap-2">
                     <InquiryActions id={iq.id} status={iq.status} />
+                    {canErase ? <EraseInquiry id={iq.id} /> : null}
                     {iq.status === "converted" && iq.convertedPilgrimId ? (
                       <Link href={`/app/pilgrims/${iq.convertedPilgrimId}`} className={buttonClass("outline", "h-10")}>
                         {t("inquiries.viewPilgrim")}

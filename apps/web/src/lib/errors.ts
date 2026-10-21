@@ -61,6 +61,17 @@ export function errorKey(error: unknown): { key: string; arg?: string } {
     "SMS_OFF",
     "NO_RECIPIENTS",
     "PACKAGE_REQUIRED",
+    "STORAGE_FULL",
+    "DISCOUNT_NOT_ALLOWED",
+    "PRICE_LOCKED",
+    "OVERPAYMENT_NOT_ALLOWED",
+    "ERASED",
+    "CONFIRM_MISMATCH",
+    "OWNER_CANNOT_DELETE",
+    "WRONG_PASSWORD",
+    "PLATFORM_ADMIN",
+    "INTERNAL",
+    "EMAIL_NOT_VERIFIED",
   ];
   /** Codes that carry a value after the colon, e.g. "OUT_OF_STOCK:Napa 500". */
   const withArg = [

@@ -51,12 +51,15 @@ export function PosClient({
   unit,
   today,
   canBackdate,
+  canPrice,
   products,
   customers,
 }: {
   unit: ShopUnit;
   today: string;
   canBackdate: boolean;
+  /** Owners, admins and accountants may change a price or give a discount; the counter sells at list price. */
+  canPrice: boolean;
   products: PosProduct[];
   customers: { id: string; name: string; area: string | null; balance: number }[];
 }) {
@@ -347,6 +350,7 @@ export function PosClient({
                   <input
                     aria-label={t("price")}
                     inputMode="decimal"
+                    readOnly={!canPrice}
                     value={l.priceText}
                     onChange={(e) =>
                       setCart((prev) =>
@@ -390,21 +394,25 @@ export function PosClient({
         <dl className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2 text-[15px]">
           <dt className="text-ink-2">{t("subtotal")}</dt>
           <dd className="tabular text-right font-semibold">{money(subtotal, locale)}</dd>
-          <dt>
-            <label htmlFor="pos-discount" className="text-ink-2">
-              {t("discount")}
-            </label>
-          </dt>
-          <dd>
-            <input
-              id="pos-discount"
-              inputMode="decimal"
-              value={discountText}
-              onChange={(e) => setDiscountText(e.target.value)}
-              placeholder="0"
-              className={`tabular h-10 w-28 rounded-md border-[1.5px] px-3 text-right outline-none ${discount === null || (discount ?? 0) > subtotal ? "border-due" : "border-line-strong"}`}
-            />
-          </dd>
+          {canPrice ? (
+            <>
+              <dt>
+                <label htmlFor="pos-discount" className="text-ink-2">
+                  {t("discount")}
+                </label>
+              </dt>
+              <dd>
+                <input
+                  id="pos-discount"
+                  inputMode="decimal"
+                  value={discountText}
+                  onChange={(e) => setDiscountText(e.target.value)}
+                  placeholder="0"
+                  className={`tabular h-10 w-28 rounded-md border-[1.5px] px-3 text-right outline-none ${discount === null || (discount ?? 0) > subtotal ? "border-due" : "border-line-strong"}`}
+                />
+              </dd>
+            </>
+          ) : null}
           <dt className="text-lg font-bold">{t("total")}</dt>
           <dd className="tabular text-right text-2xl font-bold" style={{ color: theme.color }}>
             {money(Math.max(total, 0), locale)}

@@ -15,6 +15,7 @@ import {
   tenantSettings,
   user,
 } from "@hajj/db/schema";
+import { eraseLogin } from "../services/account";
 import { router, withRoles } from "../trpc";
 
 const ASSIGNABLE = ["admin", "accountant", "staff", "shop_operator", "alim"] as const;
@@ -151,7 +152,11 @@ export const teamRouter = router({
       return { ok: true };
     }),
 
-  /** Take away a colleague's access to this agency. They are signed out of it at once. */
+  /**
+   * Take away a colleague's access to this agency. They are signed out of it
+   * at once, and a login that belongs to no other agency is erased: password,
+   * sessions, devices, name, email and mobile.
+   */
   remove: managers
     .input(z.object({ memberId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -167,6 +172,8 @@ export const teamRouter = router({
       await ctx.tx.delete(memberUnits).where(eq(memberUnits.userId, target.userId));
       await ctx.tx.delete(member).where(eq(member.id, target.id));
       await ctx.tx.delete(session).where(and(eq(session.userId, target.userId), eq(session.activeOrganizationId, ctx.tenantId)));
+      const [elsewhere] = await ctx.tx.select({ id: member.id }).from(member).where(eq(member.userId, target.userId)).limit(1);
+      if (!elsewhere) await eraseLogin(ctx.tx, target.userId);
       return { ok: true };
     }),
 

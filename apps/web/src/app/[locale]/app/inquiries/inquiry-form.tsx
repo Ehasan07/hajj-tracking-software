@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRef } from "react";
+import { DangerZone } from "@/components/danger-zone";
 import { FormError } from "@/components/form-error";
 import { Button, Field, SelectField, TextAreaField } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
@@ -94,5 +95,25 @@ export function InquiryActions({ id, status }: { id: string; status: "new" | "fo
     >
       {t("close")}
     </button>
+  );
+}
+
+/** Delete an inquiry and its audit copies, at the person's request. */
+export function EraseInquiry({ id }: { id: string }) {
+  const t = useTranslations("erase.inquiry");
+  const trpc = useTRPC();
+  const router = useRouter();
+  const erase = useMutation(trpc.inquiries.erase.mutationOptions({ onSuccess: () => router.refresh() }));
+  return (
+    <DangerZone
+      id={`erase-${id}`}
+      compact
+      body={t("body")}
+      button={t("button")}
+      confirm={t("confirm")}
+      error={erase.error}
+      pending={erase.isPending}
+      onConfirm={() => erase.mutate({ id })}
+    />
   );
 }

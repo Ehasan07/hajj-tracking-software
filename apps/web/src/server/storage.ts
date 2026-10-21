@@ -1,8 +1,10 @@
 import "server-only";
 import {
   CreateBucketCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -43,6 +45,59 @@ function ensureBucket(): Promise<void> {
 export async function putObject(key: string, body: Uint8Array, contentType: string) {
   await ensureBucket();
   await client().send(new PutObjectCommand({ Bucket: bucket(), Key: key, Body: body, ContentType: contentType }));
+}
+
+/** Every object under a prefix: key, size and when it was stored. */
+export async function listObjects(prefix: string): Promise<{ key: string; size: number; modified: Date }[]> {
+  await ensureBucket();
+  const out: { key: string; size: number; modified: Date }[] = [];
+  let token: string | undefined;
+  do {
+    const page = await client().send(new ListObjectsV2Command({ Bucket: bucket(), Prefix: prefix, ContinuationToken: token }));
+    for (const o of page.Contents ?? []) if (o.Key) out.push({ key: o.Key, size: o.Size ?? 0, modified: o.LastModified ?? new Date() });
+    token = page.IsTruncated ? page.NextContinuationToken : undefined;
+  } while (token);
+  return out;
+}
+
+export async function deleteObjects(keys: string[]) {
+  for (let i = 0; i < keys.length; i += 1000) {
+    const chunk = keys.slice(i, i + 1000);
+    if (chunk.length) await client().send(new DeleteObjectsCommand({ Bucket: bucket(), Delete: { Objects: chunk.map((Key) => ({ Key })), Quiet: true } }));
+  }
+}
+
+/* ------------------------------------------------------------ space per agency */
+
+/** Space an agency gets when its plan doesn't say (MB). */
+export const DEFAULT_STORAGE_MB = Number(process.env.STORAGE_MB_DEFAULT ?? 2048);
+const used = new Map<string, { bytes: number; at: number }>();
+
+/** The plan's allowance in bytes; null is unlimited. A plan without the setting gets the default. */
+export function storageAllowance(limits: { storageMb?: number | null } | null | undefined): number | null {
+  const mb = limits && limits.storageMb !== undefined ? limits.storageMb : DEFAULT_STORAGE_MB;
+  return mb === null ? null : mb * 1024 * 1024;
+}
+
+/** Bytes an agency keeps, counted from the store itself (remembered for a minute). */
+export async function storageUsed(tenantId: string): Promise<number> {
+  const hit = used.get(tenantId);
+  if (hit && Date.now() - hit.at < 60_000) return hit.bytes;
+  const bytes = (await listObjects(`tenants/${tenantId}/`)).reduce((sum, o) => sum + o.size, 0);
+  used.set(tenantId, { bytes, at: Date.now() });
+  return bytes;
+}
+
+/** Whether `incoming` more bytes would go past the agency's allowance. */
+export async function storageFull(tenantId: string, limits: { storageMb?: number | null } | null | undefined, incoming: number) {
+  const allowance = storageAllowance(limits);
+  return allowance !== null && (await storageUsed(tenantId)) + incoming > allowance;
+}
+
+/** Count a file just stored, so the next check needn't list the store again. */
+export function storageAdded(tenantId: string, bytes: number) {
+  const hit = used.get(tenantId);
+  if (hit) hit.bytes += bytes;
 }
 
 export async function getObject(key: string): Promise<{ body: Uint8Array; contentType: string }> {

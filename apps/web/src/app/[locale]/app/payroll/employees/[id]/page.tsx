@@ -8,7 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { dateText, money, type Locale } from "@/lib/format";
 import { BOOK_ROLES } from "@/lib/units";
 import { api } from "@/trpc/server";
-import { AdvanceForm, EmployeeForm } from "../../payroll-forms";
+import { AdvanceForm, EmployeeForm, EraseEmployee } from "../../payroll-forms";
 
 export default async function EmployeePage({
   params,
@@ -35,10 +35,19 @@ export default async function EmployeePage({
       <PageHeader title={employee.name} subtitle={employee.designation ?? undefined} />
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="flex flex-col gap-4 p-6">
-          <h2 className="text-lg font-bold">{t("payroll.details")}</h2>
-          <EmployeeForm initial={employee} />
-        </Card>
+        <div className="flex flex-col gap-5">
+          {employee.erasedAt ? null : (
+            <Card className="flex flex-col gap-4 p-6">
+              <h2 className="text-lg font-bold">{t("payroll.details")}</h2>
+              <EmployeeForm initial={employee} />
+            </Card>
+          )}
+          {!employee.erasedAt && (me.role === "owner" || me.role === "admin") ? (
+            <Card className="p-6">
+              <EraseEmployee id={employee.id} />
+            </Card>
+          ) : null}
+        </div>
         <div className="flex flex-col gap-5">
           <Card className="flex flex-col gap-1 p-6">
             <span className="text-[13px] font-semibold text-ink-3">{t("payroll.advanceOpen")}</span>

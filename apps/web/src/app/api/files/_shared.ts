@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { getHTTPStatusCodeFromError } from "@trpc/server/http";
 import { describeError, errorRef } from "@hajj/api/errors";
 import { allow } from "@/server/rate-limit";
+import { storageFull } from "@/server/storage";
+import { api } from "@/trpc/server";
 
 export function fail(error: unknown, where: string) {
   if (error instanceof TRPCError && error.code !== "INTERNAL_SERVER_ERROR") {
@@ -29,6 +31,18 @@ export function uploadRefused(request: Request, userId: string, maxBytes: number
   if (!Number.isFinite(length) || length <= 0) return Response.json({ error: "LENGTH_REQUIRED" }, { status: 411 });
   if (length > maxBytes + 64 * 1024) return Response.json({ error: "TOO_LARGE" }, { status: 413 });
   if (!allow(`upload:${userId}`, UPLOADS_PER_10_MIN, 10 * 60_000)) return Response.json({ error: "TOO_MANY" }, { status: 429 });
+  return null;
+}
+
+/**
+ * Checks before anything is stored: the agency can still make changes (an
+ * expired one could otherwise fill the store with files it can't attach), and
+ * the file fits in what its plan allows.
+ */
+export async function storeRefused(tenantId: string, incoming: number): Promise<Response | null> {
+  const subscription = await (await api()).tenant.subscription();
+  if (!subscription || subscription.inactive) return Response.json({ error: "SUBSCRIPTION_INACTIVE" }, { status: 403 });
+  if (await storageFull(tenantId, subscription.limits, incoming)) return Response.json({ error: "STORAGE_FULL" }, { status: 507 });
   return null;
 }
 

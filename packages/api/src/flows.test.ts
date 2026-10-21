@@ -73,7 +73,8 @@ describe("hajj flow", () => {
     const inquiry = await staff().inquiries.create({ name: "Abdul Karim", phone: "01712-345678", interest: "hajj" });
     expect(inquiry.ref).toMatch(/^IQ-\d{2}-000001$/);
 
-    const created = await staff().pilgrims.create({
+    // The discount is the owner's decision (staff are refused one: see security.test.ts).
+    const created = await owner().pilgrims.create({
       fullName: "Md. Abdul Karim",
       phone: "01712345678",
       packageId,

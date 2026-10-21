@@ -7,7 +7,7 @@ import { dateText, digits, money, type Locale } from "@/lib/format";
 import { routeLabel } from "@/lib/routes";
 import { BOOK_ROLES } from "@/lib/units";
 import { api } from "@/trpc/server";
-import { CollectForm, CustomerForm } from "../customer-forms";
+import { CollectForm, CustomerForm, EraseCustomer } from "../customer-forms";
 
 export default async function CustomerPage({
   params,
@@ -133,9 +133,16 @@ export default async function CustomerPage({
               canBackdate={BOOK_ROLES.includes(me.role)}
             />
           </Card>
-          <Reveal label={t("customers.edit")} variant="outline" plus={false}>
-            <CustomerForm unit={unit} routes={routeOptions} initial={customer} />
-          </Reveal>
+          {customer.erasedAt ? null : (
+            <Reveal label={t("customers.edit")} variant="outline" plus={false}>
+              <CustomerForm unit={unit} routes={routeOptions} initial={customer} />
+            </Reveal>
+          )}
+          {!customer.erasedAt && (me.role === "owner" || me.role === "admin") ? (
+            <Card className="p-6">
+              <EraseCustomer unit={unit} id={customer.id} />
+            </Card>
+          ) : null}
         </div>
       </div>
     </>

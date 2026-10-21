@@ -51,7 +51,8 @@
       "resend": "Send a new code",
       "resendIn": "You can ask again in {s} s",
       "back": "Sign in to another account",
-      "why": "To keep your account safe, the first sign-in from a new browser or device needs this code. After that, this device won't ask again for 90 days."
+      "why": "To keep your account safe, the first sign-in from a new browser or device needs this code. After that, this device won't ask again for 90 days.",
+      "backToSignIn": "Go to sign-in"
     },
     "forgot": {
       "link": "Forgot your password?",
@@ -71,7 +72,8 @@
       "saving": "Saving…",
       "afterNote": "Changing the password signs out every other device, and an alert goes to your email.",
       "backToSignIn": "Back to sign in"
-    }
+    },
+    "confirmEmail": "Confirm your email"
   },
   "onboarding": {
     "title": "About your agency",
@@ -425,7 +427,18 @@
     "SMS_OFF": "SMS isn't set up on this server yet",
     "NO_RECIPIENTS": "No pilgrims with a mobile number in this group",
     "PACKAGE_REQUIRED": "Choose a package",
-    "SMS_LIMIT": "Only {n} SMS left this month, not enough for everyone"
+    "SMS_LIMIT": "Only {n} SMS left this month, not enough for everyone",
+    "STORAGE_FULL": "Your plan's storage is full. Remove photos you no longer need or move to a bigger plan.",
+    "DISCOUNT_NOT_ALLOWED": "Only the owner, an admin or an accountant can give a discount.",
+    "PRICE_LOCKED": "Only the owner, an admin or an accountant can change a price. Sell at the listed price.",
+    "OVERPAYMENT_NOT_ALLOWED": "Only the owner, an admin or an accountant can take more than is due.",
+    "ERASED": "This person's details were erased; nothing new can be added.",
+    "CONFIRM_MISMATCH": "The confirmation didn't match. Type the reference exactly.",
+    "OWNER_CANNOT_DELETE": "An agency's owner can't delete their own account. Contact us to close the agency.",
+    "WRONG_PASSWORD": "Wrong password.",
+    "PLATFORM_ADMIN": "A platform admin's account can't be deleted this way.",
+    "INTERNAL": "Something went wrong. Please try again.",
+    "EMAIL_NOT_VERIFIED": "Confirm your email before opening an agency."
   },
   "sacred": {
     "title": "Ayat, duas and the rites of Hajj",
@@ -769,6 +782,7 @@
       "pilgrims": "Pilgrims a year",
       "staff": "Staff",
       "sms": "SMS a month",
+      "storage": "Storage (MB): passports, papers, photos",
       "unlimited": "Unlimited",
       "unlimitedHint": "Leave empty for unlimited",
       "units": "Businesses included",
@@ -1976,5 +1990,45 @@
       },
       "daysLeft": "days to go"
     }
+  },
+  "erase": {
+    "cancel": "Keep",
+    "pilgrim": {
+      "title": "Erase personal details",
+      "body": "At the pilgrim's request, their name, phone, addresses, family details, passport and NID numbers, every paper and scan, and the audit-trail copies of these are deleted for good. Receipts and the money record stay, under the reference. This can't be undone.",
+      "button": "Erase details",
+      "confirmLabel": "Type the reference to confirm: {ref}",
+      "confirm": "Erase for good",
+      "banner": "This pilgrim's personal details were erased at their request on {date}. Only the money record is kept."
+    },
+    "inquiry": {
+      "button": "Delete",
+      "body": "This inquiry and its audit-trail copies are deleted for good.",
+      "confirm": "Delete for good"
+    },
+    "customer": {
+      "title": "Erase customer details",
+      "body": "At the customer's request, their name, phone, address and area are deleted, and their name is taken out of ledger notes. Sales, payments and dues stay in the books. This can't be undone.",
+      "button": "Erase details",
+      "confirm": "Erase for good"
+    },
+    "employee": {
+      "button": "Erase details",
+      "body": "At the employee's request, their name, designation, phone and account number are deleted. Salary and advance records stay. This can't be undone.",
+      "confirm": "Erase for good"
+    },
+    "account": {
+      "title": "Delete my account",
+      "body": "Your login, password, devices, name, email and mobile are deleted for good, and you leave every agency. Receipts and work you recorded stay with the agency, shown as “—”.",
+      "ownerNote": "An agency's owner can't delete their own account, or no one would be left in charge of the agency and its books. To close the agency, contact us.",
+      "button": "Delete my account",
+      "password": "Enter your password to confirm",
+      "confirm": "Delete for good"
+    }
+  },
+  "privacy": {
+    "link": "Privacy policy",
+    "signUp": "By opening an account you agree to our <link>privacy policy</link>.",
+    "formNote": "What you send goes to this agency only. <link>Privacy policy</link>"
   }
 }

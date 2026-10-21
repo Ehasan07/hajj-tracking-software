@@ -4,7 +4,8 @@ import { z } from "zod";
 import { normalizeBdPhone } from "@hajj/core";
 import { inquiries, travelPackages } from "@hajj/db/schema";
 import { getSettings, nextReference } from "../services/tenant";
-import { router, tenantProcedure } from "../trpc";
+import { eraseAudit, recordErase } from "../services/erase";
+import { router, tenantProcedure, withRoles } from "../trpc";
 import { containing, optionalText, phoneInput } from "./shared";
 
 const statuses = ["new", "follow_up", "converted", "closed"] as const;
@@ -63,6 +64,17 @@ export const inquiriesRouter = router({
     if (!row) throw new TRPCError({ code: "NOT_FOUND" });
     return row;
   }),
+
+  /** Remove an inquiry and its audit-trail copies at the person's request. Owners and admins only. */
+  erase: withRoles("admin")
+    .input(z.object({ id: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const [row] = await ctx.tx.delete(inquiries).where(eq(inquiries.id, input.id)).returning({ id: inquiries.id });
+      if (!row) throw new TRPCError({ code: "NOT_FOUND" });
+      await eraseAudit(ctx.tx, "inquiries", [row.id]);
+      await recordErase(ctx.tx, "inquiries", row.id);
+      return { ok: true };
+    }),
 
   counts: tenantProcedure.query(async ({ ctx }) => {
     const rows = await ctx.tx

@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { DangerZone } from "@/components/danger-zone";
 import { FormError } from "@/components/form-error";
 import { useRouter } from "@/i18n/navigation";
 import { digits, type Locale } from "@/lib/format";
@@ -72,5 +73,31 @@ export function SignOutOthers({ sessions }: { sessions: number }) {
     <button type="button" onClick={() => setState("confirm")} className="h-10 rounded-md border-[1.5px] border-due px-4 text-[14px] font-semibold text-due hover:bg-due-tint">
       {t("others", { n: digits(Math.max(sessions - 1, 0), locale) })}
     </button>
+  );
+}
+
+/** Delete this login for good, after typing the password. The person is signed out everywhere. */
+export function DeleteAccount() {
+  const t = useTranslations("erase.account");
+  const trpc = useTRPC();
+  const remove = useMutation(
+    trpc.account.deleteMe.mutationOptions({
+      // The session no longer exists: a full page load lands on the sign-in page.
+      onSuccess: () => window.location.assign("/sign-in"),
+    }),
+  );
+  return (
+    <DangerZone
+      id="delete-account"
+      title={t("title")}
+      body={t("body")}
+      button={t("button")}
+      confirm={t("confirm")}
+      typeLabel={t("password")}
+      typeKind="password"
+      error={remove.error}
+      pending={remove.isPending}
+      onConfirm={(password) => remove.mutate({ password })}
+    />
   );
 }

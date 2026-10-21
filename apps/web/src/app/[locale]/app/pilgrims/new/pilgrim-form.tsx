@@ -26,9 +26,12 @@ function titleCase(value: string) {
 export function PilgrimForm({
   packages,
   prefill,
+  canDiscount,
 }: {
   packages: { id: string; label: string }[];
   prefill: Prefill;
+  /** Discounts are decided by owners, admins and accountants. */
+  canDiscount: boolean;
 }) {
   const t = useTranslations();
   const trpc = useTRPC();
@@ -195,7 +198,9 @@ export function PilgrimForm({
               </option>
             ))}
           </SelectField>
-          <Field id="discount" name="discount" inputMode="decimal" label={t("pilgrims.discount")} hint={t("common.optional")} />
+          {canDiscount ? (
+            <Field id="discount" name="discount" inputMode="decimal" label={t("pilgrims.discount")} hint={t("common.optional")} />
+          ) : null}
           {duplicate ? (
             <div className="flex flex-col gap-3 rounded-md bg-saffron-tint p-4">
               <FormError error={create.error} />

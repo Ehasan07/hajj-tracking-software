@@ -24,6 +24,8 @@ export interface PlanLimits {
   pilgrimsPerYear: number | null;
   staffSeats: number | null;
   smsPerMonth: number | null;
+  /** Files kept (passport copies, papers, website photos), in MB; null means unlimited, absent means the default. */
+  storageMb?: number | null;
 }
 
 /** What is for sale. Readable by everyone (pricing page); changed only by platform admins through the API. */

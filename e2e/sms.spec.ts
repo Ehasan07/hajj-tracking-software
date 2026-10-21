@@ -1,4 +1,4 @@
-import { clientAddress, expect, mobileNumber, passPhoneStep, test } from "./fixtures";
+import { clientAddress, expect, mobileNumber, passEmailStep, passPhoneStep, test } from "./fixtures";
 import { waitForSms, waitForSmsCode } from "./mail";
 
 const PASSWORD = "Correct-Horse-Battery-7";
@@ -23,6 +23,7 @@ test("the mobile is verified at sign-up, and a forgotten password comes back by 
   await page.locator("#phone").fill(phone);
   let since = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passEmailStep(page, email, since);
   await expect(page.getByText("মোবাইল নম্বর যাচাই")).toBeVisible();
   await page.getByRole("textbox", { name: "৬ সংখ্যার কোড 1" }).click();
   await page.keyboard.type("000000");

@@ -21,6 +21,7 @@ export interface PlanDraft {
   pilgrimsPerYear: number | null;
   staffSeats: number | null;
   smsPerMonth: number | null;
+  storageMb: number | null;
   units: BusinessUnit[];
   customDomain: boolean;
   sortOrder: number;
@@ -60,6 +61,7 @@ export function PlanForm({ plan, unitLabels, onDone }: { plan: PlanDraft; unitLa
       pilgrimsPerYear: num(f.get("pilgrimsPerYear")),
       staffSeats: num(f.get("staffSeats")),
       smsPerMonth: num(f.get("smsPerMonth")),
+      storageMb: num(f.get("storageMb")),
       units,
       customDomain: f.get("customDomain") === "on",
       sortOrder: Number(f.get("sortOrder") || 0),
@@ -81,6 +83,7 @@ export function PlanForm({ plan, unitLabels, onDone }: { plan: PlanDraft; unitLa
       <Field id={`${p}-pilgrims`} name="pilgrimsPerYear" type="number" min={1} defaultValue={plan.pilgrimsPerYear ?? ""} label={t("pilgrims")} hint={t("unlimitedHint")} />
       <Field id={`${p}-staff`} name="staffSeats" type="number" min={1} defaultValue={plan.staffSeats ?? ""} label={t("staff")} hint={t("unlimitedHint")} />
       <Field id={`${p}-sms`} name="smsPerMonth" type="number" min={0} defaultValue={plan.smsPerMonth ?? ""} label={t("sms")} hint={t("unlimitedHint")} />
+      <Field id={`${p}-storage`} name="storageMb" type="number" min={50} defaultValue={plan.storageMb ?? ""} label={t("storage")} hint={t("unlimitedHint")} />
       <fieldset className="flex flex-col gap-2 sm:col-span-2">
         <legend className="mb-1 text-sm font-semibold">{t("units")}</legend>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">

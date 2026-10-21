@@ -75,6 +75,8 @@ export const employees = pgTable(
     accountNo: text(),
     notes: text(),
     active: boolean().notNull().default(true),
+    /** Name and contact removed at the employee's request; pay records stay for the books. */
+    erasedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
   (t) => [check("employees_basic", sql`${t.basic} >= 0`), tenantIsolation("employees")],

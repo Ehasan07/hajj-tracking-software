@@ -55,8 +55,10 @@ export const paymentsRouter = router({
         .from(payments)
         .where(and(eq(payments.pilgrimId, pilgrim.id), isNull(payments.voidedAt)));
       const before = outstanding(pilgrim.price, previous.map((p) => p.amount), [pilgrim.discount]);
-      if (amount > before.due && !input.allowOverpayment) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: `OVERPAYMENT:${before.due}` });
+      if (amount > before.due) {
+        if (!input.allowOverpayment) throw new TRPCError({ code: "BAD_REQUEST", message: `OVERPAYMENT:${before.due}` });
+        // Taking more than is due is a money decision: owners, admins and accountants.
+        if (!["owner", "admin", "accountant"].includes(ctx.role)) throw new TRPCError({ code: "FORBIDDEN", message: "OVERPAYMENT_NOT_ALLOWED" });
       }
 
       const settings = await getSettings(ctx.tx);

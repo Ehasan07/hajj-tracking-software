@@ -1,4 +1,4 @@
-import { expect, mobileNumber, passPhoneStep, test } from "./fixtures";
+import { expect, mobileNumber, passEmailStep, passPhoneStep, test } from "./fixtures";
 import { waitForSms } from "./mail";
 
 // ICAO 9303 specimen passport, with valid check digits.
@@ -20,6 +20,7 @@ test("office day: inquiry to printed receipt", async ({ page }) => {
   await page.locator("#phone").fill(phone);
   const since = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passEmailStep(page, email, since);
   await passPhoneStep(page, phone, since);
 
   await page.waitForURL("**/onboarding");

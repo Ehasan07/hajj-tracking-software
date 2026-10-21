@@ -8,7 +8,7 @@ import { deviceCheckEnabled, TRUST_COOKIE, TRUST_DAYS, unsign } from "@/server/d
 import { api } from "@/trpc/server";
 import { getSession } from "@/server/session";
 import { maskPhone, smsConfigured, verifiedPhone } from "@/server/phone-otp";
-import { RevokeDevice, SignOutOthers } from "./device-actions";
+import { DeleteAccount, RevokeDevice, SignOutOthers } from "./device-actions";
 import { PhoneCard } from "./phone-card";
 
 export default async function DevicesPage({ params }: { params: Promise<{ locale: Locale }> }) {
@@ -21,6 +21,8 @@ export default async function DevicesPage({ params }: { params: Promise<{ locale
   const enabled = deviceCheckEnabled();
   const session = await getSession();
   const phone = session ? await verifiedPhone(session.user.id) : null;
+  const isOwner = (await (await api()).tenant.me().catch(() => null))?.role === "owner";
+  const te = await getTranslations("erase.account");
 
   return (
     <PageBody>
@@ -73,6 +75,17 @@ export default async function DevicesPage({ params }: { params: Promise<{ locale
               </li>
             ))}
           </ul>
+        )}
+      </Card>
+
+      <Card className="flex flex-col gap-3 p-6">
+        {isOwner ? (
+          <>
+            <h2 className="text-lg font-bold">{te("title")}</h2>
+            <p className="text-[14px] text-ink-2">{te("ownerNote")}</p>
+          </>
+        ) : (
+          <DeleteAccount />
         )}
       </Card>
     </PageBody>

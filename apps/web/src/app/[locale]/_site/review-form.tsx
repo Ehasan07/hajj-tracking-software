@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useActionState, useState } from "react";
 import { CheckIcon } from "@/components/icons";
 import { Button, Field, TextAreaField } from "@/components/ui";
@@ -20,6 +21,7 @@ export function Stars({ value, size = 18, className = "" }: { value: number; siz
 
 /** "Share your experience": lands with the agency for approval before it shows. */
 export function ReviewForm({ site }: { site?: string }) {
+  const tp = useTranslations("privacy");
   const t = useTranslations("site.reviews");
   const [state, action, pending] = useActionState<ReviewState, FormData>(submitReview, { status: "idle" });
   const v = state.status === "error" ? state.values : {};
@@ -74,6 +76,9 @@ export function ReviewForm({ site }: { site?: string }) {
       <Button type="submit" disabled={pending} className="sm:col-span-2">
         {pending ? t("sending") : t("submit")}
       </Button>
+      <p className="text-[13px] text-[var(--site-ink-3,var(--color-ink-3))] sm:col-span-2">
+        {tp.rich("formNote", { link: (c) => <Link href="/privacy" className="underline underline-offset-4">{c}</Link> })}
+      </p>
     </form>
   );
 }

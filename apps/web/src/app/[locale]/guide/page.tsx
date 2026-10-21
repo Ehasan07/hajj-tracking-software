@@ -314,6 +314,7 @@ export default async function GuideBook({ params }: { params: Params }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("book");
+  const tp = await getTranslations("privacy");
 
   return (
     <div
@@ -403,6 +404,9 @@ export default async function GuideBook({ params }: { params: Params }) {
           <p>{t("sources.hadithCredit")}</p>
           <Link href="/sign-up" className={buttonClass("outline", "mt-2 print:hidden")}>
             {t("forAgencies")}
+          </Link>
+          <Link href="/privacy" className="underline underline-offset-4 print:hidden">
+            {tp("link")}
           </Link>
         </footer>
       </main>

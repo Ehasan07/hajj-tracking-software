@@ -1,4 +1,4 @@
-import { clientAddress, expect, mobileNumber, passPhoneStep, test } from "./fixtures";
+import { clientAddress, expect, mobileNumber, passEmailStep, passPhoneStep, test } from "./fixtures";
 
 const shots = process.env.E2E_SCREENSHOTS;
 async function snap(page: import("@playwright/test").Page, name: string) {
@@ -24,6 +24,7 @@ test("an agency arranges its own website, and a visitor's review shows once appr
   await page.locator("#phone").fill(phone);
   const since = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passEmailStep(page, `site-${stamp}@example.com`, since);
   await passPhoneStep(page, phone, since);
   await page.waitForURL("**/onboarding");
   await page.locator("#agencyName").fill("Noor Travels");

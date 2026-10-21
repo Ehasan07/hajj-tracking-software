@@ -15,7 +15,7 @@ import { useTRPC } from "@/trpc/react";
 
 const METHODS = ["cash", "bkash", "nagad", "rocket", "bank", "card", "other"] as const;
 
-export function ReceivePayment({ pilgrimId, due }: { pilgrimId: string; due: number }) {
+export function ReceivePayment({ pilgrimId, due, canOverpay }: { pilgrimId: string; due: number; canOverpay: boolean }) {
   const t = useTranslations();
   const locale = useLocale() as Locale;
   const trpc = useTRPC();
@@ -101,7 +101,7 @@ export function ReceivePayment({ pilgrimId, due }: { pilgrimId: string; due: num
         <Field id="reference" name="reference" required label={t("payment.reference")} hint={t("payment.referenceHint")} className="font-mono" />
       ) : null}
       <Field id="purpose" name="purpose" label={t("payment.purpose")} placeholder={t("payment.purposePlaceholder")} />
-      {over ? (
+      {over && canOverpay ? (
         <label className="flex items-center gap-3 rounded-md bg-saffron-tint px-4 py-3 text-[15px] font-semibold text-saffron-ink">
           <input type="checkbox" checked={allowOver} onChange={(e) => setAllowOver(e.target.checked)} className="h-5 w-5 accent-[var(--color-saffron-deep)]" />
           {t("payment.allowOverpay")}

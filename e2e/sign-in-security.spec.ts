@@ -1,4 +1,4 @@
-import { clientAddress, expect, mobileNumber, passPhoneStep, test } from "./fixtures";
+import { clientAddress, expect, mobileNumber, passEmailStep, passPhoneStep, test } from "./fixtures";
 import { waitForCode, waitForMail } from "./mail";
 
 const PASSWORD = "Correct-Horse-Battery-7";
@@ -11,6 +11,7 @@ async function signUp(page: import("@playwright/test").Page, email: string, phon
   await page.locator("#phone").fill(phone);
   const since = new Date();
   await page.getByRole("button", { name: "অ্যাকাউন্ট খুলুন" }).click();
+  await passEmailStep(page, email, since);
   await passPhoneStep(page, phone, since);
   await page.waitForURL("**/onboarding");
   await page.locator("#agencyName").fill("Noor Travels");
@@ -72,6 +73,8 @@ test("a new device needs the emailed code once; then it is trusted and can be re
   await expect(page.getByText("এই ডিভাইস")).toHaveCount(0);
   await expect(page.getByRole("listitem").filter({ hasText: "সরিয়ে দিন" })).toHaveCount(1);
   await page.context().clearCookies({ name: "hajj.session_token" });
+  // Sign-ins are capped at five a minute per address, and this test has used them up.
+  await page.setExtraHTTPHeaders({ "x-real-ip": clientAddress() });
   since = new Date();
   await submitPassword(page, email);
   await expect(page.getByText("নতুন ডিভাইস থেকে লগইন")).toBeVisible();
@@ -182,8 +185,15 @@ test("auth routes the app doesn't use are closed, and sign-in is limited per add
 test("an account makes one agency, never with a reserved web address", async ({ request, baseURL }) => {
   const headers = { origin: new URL(baseURL!).origin };
   const email = `org-${Date.now()}@example.com`;
+  const since = new Date();
   const signUp = await request.post("/api/auth/sign-up/email", { headers, data: { name: "Karim Uddin", email, password: PASSWORD } });
   expect(signUp.status()).toBe(200);
+  // No session until the email is confirmed: an agency can't be opened yet.
+  expect((await signUp.json()).emailVerification).toBe(true);
+  expect((await request.post("/api/auth/organization/create", { headers, data: { name: "Too Soon", slug: `soon-${Date.now()}` } })).status()).toBe(401);
+  const verified = await request.post("/api/device/verify", { headers, data: { code: await waitForCode(email, since) } });
+  expect(verified.status()).toBe(200);
+  expect((await request.post("/api/auth/sign-in/email", { headers, data: { email, password: PASSWORD } })).status()).toBe(200);
 
   const reserved = await request.post("/api/auth/organization/create", { headers, data: { name: "Admin", slug: "admin" } });
   expect(reserved.status()).toBe(400);

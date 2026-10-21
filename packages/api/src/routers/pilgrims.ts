@@ -19,11 +19,15 @@ import {
   subscriptions,
   travelPackages,
 } from "@hajj/db/schema";
-import { pilgrimReadiness } from "../services/pilgrim";
+import { ERASED_NAME, eraseAudit, eraseSms, recordErase } from "../services/erase";
+import { assertNotErased, pilgrimReadiness } from "../services/pilgrim";
 import { blindIndex, decryptField, encryptField } from "../crypto";
 import { getSettings, nextReference } from "../services/tenant";
 import { router, tenantProcedure, withRoles } from "../trpc";
 import { containing, isPilgrimFileKey, optionalText, phoneInput } from "./shared";
+
+/** Roles that decide money given away (discounts). */
+const MONEY_ROLES: string[] = ["owner", "admin", "accountant"];
 
 const pilgrimStatuses = [
   "registered",
@@ -300,6 +304,10 @@ export const pilgrimsRouter = router({
       if (discountMinor < 0 || discountMinor > pkg.price) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "INVALID_DISCOUNT" });
       }
+      // A discount is money given away: owners, admins and accountants decide it.
+      if (discountMinor > 0 && !MONEY_ROLES.includes(ctx.role)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "DISCOUNT_NOT_ALLOWED" });
+      }
 
       const passport = passportColumns(ctx.tenantId, passportNumber);
       if (passport.passportIndex && !allowDuplicatePassport) {
@@ -340,6 +348,7 @@ export const pilgrimsRouter = router({
     .input(profileInput.partial().extend({ id: z.uuid() }))
     .mutation(async ({ ctx, input }) => {
       const { id, nidNumber, ...patch } = input;
+      await assertNotErased(ctx.tx, id);
       const [row] = await ctx.tx
         .update(pilgrims)
         .set({ ...patch, ...nidColumns(ctx.tenantId, nidNumber) })
@@ -362,6 +371,7 @@ export const pilgrimsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await assertNotErased(ctx.tx, input.id);
       const { id, passportNumber, allowDuplicatePassport, ...rest } = input;
       const passport = passportColumns(ctx.tenantId, passportNumber);
       if (!allowDuplicatePassport) {
@@ -436,6 +446,7 @@ export const pilgrimsRouter = router({
       if (!isPilgrimFileKey(input.key, ctx.tenantId, input.id, "passport")) {
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
+      await assertNotErased(ctx.tx, input.id);
       const [row] = await ctx.tx
         .update(pilgrims)
         .set({ passportScanKey: input.key })
@@ -455,6 +466,91 @@ export const pilgrimsRouter = router({
         .where(eq(pilgrims.id, input.id));
       if (row?.key) await ctx.tx.execute(sql`select record_access('pilgrims', ${input.id}, 'VIEW_PASSPORT_SCAN')`);
       return row?.key ?? null;
+    }),
+
+  /**
+   * Erase a pilgrim's personal details at their request: name, contact,
+   * family, addresses, ID numbers, papers and scans, and the copies of them in
+   * the audit trail, the inquiry they came from and the SMS sent to them.
+   * Payments and receipts stay, under the reference, for the books. Owners and
+   * admins only; the reference must be typed to confirm. Returns the stored
+   * files to delete.
+   */
+  erase: withRoles("admin")
+    .input(z.object({ id: z.uuid(), confirmRef: z.string().trim().max(40) }))
+    .mutation(async ({ ctx, input }) => {
+      const [p] = await ctx.tx
+        .select({
+          id: pilgrims.id,
+          ref: pilgrims.ref,
+          phone: pilgrims.phone,
+          altPhone: pilgrims.altPhone,
+          emergencyPhone: pilgrims.emergencyPhone,
+          scan: pilgrims.passportScanKey,
+          inquiryId: pilgrims.inquiryId,
+          erasedAt: pilgrims.erasedAt,
+        })
+        .from(pilgrims)
+        .where(eq(pilgrims.id, input.id));
+      if (!p) throw new TRPCError({ code: "NOT_FOUND" });
+      if (input.confirmRef.toUpperCase() !== p.ref) throw new TRPCError({ code: "BAD_REQUEST", message: "CONFIRM_MISMATCH" });
+      if (p.erasedAt) return { fileKeys: [] as string[] };
+
+      const docs = await ctx.tx.execute<{ id: string; key: string }>(
+        sql`select id::text, file_key as key from erase_pilgrim_documents(${p.id}::uuid)`,
+      );
+      await ctx.tx
+        .update(pilgrims)
+        .set({
+          fullName: ERASED_NAME,
+          fatherName: null,
+          motherName: null,
+          spouseName: null,
+          occupation: null,
+          bloodGroup: null,
+          phone: "",
+          altPhone: null,
+          email: null,
+          gender: null,
+          dateOfBirth: null,
+          address: null,
+          permanentAddress: null,
+          district: null,
+          nidEnc: null,
+          nidIndex: null,
+          nidLast4: null,
+          prpNumber: null,
+          hajjRegNumber: null,
+          visaNumber: null,
+          mahramName: null,
+          mahramRelation: null,
+          mahramPilgrimId: null,
+          passportNumberEnc: null,
+          passportIndex: null,
+          passportLast2: null,
+          passportExpiry: null,
+          nationality: null,
+          passportScanKey: null,
+          emergencyName: null,
+          emergencyPhone: null,
+          notes: null,
+          inquiryId: null,
+          erasedAt: new Date(),
+        })
+        .where(eq(pilgrims.id, p.id));
+      // Others who named this person as their mahram keep the link, not the name.
+      await ctx.tx.update(pilgrims).set({ mahramName: null }).where(eq(pilgrims.mahramPilgrimId, p.id));
+
+      const fromInquiries = await ctx.tx
+        .delete(inquiries)
+        .where(or(eq(inquiries.convertedPilgrimId, p.id), p.inquiryId ? eq(inquiries.id, p.inquiryId) : undefined))
+        .returning({ id: inquiries.id });
+      await eraseAudit(ctx.tx, "inquiries", fromInquiries.map((i) => i.id));
+      await eraseSms(ctx.tx, [p.phone, p.altPhone, p.emergencyPhone]);
+      await eraseAudit(ctx.tx, "pilgrim_documents", docs.map((d) => d.id));
+      await eraseAudit(ctx.tx, "pilgrims", [p.id]);
+      await recordErase(ctx.tx, "pilgrims", p.id);
+      return { fileKeys: [...docs.map((d) => d.key), ...(p.scan ? [p.scan] : [])] };
     }),
 
   statusCounts: tenantProcedure.query(async ({ ctx }) => {

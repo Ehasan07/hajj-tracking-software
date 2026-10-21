@@ -18,7 +18,7 @@ export default async function NewPilgrimPage({
   const { inquiry: inquiryId } = await searchParams;
   const t = await getTranslations();
   const caller = await api();
-  const packages = await caller.packages.list({ activeOnly: true });
+  const [packages, me] = await Promise.all([caller.packages.list({ activeOnly: true }), caller.tenant.me()]);
   const inquiry = inquiryId && /^[0-9a-f-]{36}$/.test(inquiryId) ? await caller.inquiries.get({ id: inquiryId }).catch(() => null) : null;
 
   return (
@@ -41,6 +41,7 @@ export default async function NewPilgrimPage({
         </Card>
       ) : (
         <PilgrimForm
+          canDiscount={["owner", "admin", "accountant"].includes(me.role)}
           packages={packages.map((p) => ({ id: p.id, label: `${p.name} · ${money(p.price, locale, p.currency)}` }))}
           prefill={{
             inquiryId: inquiry?.id,

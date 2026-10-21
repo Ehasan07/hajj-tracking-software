@@ -138,6 +138,8 @@ export const pilgrims = pgTable(
     emergencyPhone: text(),
     notes: text(),
     inquiryId: uuid().references(() => inquiries.id, { onDelete: "set null" }),
+    /** Personal details removed at the pilgrim's request; payments stay for the books. */
+    erasedAt: timestamp({ withTimezone: true }),
     createdBy: text().notNull().default(sql`current_setting('app.user_id', true)`),
     ...timestamps,
   },

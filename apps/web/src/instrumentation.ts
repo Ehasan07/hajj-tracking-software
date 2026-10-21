@@ -1,4 +1,4 @@
-/** Runs once when the server starts: check the settings, then begin sending queued SMS. */
+/** Runs once when the server starts: check the settings, then begin sending queued SMS and housekeeping. */
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     if (process.env.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
@@ -11,5 +11,7 @@ export async function register() {
     }
     const { startSmsDispatcher } = await import("./server/sms-dispatcher");
     startSmsDispatcher();
+    const { startMaintenance } = await import("./server/maintenance");
+    startMaintenance();
   }
 }

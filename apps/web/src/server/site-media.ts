@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { sql } from "drizzle-orm";
 import { db } from "@hajj/db";
-import { getObject, putObject, sniffImageOrPdf } from "./storage";
+import { getObject, putObject, sniffImageOrPdf, storageAdded } from "./storage";
 
 /**
  * Pictures for an agency's public website. Each upload is decoded and drawn
@@ -46,6 +46,7 @@ export async function storeSiteImage(tenantId: string, purpose: SiteImagePurpose
   }
   const key = `tenants/${tenantId}/site/${randomUUID()}.webp`;
   await putObject(key, webp, "image/webp");
+  storageAdded(tenantId, webp.length);
   return key;
 }
 

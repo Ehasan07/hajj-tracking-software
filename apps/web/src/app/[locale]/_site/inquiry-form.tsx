@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useActionState } from "react";
 import { CheckIcon } from "@/components/icons";
 import { Button, Field, SelectField, TextAreaField } from "@/components/ui";
@@ -16,6 +17,7 @@ export function InquiryForm({
   /** The /site/<slug> this form is on, so it reaches that agency. */
   site?: string;
 }) {
+  const tp = useTranslations("privacy");
   const t = useTranslations("site.inquiry");
   const ti = useTranslations("interest");
   const [state, action, pending] = useActionState<InquiryState, FormData>(submitInquiry, { status: "idle" });
@@ -68,6 +70,9 @@ export function InquiryForm({
       <Button type="submit" disabled={pending} className="h-14 text-lg sm:col-span-2">
         {pending ? t("sending") : t("submit")}
       </Button>
+      <p className="text-[13px] text-[var(--site-ink-3,var(--color-ink-3))] sm:col-span-2">
+        {tp.rich("formNote", { link: (c) => <Link href="/privacy" className="underline underline-offset-4">{c}</Link> })}
+      </p>
     </form>
   );
 }

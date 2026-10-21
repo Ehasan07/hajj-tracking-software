@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import type { ShopUnit } from "@hajj/core";
+import { DangerZone } from "@/components/danger-zone";
 import { FormError } from "@/components/form-error";
 import { Button, Field, SelectField } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
@@ -243,5 +244,25 @@ export function CollectForm({
         {t("collect")}
       </Button>
     </form>
+  );
+}
+
+/** Erase a customer's name and contact at their request; sales and dues stay. */
+export function EraseCustomer({ unit, id }: { unit: ShopUnit; id: string }) {
+  const t = useTranslations("erase.customer");
+  const trpc = useTRPC();
+  const router = useRouter();
+  const erase = useMutation(trpc.shop.eraseCustomer.mutationOptions({ onSuccess: () => router.refresh() }));
+  return (
+    <DangerZone
+      id="erase-customer"
+      title={t("title")}
+      body={t("body")}
+      button={t("button")}
+      confirm={t("confirm")}
+      error={erase.error}
+      pending={erase.isPending}
+      onConfirm={() => erase.mutate({ unit, id })}
+    />
   );
 }

@@ -5,6 +5,7 @@ import { Reveal } from "@/components/reveal";
 import { Badge, buttonClass, Card } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { dateText, digits, money, type Locale } from "@/lib/format";
+import { BOOK_ROLES } from "@/lib/units";
 import { api } from "@/trpc/server";
 import { ProductForm } from "../product-form";
 import { AdjustStockForm, ReceiveStockForm } from "./stock-forms";
@@ -21,10 +22,11 @@ export default async function ProductPage({
   const all = await caller.shop.products({ unit, includeInactive: true });
   const product = all.find((p) => p.id === id);
   if (!product) notFound();
-  const [batches, movements, overview] = await Promise.all([
+  const [batches, movements, overview, me] = await Promise.all([
     product.usesBatches ? caller.shop.batches({ unit, productId: id }) : Promise.resolve([]),
     caller.shop.movements({ unit, productId: id }),
     caller.shop.overview({ unit }),
+    caller.tenant.me(),
   ]);
   const today = overview.day;
   const categories = [...new Set(all.map((p) => p.category).filter(Boolean) as string[])];
@@ -68,9 +70,11 @@ export default async function ProductPage({
         ) : null}
       </Card>
 
-      <Reveal label={t("products.edit")} variant="outline" plus={false}>
-        <ProductForm unit={unit} categories={categories} initial={product} />
-      </Reveal>
+      {BOOK_ROLES.includes(me.role) ? (
+        <Reveal label={t("products.edit")} variant="outline" plus={false}>
+          <ProductForm unit={unit} categories={categories} initial={product} />
+        </Reveal>
+      ) : null}
 
       {product.trackStock ? (
         <div className="grid gap-5 lg:grid-cols-2">

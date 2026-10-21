@@ -151,6 +151,8 @@ export const customers = pgTable(
     openingDue: money().notNull().default(0),
     active: boolean().notNull().default(true),
     sortOrder: integer().notNull().default(0),
+    /** Name and contact removed at the customer's request; sales and dues stay for the books. */
+    erasedAt: timestamp({ withTimezone: true }),
     ...timestamps,
   },
   (t) => [

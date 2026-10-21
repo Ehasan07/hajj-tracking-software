@@ -2,9 +2,9 @@ import { randomUUID } from "node:crypto";
 import { encryptBytes } from "@hajj/api/crypto";
 import { documentType } from "@hajj/core";
 import { getSession } from "@/server/session";
-import { putObject, sniffImageOrPdf } from "@/server/storage";
+import { putObject, sniffImageOrPdf, storageAdded } from "@/server/storage";
 import { api } from "@/trpc/server";
-import { fail, uploadRefused } from "../../_shared";
+import { fail, storeRefused, uploadRefused } from "../../_shared";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "application/pdf": "pdf" } as const;
@@ -17,7 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ pil
     const tenantId = session?.session.activeOrganizationId;
     if (!session || !tenantId) return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
-    const refused = uploadRefused(request, session.user.id, MAX_BYTES);
+    const refused = uploadRefused(request, session.user.id, MAX_BYTES) ?? (await storeRefused(tenantId, Number(request.headers.get("content-length"))));
     if (refused) return refused;
 
     const form = await request.formData();
@@ -34,7 +34,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ pil
     const caller = await api();
     await caller.pilgrims.get({ id: pilgrimId }); // tenant access check before anything is stored
     const key = `tenants/${tenantId}/pilgrims/${pilgrimId}/${type}-${randomUUID()}.${EXT[contentType]}.enc`;
-    await putObject(key, encryptBytes(bytes), "application/octet-stream");
+    const sealed = encryptBytes(bytes);
+    await putObject(key, sealed, "application/octet-stream");
+    storageAdded(tenantId, sealed.length);
     const row = await caller.documents.attach({ pilgrimId, type, key, contentType, sizeBytes: bytes.length });
     return Response.json({ ok: true, id: row.id });
   } catch (error) {

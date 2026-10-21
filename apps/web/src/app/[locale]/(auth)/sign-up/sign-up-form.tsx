@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useMemo, useState, type FormEvent } from "react";
 import { normalizeBdPhone } from "@hajj/core";
+import { EmailCodeStep, type CodeChallenge } from "@/components/email-code-step";
 import { PasswordField, passwordReady } from "@/components/password-field";
 import { PhoneVerify } from "@/components/phone-verify";
 import { Button, Field } from "@/components/ui";
@@ -18,7 +19,8 @@ export function SignUpForm({ phoneRequired }: { phoneRequired: boolean }) {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState<string>();
-  const [stage, setStage] = useState<"account" | "phone">("account");
+  const [stage, setStage] = useState<"account" | "email" | "phone">("account");
+  const [challenge, setChallenge] = useState<CodeChallenge | null>(null);
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(false);
   const context = useMemo(() => ({ name, email }), [name, email]);
@@ -38,7 +40,7 @@ export function SignUpForm({ phoneRequired }: { phoneRequired: boolean }) {
     }
     setPending(true);
     setError(undefined);
-    const { error: failure } = await authClient.signUp.email({ name: name.trim(), email: email.trim(), password });
+    const { data, error: failure } = await authClient.signUp.email({ name: name.trim(), email: email.trim(), password });
     setPending(false);
     if (failure) {
       const code = failure.code ?? "";
@@ -48,8 +50,39 @@ export function SignUpForm({ phoneRequired }: { phoneRequired: boolean }) {
       else setError(t("errors.generic"));
       return;
     }
+    // The account confirms its email with a code before it can be used.
+    const step = data as unknown as { emailVerification?: boolean; email?: string; device?: string; resendIn?: number };
+    if (step?.emailVerification) {
+      setChallenge({ email: step.email ?? "", device: step.device ?? "", resendIn: step.resendIn ?? 45 });
+      setStage("email");
+      return;
+    }
+    next();
+  }
+
+  function next() {
     if (phoneRequired) setStage("phone");
     else router.replace("/onboarding");
+  }
+
+  /** After the code: sign in from this (now trusted) browser with the password just chosen. */
+  async function signInAfterCode(): Promise<string | undefined> {
+    const { error: failure } = await authClient.signIn.email({ email: email.trim(), password });
+    if (failure) return failure.status === 429 ? t("auth.tooMany") : t("errors.generic");
+    next();
+    return undefined;
+  }
+
+  if (stage === "email" && challenge) {
+    return (
+      <EmailCodeStep
+        challenge={challenge}
+        title={t("auth.confirmEmail")}
+        backLabel={t("auth.device.backToSignIn")}
+        onVerified={signInAfterCode}
+        onBack={() => router.replace("/sign-in")}
+      />
+    );
   }
 
   if (stage === "phone") {
@@ -111,6 +144,9 @@ export function SignUpForm({ phoneRequired }: { phoneRequired: boolean }) {
       <Button type="submit" disabled={pending}>
         {pending ? t("common.loading") : t("common.signUp")}
       </Button>
+      <p className="-mt-2 text-[13px] text-ink-3">
+        {t.rich("privacy.signUp", { link: (c) => <Link href="/privacy" className="underline underline-offset-4">{c}</Link> })}
+      </p>
       <p className="text-[15px] text-ink-2">
         {t("auth.haveAccount")}{" "}
         <Link href="/sign-in" className="font-semibold text-haram underline underline-offset-4">

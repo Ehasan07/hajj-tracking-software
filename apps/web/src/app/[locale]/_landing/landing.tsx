@@ -170,6 +170,7 @@ function StatementSlip({ locale }: { locale: Locale }) {
 export async function Landing({ locale }: { locale: Locale }) {
   const t = await getTranslations("landing");
   const ts = await getTranslations("site");
+  const tp = await getTranslations("privacy");
   const arafah = nextArafah();
   const plansList = await db
     .select({ code: plans.code, nameBn: plans.nameBn, nameEn: plans.nameEn, taglineBn: plans.taglineBn, taglineEn: plans.taglineEn, priceMonthly: plans.priceMonthly, priceYearly: plans.priceYearly, limits: plans.limits })
@@ -460,6 +461,9 @@ export async function Landing({ locale }: { locale: Locale }) {
             <span>© {digits(new Date().getFullYear(), locale)}</span>
             <Link href="/guide" className="underline underline-offset-4">
               {t("nav.book")}
+            </Link>
+            <Link href="/privacy" className="underline underline-offset-4">
+              {tp("link")}
             </Link>
             <Link href="/sign-in" className="underline underline-offset-4">
               {t("signIn")}

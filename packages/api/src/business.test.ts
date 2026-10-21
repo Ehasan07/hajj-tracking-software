@@ -72,7 +72,7 @@ describe("medicine shop", () => {
   let paracetamol: string;
 
   it("keeps stock in batches and sells the one expiring first", async () => {
-    const p = await staff().shop.saveProduct({
+    const p = await owner().shop.saveProduct({
       unit: "medicine",
       name: "Napa 500",
       genericName: "Paracetamol",
@@ -199,7 +199,7 @@ describe("zamzam routes", () => {
 
   it("delivers on credit, shows it on today's route, and collects the due", async () => {
     jar = (
-      await staff().shop.saveProduct({
+      await owner().shop.saveProduct({
         unit: "zamzam",
         name: "Zamzam 5 L",
         unitLabel: "jar",

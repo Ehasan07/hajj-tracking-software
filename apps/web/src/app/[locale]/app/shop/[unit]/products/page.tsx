@@ -5,6 +5,7 @@ import { Reveal } from "@/components/reveal";
 import { Badge, Card, EmptyState } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { dateText, digits, money, type Locale } from "@/lib/format";
+import { BOOK_ROLES } from "@/lib/units";
 import { api } from "@/trpc/server";
 import { ProductForm } from "./product-form";
 
@@ -20,17 +21,20 @@ export default async function ProductsPage({
   const { q } = await searchParams;
   const t = await getTranslations("shop");
   const caller = await api();
-  const [products, expiring] = await Promise.all([
+  const [products, expiring, me] = await Promise.all([
     caller.shop.products({ unit, q, includeInactive: true }),
     unit === "medicine" ? caller.shop.expiring({ unit, days: 60 }) : Promise.resolve(null),
+    caller.tenant.me(),
   ]);
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean) as string[])];
 
   return (
     <>
-      <Reveal label={t("products.add")}>
-        <ProductForm unit={unit} categories={categories} />
-      </Reveal>
+      {BOOK_ROLES.includes(me.role) ? (
+        <Reveal label={t("products.add")}>
+          <ProductForm unit={unit} categories={categories} />
+        </Reveal>
+      ) : null}
 
       {expiring && expiring.rows.length > 0 ? (
         <Card className="flex animate-rise flex-col gap-3 border-l-4 border-due p-5">

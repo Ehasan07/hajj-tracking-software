@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { calculateSalary, parseAmount } from "@hajj/core";
+import { DangerZone } from "@/components/danger-zone";
 import { FormError } from "@/components/form-error";
 import { Button, Field, SelectField } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
@@ -650,5 +651,24 @@ export function LineEditor({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Erase an employee's name and contact at their request; pay records stay. */
+export function EraseEmployee({ id }: { id: string }) {
+  const t = useTranslations("erase.employee");
+  const trpc = useTRPC();
+  const router = useRouter();
+  const erase = useMutation(trpc.payroll.eraseEmployee.mutationOptions({ onSuccess: () => router.refresh() }));
+  return (
+    <DangerZone
+      id="erase-employee"
+      body={t("body")}
+      button={t("button")}
+      confirm={t("confirm")}
+      error={erase.error}
+      pending={erase.isPending}
+      onConfirm={() => erase.mutate({ id })}
+    />
   );
 }

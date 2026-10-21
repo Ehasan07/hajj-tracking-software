@@ -18,6 +18,16 @@ export function mobileNumber() {
   return `017${String(Math.floor(Math.random() * 1e8)).padStart(8, "0")}`;
 }
 
+/** Sign-up first confirms the email: type the code it was sent, and wait for the next step. */
+export async function passEmailStep(page: import("@playwright/test").Page, email: string, since: Date) {
+  const { waitForCode } = await import("./mail");
+  const step = page.getByText("আপনার ইমেইল যাচাই করুন");
+  await step.waitFor();
+  await page.getByRole("textbox", { name: "৬ সংখ্যার কোড 1" }).click();
+  await page.keyboard.type(await waitForCode(email, since));
+  await step.waitFor({ state: "detached" });
+}
+
 /** Sign-up asks for a mobile number when SMS works; type the code it was sent. */
 export async function passPhoneStep(page: import("@playwright/test").Page, phone: string, since: Date) {
   const { waitForSmsCode } = await import("./mail");

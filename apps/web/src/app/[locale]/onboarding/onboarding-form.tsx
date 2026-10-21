@@ -53,7 +53,8 @@ export function OnboardingForm({ existingOrgId }: { existingOrgId?: string }) {
       router.replace("/app");
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause));
+      const message = cause instanceof Error ? cause.message : String(cause);
+      setError(message === "EMAIL_NOT_VERIFIED" ? t("errors.EMAIL_NOT_VERIFIED") : message);
       setPending(false);
     }
   }

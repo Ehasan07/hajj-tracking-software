@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { DEFAULT_STORAGE_MB } from "@/server/storage";
 import { BUSINESS_UNITS, type BusinessUnit } from "@hajj/core";
 import { CheckIcon, KaabaIcon } from "@/components/icons";
 import { PageBody, PageHeader } from "@/components/page-header";
@@ -29,6 +30,7 @@ export default async function PlansPage({ params }: { params: Promise<{ locale: 
     pilgrimsPerYear: p.limits.pilgrimsPerYear,
     staffSeats: p.limits.staffSeats,
     smsPerMonth: p.limits.smsPerMonth,
+    storageMb: p.limits.storageMb === undefined ? DEFAULT_STORAGE_MB : p.limits.storageMb,
     units: p.units,
     customDomain: p.customDomain,
     sortOrder: p.sortOrder,
@@ -68,6 +70,7 @@ export default async function PlansPage({ params }: { params: Promise<{ locale: 
                 <li className="flex justify-between gap-2"><span className="text-ink-3">{t("admin.plans.pilgrims")}</span><b>{limit(p.limits.pilgrimsPerYear)}</b></li>
                 <li className="flex justify-between gap-2"><span className="text-ink-3">{t("admin.plans.staff")}</span><b>{limit(p.limits.staffSeats)}</b></li>
                 <li className="flex justify-between gap-2"><span className="text-ink-3">{t("admin.plans.sms")}</span><b>{limit(p.limits.smsPerMonth)}</b></li>
+                <li className="flex justify-between gap-2"><span className="text-ink-3">{t("admin.plans.storage")}</span><b>{limit(p.limits.storageMb === undefined ? DEFAULT_STORAGE_MB : p.limits.storageMb)}</b></li>
                 {p.units.map((u) => (
                   <li key={u} className="flex items-center gap-2">
                     <CheckIcon size={16} className="text-paid" />
@@ -92,7 +95,7 @@ export default async function PlansPage({ params }: { params: Promise<{ locale: 
       <Card className="p-6">
         <h2 className="mb-5 text-lg font-bold">{t("admin.plans.new")}</h2>
         <PlanForm
-          plan={{ code: "", nameBn: "", nameEn: "", taglineBn: "", taglineEn: "", priceMonthly: "", priceYearly: "", pilgrimsPerYear: null, staffSeats: null, smsPerMonth: null, units: ["hajj", "office"], customDomain: false, sortOrder: (plans.length + 1) * 10, active: true }}
+          plan={{ code: "", nameBn: "", nameEn: "", taglineBn: "", taglineEn: "", priceMonthly: "", priceYearly: "", pilgrimsPerYear: null, staffSeats: null, smsPerMonth: null, storageMb: DEFAULT_STORAGE_MB, units: ["hajj", "office"], customDomain: false, sortOrder: (plans.length + 1) * 10, active: true }}
           unitLabels={unitLabels}
         />
       </Card>

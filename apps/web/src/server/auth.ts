@@ -106,17 +106,25 @@ const afterHook = createAuthMiddleware(async (ctx) => {
     const found = await ctx.context.internalAdapter.findUserByEmail(email);
     if (!found) return;
     const meta = deviceMeta(ctx.headers ?? new Headers());
+    // The reset code came by email, so the address is proven too.
+    if (!found.user.emailVerified) await ctx.context.internalAdapter.updateUser(found.user.id, { emailVerified: true });
     if (deviceCheckEnabled()) {
       ctx.setCookie(TRUST_COOKIE, await trustDevice(found.user.id, meta, ctx.getCookie(TRUST_COOKIE)), cookieAttrs(trustCookieOptions));
     }
     void sendSecurityAlert(found.user.id, "password", meta);
   }
 
-  // The browser an account was opened in is that account's first trusted device.
+  // A new account proves its email before it gets a session: a code goes to the address,
+  // and the browser that enters it becomes the account's first trusted device. An address
+  // nobody reads (a made-up one) never gets past this, so it can't open agencies or trials.
   if (ctx.path === "/sign-up/email" && ctx.context.newSession && deviceCheckEnabled()) {
+    const created = ctx.context.newSession;
     const meta = deviceMeta(ctx.headers ?? new Headers());
-    const value = await trustDevice(ctx.context.newSession.user.id, meta, ctx.getCookie(TRUST_COOKIE));
-    ctx.setCookie(TRUST_COOKIE, value, cookieAttrs(trustCookieOptions));
+    await ctx.context.internalAdapter.deleteSession(created.session.token);
+    ctx.context.responseHeaders?.delete("set-cookie");
+    const challenge = await startDeviceChallenge(created.user.id, created.user.email, meta, unsign(ctx.getCookie(PENDING_COOKIE)), "signup");
+    ctx.setCookie(PENDING_COOKIE, sign(challenge.id), cookieAttrs(pendingCookieOptions));
+    return ctx.json({ emailVerification: true, email: challenge.email, device: challenge.device, resendIn: challenge.resendIn });
   }
 });
 
@@ -207,7 +215,7 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 60 * 60, max: 5 },
-      "/organization/create": { window: 60 * 60, max: 3 },
+      "/organization/create": { window: 60 * 60, max: 5 },
       "/email-otp/request-password-reset": { window: 60 * 60, max: 3 },
       "/email-otp/check-verification-otp": { window: 10 * 60, max: 10 },
       "/email-otp/reset-password": { window: 10 * 60, max: 10 },
@@ -232,7 +240,18 @@ export const auth = betterAuth({
       organizationHooks: {
         // The same address rules as the website page, so the API can't take a reserved
         // name or the one the main domain shows.
-        beforeCreateOrganization: async ({ organization: org }) => {
+        beforeCreateOrganization: async ({ organization: org, user: creator }) => {
+          // Only an account whose email is proven opens an agency (and its free trial). A
+          // trusted browser counts: today one is only given after a code from the inbox, and
+          // accounts opened before sign-up asked for a code were trusted when they were made.
+          if (deviceCheckEnabled() && !creator.emailVerified) {
+            const [trusted] = await db
+              .select({ id: schema.trustedDevices.id })
+              .from(schema.trustedDevices)
+              .where(eq(schema.trustedDevices.userId, creator.id))
+              .limit(1);
+            if (!trusted) throw new APIError("FORBIDDEN", { message: "EMAIL_NOT_VERIFIED", code: "EMAIL_NOT_VERIFIED" });
+          }
           const slug = String(org.slug ?? "");
           const problem = siteSlugError(slug) ?? (slug === process.env.PUBLIC_TENANT_SLUG ? "SLUG_RESERVED" : null);
           if (problem) throw new APIError("BAD_REQUEST", { message: problem, code: problem });

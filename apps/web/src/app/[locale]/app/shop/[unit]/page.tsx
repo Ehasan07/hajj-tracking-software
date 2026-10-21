@@ -79,6 +79,7 @@ export default async function ShopPos({
         unit={unit}
         today={overview.day}
         canBackdate={BOOK_ROLES.includes(me.role)}
+        canPrice={BOOK_ROLES.includes(me.role)}
         products={products.map((p) => ({
           id: p.id,
           name: p.name,

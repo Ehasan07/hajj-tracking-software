@@ -14,7 +14,7 @@ interface CodeEmail {
   to: string;
   name: string;
   code: string;
-  purpose: "device" | "reset";
+  purpose: "device" | "reset" | "signup";
   /** Shown for a new-device sign-in, e.g. "Desktop · Chrome · macOS". */
   device?: string;
   minutes: number;
@@ -29,6 +29,15 @@ const COPY = {
       `আসসালামু আলাইকুম ${name}, একটি নতুন ডিভাইস${device ? ` (${device})` : ""} থেকে আপনার অ্যাকাউন্টে লগইনের চেষ্টা হয়েছে। লগইন শেষ করতে নিচের কোডটি দিন। কোডটি ${m} মিনিট কাজ করবে।`,
     bodyEn: (name: string, device: string, m: number) =>
       `Hi ${name}, someone is signing in to your account from a new device${device ? ` (${device})` : ""}. Enter the code below to finish signing in. It works for ${m} minutes.`,
+  },
+  signup: {
+    subject: (code: string) => `${code} — ইমেইল যাচাইয়ের কোড · confirm your email`,
+    headingBn: "ইমেইল যাচাই",
+    headingEn: "Confirm your email",
+    bodyBn: (name: string, _d: string, m: string) =>
+      `আসসালামু আলাইকুম ${name}, হজ ট্র্যাকিং-এ অ্যাকাউন্ট খোলার জন্য ধন্যবাদ। ইমেইলটি আপনার, তা নিশ্চিত করতে নিচের কোডটি দিন। কোডটি ${m} মিনিট কাজ করবে।`,
+    bodyEn: (name: string, _d: string, m: number) =>
+      `Hi ${name}, thanks for opening a Hajj Tracking account. Enter the code below to confirm this email is yours. It works for ${m} minutes.`,
   },
   reset: {
     subject: (code: string) => `${code} — পাসওয়ার্ড রিসেটের কোড · your password reset code`,

@@ -32,6 +32,7 @@ export default async function AppHome({ params }: { params: Params }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("pwa.home");
+  const tp = await getTranslations("privacy");
   const prefix = locale === "en" ? "/en" : "";
   const arafah = nextArafah();
 
@@ -88,6 +89,9 @@ export default async function AppHome({ params }: { params: Params }) {
       </section>
 
       <InstallApp />
+      <a href={`${prefix}/privacy`} className="self-center text-[13px] text-ink-3 underline underline-offset-4">
+        {tp("link")}
+      </a>
     </main>
   );
 }

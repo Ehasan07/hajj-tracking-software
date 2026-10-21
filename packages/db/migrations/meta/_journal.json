@@ -155,6 +155,27 @@
       "when": 1792487943132,
       "tag": "0021_sms_security",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792552142050,
+      "tag": "0022_privacy_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792552170018,
+      "tag": "0023_privacy_security",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792553401733,
+      "tag": "0024_erase_documents",
+      "breakpoints": true
     }
   ]
 }

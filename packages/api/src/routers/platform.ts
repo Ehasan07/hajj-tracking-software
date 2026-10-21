@@ -118,6 +118,8 @@ export const platformRouter = router({
         pilgrimsPerYear: z.number().int().positive().nullable(),
         staffSeats: z.number().int().positive().nullable(),
         smsPerMonth: z.number().int().min(0).nullable(),
+        // Left out: the default allowance (see STORAGE_MB_DEFAULT); null: unlimited.
+        storageMb: z.number().int().min(50).max(10_000_000).nullable().optional(),
         units: z.array(z.enum(BUSINESS_UNITS)).min(1),
         customDomain: z.boolean(),
         sortOrder: z.number().int().min(0).max(1000),
@@ -125,7 +127,12 @@ export const platformRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const limits = JSON.stringify({ pilgrimsPerYear: input.pilgrimsPerYear, staffSeats: input.staffSeats, smsPerMonth: input.smsPerMonth });
+      const limits = JSON.stringify({
+        pilgrimsPerYear: input.pilgrimsPerYear,
+        staffSeats: input.staffSeats,
+        smsPerMonth: input.smsPerMonth,
+        storageMb: input.storageMb,
+      });
       const units = `{${input.units.join(",")}}`;
       const [row] = await ctx.tx
         .execute<{ id: string }>(

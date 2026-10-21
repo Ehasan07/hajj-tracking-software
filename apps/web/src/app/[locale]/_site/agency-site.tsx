@@ -105,6 +105,7 @@ export async function AgencySite({
 }) {
   const t = await getTranslations("site");
   const tc = await getTranslations("common");
+  const tp = await getTranslations("privacy");
   const ti = await getTranslations("interest");
   const agency = site.settings!;
   const web = site.web;
@@ -676,6 +677,9 @@ export async function AgencySite({
               </span>
               <Link href="/guide" className="underline underline-offset-4">
                 {t("nav.book")}
+              </Link>
+              <Link href="/privacy" className="underline underline-offset-4">
+                {tp("link")}
               </Link>
               <Link href="/sign-in" className="underline underline-offset-4">
                 {tc("signIn")}

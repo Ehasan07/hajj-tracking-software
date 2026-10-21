@@ -12,6 +12,7 @@ import {
   salarySheets,
   type PayLine,
 } from "@hajj/db/schema";
+import { ERASED_NAME, eraseAudit, eraseLedgerMemos, recordErase } from "../services/erase";
 import { entryDate, getSettings } from "../services/tenant";
 import { router, withRoles } from "../trpc";
 import { amountInput, amountOrZero, dateKey, optionalText, paymentMethods } from "./shared";
@@ -164,6 +165,34 @@ export const payrollRouter = router({
       }
       const [row] = await ctx.tx.insert(employees).values(values).returning({ id: employees.id });
       return row!;
+    }),
+
+  /**
+   * Erase an employee's name and contact at their request. Salary sheets,
+   * advances and the ledger keep the amounts (as "—"). Owners and admins only.
+   */
+  eraseEmployee: withRoles("admin")
+    .input(z.object({ id: z.uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const [e] = await ctx.tx
+        .select({ id: employees.id, name: employees.name, erasedAt: employees.erasedAt })
+        .from(employees)
+        .where(eq(employees.id, input.id));
+      if (!e) throw new TRPCError({ code: "NOT_FOUND" });
+      if (e.erasedAt) return { ok: true };
+      await ctx.tx
+        .update(employees)
+        .set({ name: ERASED_NAME, designation: null, phone: null, payoutMethod: null, accountNo: null, notes: null, active: false, erasedAt: new Date() })
+        .where(eq(employees.id, e.id));
+      const lineIds = (await ctx.tx.select({ id: salaryLines.id }).from(salaryLines).where(eq(salaryLines.employeeId, e.id))).map((r) => r.id);
+      const advanceIds = (
+        await ctx.tx.select({ id: employeeAdvances.id }).from(employeeAdvances).where(eq(employeeAdvances.employeeId, e.id))
+      ).map((r) => r.id);
+      await eraseLedgerMemos(ctx.tx, "salary", lineIds, e.name);
+      await eraseLedgerMemos(ctx.tx, "salary_advance", advanceIds, e.name);
+      await eraseAudit(ctx.tx, "employees", [e.id]);
+      await recordErase(ctx.tx, "employees", e.id);
+      return { ok: true };
     }),
 
   /** Money advanced to an employee now, recovered later from salary. Posted to the office ledger. */

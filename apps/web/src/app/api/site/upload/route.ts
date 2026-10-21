@@ -1,7 +1,7 @@
 import { getSession } from "@/server/session";
 import { isSiteImagePurpose, SITE_IMAGE_MAX_BYTES, siteImageUrl, SiteImageError, storeSiteImage } from "@/server/site-media";
 import { api } from "@/trpc/server";
-import { fail, uploadRefused } from "../../files/_shared";
+import { fail, storeRefused, uploadRefused } from "../../files/_shared";
 
 /**
  * Upload one website picture: form fields "purpose" (logo, hero, gallery,
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const tenantId = session?.session.activeOrganizationId;
     if (!session || !tenantId) return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
-    const refused = uploadRefused(request, session.user.id, SITE_IMAGE_MAX_BYTES);
+    const refused = uploadRefused(request, session.user.id, SITE_IMAGE_MAX_BYTES) ?? (await storeRefused(tenantId, Number(request.headers.get("content-length"))));
     if (refused) return refused;
 
     const caller = await api();

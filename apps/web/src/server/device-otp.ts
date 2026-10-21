@@ -154,7 +154,7 @@ export const pendingCookieOptions = {
 
 /* --------------------------------------------------------- device challenge */
 
-async function emailCode(userId: string, code: string, purpose: "device" | "reset", device?: string) {
+async function emailCode(userId: string, code: string, purpose: "device" | "reset" | "signup", device?: string) {
   const [u] = await db.select({ email: user.email, name: user.name }).from(user).where(eq(user.id, userId));
   if (!u) return;
   const result = await sendMail(codeEmail({ to: u.email, name: u.name, code, purpose, device, minutes: OTP_TTL_SECONDS / 60 }));
@@ -174,11 +174,18 @@ function view(row: typeof emailOtps.$inferSelect, email: string): ChallengeView 
 }
 
 /**
- * Start (or keep) the code check for a sign-in from an untrusted browser.
- * The same browser submitting the password again within the wait keeps the
- * code already sent (`pendingId` is the challenge its cookie points at).
+ * Start (or keep) the code check for a sign-in from an untrusted browser, or
+ * (`kind: "signup"`) for a new account proving its email before it can be
+ * used. The same browser submitting the password again within the wait keeps
+ * the code already sent (`pendingId` is the challenge its cookie points at).
  */
-export async function startDeviceChallenge(userId: string, email: string, meta: DeviceMeta, pendingId?: string | null): Promise<ChallengeView> {
+export async function startDeviceChallenge(
+  userId: string,
+  email: string,
+  meta: DeviceMeta,
+  pendingId?: string | null,
+  kind: "device" | "signup" = "device",
+): Promise<ChallengeView> {
   const open = and(eq(emailOtps.userId, userId), eq(emailOtps.purpose, "device"), isNull(emailOtps.consumedAt), gt(emailOtps.expiresAt, new Date()));
   if (pendingId) {
     const [mine] = await db.select().from(emailOtps).where(and(open, eq(emailOtps.id, pendingId)));
@@ -196,10 +203,10 @@ export async function startDeviceChallenge(userId: string, email: string, meta: 
   const code = newCode();
   const [row] = await db
     .insert(emailOtps)
-    .values({ userId, purpose: "device", expiresAt: new Date(Date.now() + OTP_TTL_SECONDS * 1000), meta: { ...meta } })
+    .values({ userId, purpose: "device", expiresAt: new Date(Date.now() + OTP_TTL_SECONDS * 1000), meta: { ...meta, kind } })
     .returning();
   await db.update(emailOtps).set({ codeHash: codeHash(row!.id, code) }).where(eq(emailOtps.id, row!.id));
-  await emailCode(userId, code, "device", meta.label);
+  await emailCode(userId, code, kind, meta.label);
   return view(row!, email);
 }
 
@@ -245,6 +252,8 @@ export async function verifyDeviceChallenge(challengeId: string, code: string): 
     .returning({ id: emailOtps.id });
   if (!consumed) return { ok: false, reason: "invalid" };
   const m = otp.meta;
+  // A code that reached the inbox proves the address.
+  await db.update(user).set({ emailVerified: true }).where(eq(user.id, otp.userId));
   return { ok: true, userId: otp.userId, meta: { label: m.label ?? "", deviceType: m.deviceType ?? "", browser: m.browser ?? "", os: m.os ?? "", ip: m.ip ?? "" } };
 }
 
@@ -268,7 +277,7 @@ export async function resendDeviceChallenge(challengeId: string): Promise<{ ok: 
     })
     .where(eq(emailOtps.id, row.otp.id))
     .returning();
-  await emailCode(row.otp.userId, code, "device", row.otp.meta.label);
+  await emailCode(row.otp.userId, code, row.otp.meta.kind === "signup" ? "signup" : "device", row.otp.meta.label);
   return { ok: true, view: view(updated!, row.email) };
 }
 

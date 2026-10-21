@@ -4,6 +4,7 @@ import { z } from "zod";
 import { documentType } from "@hajj/core";
 import { pilgrimDocuments, pilgrims } from "@hajj/db/schema";
 import { router, tenantProcedure, withRoles } from "../trpc";
+import { assertNotErased } from "../services/pilgrim";
 import { isPilgrimFileKey } from "./shared";
 
 export const documentsRouter = router({
@@ -27,8 +28,7 @@ export const documentsRouter = router({
       if (!isPilgrimFileKey(input.key, ctx.tenantId, input.pilgrimId, input.type)) {
         throw new TRPCError({ code: "BAD_REQUEST" });
       }
-      const [owner] = await ctx.tx.select({ id: pilgrims.id }).from(pilgrims).where(eq(pilgrims.id, input.pilgrimId));
-      if (!owner) throw new TRPCError({ code: "NOT_FOUND" });
+      await assertNotErased(ctx.tx, input.pilgrimId);
       const [row] = await ctx.tx
         .insert(pilgrimDocuments)
         .values({

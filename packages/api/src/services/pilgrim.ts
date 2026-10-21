@@ -5,6 +5,13 @@ import type { Transaction } from "@hajj/db";
 import { payments, pilgrimDocuments, pilgrims, travelPackages } from "@hajj/db/schema";
 import { businessDate, getSettings } from "./tenant";
 
+/** An erased pilgrim's record only carries payments for the books: nothing new is added to it. */
+export async function assertNotErased(tx: Transaction, pilgrimId: string) {
+  const [row] = await tx.select({ erasedAt: pilgrims.erasedAt }).from(pilgrims).where(eq(pilgrims.id, pilgrimId));
+  if (!row) throw new TRPCError({ code: "NOT_FOUND" });
+  if (row.erasedAt) throw new TRPCError({ code: "BAD_REQUEST", message: "ERASED" });
+}
+
 /** Readiness to finalise, computed from the pilgrim's record, papers and payments. */
 export async function pilgrimReadiness(tx: Transaction, pilgrimId: string) {
   const [row] = await tx
