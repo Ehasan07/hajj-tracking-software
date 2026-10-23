@@ -217,6 +217,11 @@ async function main() {
     if (!text) throw new Error(`Missing ayah ${ref}`);
     ayat[ref] = text;
   }
+  // Each ayah's place in the whole Quran (1 to 6236), counted from the same text: recitation files are named by it.
+  const order = [...lines.keys()];
+  if (order.length !== 6236) throw new Error(`Expected 6236 ayat, got ${order.length}`);
+  const numbers: Record<string, number> = {};
+  for (const ref of AYAT) numbers[ref] = order.indexOf(ref) + 1;
   const parts: Record<string, { ref: string; text: string }> = {};
   for (const p of AYAH_PARTS) {
     const text = quranCut(lines.get(p.ref) ?? "", p.start, p.end);
@@ -232,7 +237,9 @@ async function main() {
       `/** Verbatim Tanzil Uthmani text. Surahs other than al-Fatihah carry the basmalah before ayah 1. */\n` +
       `export const AYAT: Record<string, string> = ${JSON.stringify(ayat, null, 2)};\n\n` +
       `/** Words cut verbatim from one ayah of the same text (see AYAH_PARTS in scripts/generate.ts). */\n` +
-      `export const AYAH_PARTS: Record<string, { ref: string; text: string }> = ${JSON.stringify(parts, null, 2)};\n`,
+      `export const AYAH_PARTS: Record<string, { ref: string; text: string }> = ${JSON.stringify(parts, null, 2)};\n\n` +
+      `/** Each ayah's number in the whole Quran (1 to 6236), counted from the same text; recitation files use it. */\n` +
+      `export const AYAH_NUMBER: Record<string, number> = ${JSON.stringify(numbers)};\n`,
   );
 
   // Hadith (two independent copies must agree)

@@ -38,6 +38,25 @@ test("the guide book reads in Bangla and English, with search and reading settin
   await page.reload();
   await expect(page.getByRole("button", { name: "English", pressed: false })).toBeVisible();
 
+  // Recitation: an ayah plays from this site (not straight from the CDN), its row lights up, and it stops.
+  const fatihah = page.locator("#item-surah_fatihah").first();
+  const [audio] = await Promise.all([
+    page.waitForResponse((r) => /\/api\/recitation\/husary\/1-2$/.test(r.url())),
+    fatihah.getByRole("button", { name: "আয়াত ২ শুনুন" }).click(),
+  ]);
+  expect(audio.status()).toBeLessThan(300);
+  expect(audio.headers()["content-type"]).toBe("audio/mpeg");
+  await expect(fatihah.locator('[data-verse="surah_fatihah|1-2"]')).toHaveAttribute("data-playing", "");
+  await expect(page.getByRole("status").filter({ hasText: "সূরা আল-ফাতিহা · আয়াত ২" })).toBeVisible();
+  await page.getByRole("button", { name: "থামান" }).click();
+  await expect(fatihah.locator("[data-playing]")).toHaveCount(0);
+  // Only the book's ayat, by the listed reciters.
+  expect((await page.request.get("/api/recitation/husary/2-1")).status()).toBe(404);
+  expect((await page.request.get("/api/recitation/someone/1-1")).status()).toBe(404);
+  const piece = await page.request.get("/api/recitation/husary/1-2", { headers: { range: "bytes=0-99" } });
+  expect(piece.status()).toBe(206);
+  expect((await piece.body()).length).toBe(100);
+
   // On paper: the whole book on A4, text showing (not hidden by the receipt-only print rules), no buttons.
   await page.emulateMedia({ media: "print" });
   await expect(page.locator("#item-kalima_tayyibah")).toBeVisible();

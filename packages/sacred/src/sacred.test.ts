@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { AYAT } from "./generated/quran";
-import { allItems, arabicNumber, BOOK, getItem, ITEMS, itemOfTheDay, receiptItem, STEPS, SUNNAH } from "./index";
+import { allItems, arabicNumber, ayahNumber, BOOK, getItem, ITEMS, itemOfTheDay, receiptItem, STEPS, SUNNAH } from "./index";
 
 const ARABIC = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
 
@@ -52,6 +52,15 @@ describe("sacred content", () => {
       for (const id of step.items) expect(ids.has(id), `${step.id} → ${id}`).toBe(true);
       for (const id of step.sunnah) expect(practices.has(id), `${step.id} → ${id}`).toBe(true);
     }
+  });
+
+  it("knows each ayah's number in the whole Quran, for the recitation files", () => {
+    expect(ayahNumber("1:1")).toBe(1);
+    expect(ayahNumber("2:255")).toBe(262);
+    expect(ayahNumber("112:1")).toBe(6222);
+    expect(ayahNumber("114:6")).toBe(6236);
+    expect(ayahNumber("47:19")).toBeNull();
+    for (const item of allItems()) for (const v of item.verses) if (v.ayah > 0) expect(ayahNumber(v.ref), `${item.id} ${v.ref}`).not.toBeNull();
   });
 
   it("splits the basmalah off the first ayah of a surah", () => {

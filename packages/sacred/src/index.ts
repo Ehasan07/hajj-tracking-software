@@ -1,4 +1,4 @@
-import { AYAH_PARTS, AYAT } from "./generated/quran";
+import { AYAH_NUMBER, AYAH_PARTS, AYAT } from "./generated/quran";
 import { HADITH } from "./generated/hadith";
 import {
   HADITH_BOOK_NAMES,
@@ -136,6 +136,11 @@ export function receiptItem(): ResolvedItem {
 }
 
 export { HADITH_BOOK_NAMES, ITEMS, STEPS, SUNNAH, SURAH_NAMES };
+
+/** An ayah's number in the whole Quran, for the ayat this package holds; null for any other. */
+export function ayahNumber(ref: string): number | null {
+  return AYAH_NUMBER[ref] ?? null;
+}
 
 export const QURAN_ATTRIBUTION = {
   bn: "কোরআনের আরবি পাঠ: Tanzil Project (tanzil.net), Creative Commons Attribution 3.0",

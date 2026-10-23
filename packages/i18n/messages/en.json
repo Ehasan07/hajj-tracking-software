@@ -1924,7 +1924,8 @@
         "pr": "Pronunciation",
         "bn": "Bangla",
         "en": "English"
-      }
+      },
+      "reciter": "Reciter"
     },
     "contents": "Contents",
     "chapter": "Chapter {n}",
@@ -1935,7 +1936,22 @@
     "total": "{n} rak'ahs in all",
     "sunnah": "Sunnah at this step",
     "print": "Print",
-    "forAgencies": "See the full software for Hajj agencies"
+    "forAgencies": "See the full software for Hajj agencies",
+    "recite": {
+      "listenSurah": "Listen to the surah",
+      "listenAll": "Listen to all ayat",
+      "listenAyah": "Listen to ayah {n}",
+      "listen": "Listen",
+      "listenBasmalah": "Listen to the basmalah",
+      "stop": "Stop",
+      "playing": "Reciting",
+      "ayah": "Ayah {n}",
+      "basmalah": "Basmalah",
+      "error": "The recitation couldn't play. Check the internet connection and try again.",
+      "hint": "Tap an ayah's Arabic to hear it recited.",
+      "credit": "Recitation audio: Islamic Network (alquran.cloud); the recordings belong to their reciters.",
+      "dismiss": "Dismiss"
+    }
   },
   "pwa": {
     "install": "Install the app",

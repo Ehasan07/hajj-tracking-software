@@ -16,6 +16,8 @@ export interface Text {
 
 export type ItemKind = "ayah" | "surah" | "dua" | "hadith";
 
+export { RECITERS, type ReciterId } from "./reciters";
+
 export type ArabicSource =
   | { type: "quran"; refs: string[] }
   | { type: "hadith"; id: string }

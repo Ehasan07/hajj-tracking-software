@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { RECITERS, type ReciterId } from "@hajj/sacred/reciters";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { SearchIcon } from "@/components/icons";
 
@@ -8,7 +9,9 @@ type Part = "ar" | "pr" | "bn" | "en";
 const PARTS: Part[] = ["ar", "pr", "bn", "en"];
 const SIZES = { s: { body: "15px", ar: "24px" }, m: { body: "17px", ar: "28px" }, l: { body: "20px", ar: "34px" } } as const;
 type Size = keyof typeof SIZES;
-const KEY = "hajj.book.reading";
+/** Reading settings kept on this device; the recitation player reads the reciter from here too. */
+export const READING_KEY = "hajj.book.reading";
+const KEY = READING_KEY;
 
 /** One spelling for words written several ways, so "দুরুদ" finds "দরুদ" and "কলেমা" finds "কালিমা". */
 const canon = (text: string) =>
@@ -23,16 +26,20 @@ const canon = (text: string) =>
 interface Prefs {
   size: Size;
   hidden: Part[];
+  reciter: ReciterId;
 }
 
 function read(): Prefs {
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) ?? "null") as Prefs | null;
-    if (raw && raw.size in SIZES && Array.isArray(raw.hidden)) return { size: raw.size, hidden: raw.hidden.filter((p) => PARTS.includes(p)) };
+    const raw = JSON.parse(localStorage.getItem(KEY) ?? "null") as Partial<Prefs> | null;
+    if (raw && raw.size && raw.size in SIZES && Array.isArray(raw.hidden)) {
+      const reciter = RECITERS.some((r) => r.id === raw.reciter) ? raw.reciter! : "husary";
+      return { size: raw.size, hidden: raw.hidden.filter((p) => PARTS.includes(p)), reciter };
+    }
   } catch {
     /* private mode, or nothing saved */
   }
-  return { size: "m", hidden: [] };
+  return { size: "m", hidden: [], reciter: "husary" };
 }
 
 /** Apply reading preferences to the book: text size, and which of Arabic / pronunciation / Bangla / English to show. */
@@ -47,7 +54,8 @@ function apply({ size, hidden }: Prefs) {
 /** Reading settings (remembered on this device) and a search over the whole book. */
 export function BookControls() {
   const t = useTranslations("book.controls");
-  const [prefs, setPrefs] = useState<Prefs>({ size: "m", hidden: [] });
+  const locale = useLocale() as "bn" | "en";
+  const [prefs, setPrefs] = useState<Prefs>({ size: "m", hidden: [], reciter: "husary" });
   const [query, setQuery] = useState("");
   const [found, setFound] = useState<number | null>(null);
 
@@ -140,6 +148,20 @@ export function BookControls() {
             );
           })}
         </div>
+        <label className="flex items-center gap-2 text-[14px] text-ink-2">
+          <span className="font-semibold">{t("reciter")}</span>
+          <select
+            value={prefs.reciter}
+            onChange={(e) => update({ ...prefs, reciter: e.target.value as ReciterId })}
+            className="h-10 rounded-full border-[1.5px] border-line-strong bg-field px-3 text-[14px] font-semibold text-ink outline-none focus:border-haram"
+          >
+            {RECITERS.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name[locale]}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
     </div>
   );

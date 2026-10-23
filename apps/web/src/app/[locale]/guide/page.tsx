@@ -21,6 +21,7 @@ import { buttonClass } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { digits, type Locale } from "@/lib/format";
 import { BookControls } from "./book-controls";
+import { Recitation } from "./recitation";
 import { BrandMark } from "@/components/brand-mark";
 import { InstallApp } from "@/components/pwa";
 
@@ -64,12 +65,47 @@ function Meanings({ bn, en, locale }: { bn: string; en: string; locale: Locale }
   );
 }
 
+/** "112-1": an ayah as the recitation route names it. */
+const reciteRef = (ref: string) => ref.replace(":", "-");
+
+/**
+ * A play button for the recitation player (recitation.tsx), which listens for
+ * clicks on anything with data-recite. Shows a pause sign while it plays.
+ */
+function ReciteButton({ refs, item, title, label, wide = false }: { refs: string; item: string; title: string; label: string; wide?: boolean }) {
+  return (
+    <button
+      type="button"
+      data-recite={refs}
+      data-recite-item={item}
+      data-recite-title={title}
+      aria-label={label}
+      title={label}
+      className={`group/recite inline-flex shrink-0 items-center justify-center gap-2 rounded-full border-[1.5px] border-haram/40 text-haram-deep transition-colors hover:bg-haram-tint data-[playing]:border-haram data-[playing]:bg-haram data-[playing]:text-white print:hidden ${wide ? "h-10 px-4 text-[14px] font-semibold" : "h-9 w-9"}`}
+    >
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" className="group-data-[playing]/recite:hidden">
+        <path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z" fill="currentColor" />
+      </svg>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" className="hidden group-data-[playing]/recite:block">
+        <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" />
+        <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" />
+      </svg>
+      {wide ? <span>{label}</span> : null}
+    </button>
+  );
+}
+
 /** One surah, ayah or dua: Arabic, Bangla pronunciation, Bangla and English meaning, when it is said, and its source. */
 async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem; locale: Locale; compact?: boolean }) {
   const t = await getTranslations("book");
   const quran = item.verses[0]!.surah > 0;
   const lines = (item.pronunciation ?? "").split("\n");
   const perAyah = quran && item.verses.length > 1;
+  // Whole ayat can be heard; words cut from an ayah (the kalimah) can't.
+  const recitable = quran && item.verses.every((v) => !v.part);
+  const title = pick(item.title, locale);
+  const allRefs = [...(item.basmalah ? ["1-1"] : []), ...item.verses.map((v) => reciteRef(v.ref))].join(",");
+  const tapToPlay = "cursor-pointer rounded-lg transition-colors hover:bg-haram-tint/40";
   return (
     <article
       id={`item-${item.id}`}
@@ -80,6 +116,9 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
         <h4 className="text-[19px] leading-snug font-bold">{pick(item.title, locale)}</h4>
         <span className="text-[13px] text-ink-3">{pick(item.citation, locale)}</span>
       </header>
+      {recitable && perAyah ? (
+        <ReciteButton refs={allRefs} item={item.id} title={title} wide label={item.kind === "surah" ? t("recite.listenSurah") : t("recite.listenAll")} />
+      ) : null}
       {item.when ? (
         <p className={`rounded-xl bg-saffron-tint/70 px-4 py-2.5 text-[14px] leading-relaxed text-saffron-ink`}>
           <b>{t("when")}: </b>
@@ -89,7 +128,13 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
 
       {item.basmalah ? (
         <div className="flex flex-col items-center gap-1 border-b border-dashed border-line pb-3 text-center">
-          <ArabicText source="quran" className={`${show.ar} !text-center ${arabicSize} text-haram-deep`}>
+          <ArabicText
+            source="quran"
+            className={`${show.ar} !text-center ${arabicSize} text-haram-deep ${tapToPlay}`}
+            data-recite="1-1"
+            data-recite-item={`${item.id}-basmalah`}
+            data-recite-title={title}
+          >
             {BASMALAH}
           </ArabicText>
           <span className={`${show.pr} text-[14px] text-ink-2`}>{t("basmalah")}</span>
@@ -99,17 +144,32 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
       {perAyah ? (
         <ol className="flex flex-col divide-y divide-dashed divide-line">
           {item.verses.map((v, i) => (
-            <li key={v.ref} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 print:break-inside-avoid">
-              <ArabicText source="quran" className={`${show.ar} ${arabicSize}`}>
-                {v.arabic}
-                {v.part ? null : (
-                  <span className="mx-1 text-saffron-deep">
-                    {" "}
-                    {AYAH_END}
-                    {arabicNumber(v.ayah)}
+            <li
+              key={v.ref}
+              data-verse={`${item.id}|${reciteRef(v.ref)}`}
+              className="-mx-2 flex flex-col gap-2 rounded-xl px-2 py-3 transition-colors first:pt-0 last:pb-0 data-[playing]:bg-haram-tint/60 print:break-inside-avoid"
+            >
+              <div className="flex items-start gap-3">
+                {recitable ? (
+                  <span className="mt-2 print:hidden">
+                    <ReciteButton refs={reciteRef(v.ref)} item={item.id} title={title} label={t("recite.listenAyah", { n: digits(v.ayah, locale) })} />
                   </span>
-                )}
-              </ArabicText>
+                ) : null}
+                <ArabicText
+                  source="quran"
+                  className={`${show.ar} ${arabicSize} min-w-0 flex-1 ${recitable ? tapToPlay : ""}`}
+                  {...(recitable ? { "data-recite": reciteRef(v.ref), "data-recite-item": item.id, "data-recite-title": title } : {})}
+                >
+                  {v.arabic}
+                  {v.part ? null : (
+                    <span className="mx-1 text-saffron-deep">
+                      {" "}
+                      {AYAH_END}
+                      {arabicNumber(v.ayah)}
+                    </span>
+                  )}
+                </ArabicText>
+              </div>
               <p className={`${show.pr} ${body} font-semibold text-haram-deep`}>
                 <span className="mr-2 inline-grid h-6 min-w-6 place-items-center rounded-full bg-haram-tint px-1.5 text-[12px] font-bold">
                   {v.part ? pick(v.part, locale) : digits(v.ayah, locale)}
@@ -121,8 +181,17 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
           ))}
         </ol>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          <ArabicText source={quran ? "quran" : "hadith"} className={`${show.ar} ${arabicSize}`}>
+        <div className="flex flex-col gap-2.5" {...(recitable ? { "data-verse": `${item.id}|${allRefs}` } : {})}>
+          {recitable ? (
+            <div className="flex items-center justify-end print:hidden">
+              <ReciteButton refs={allRefs} item={item.id} title={title} wide label={t("recite.listen")} />
+            </div>
+          ) : null}
+          <ArabicText
+            source={quran ? "quran" : "hadith"}
+            className={`${show.ar} ${arabicSize} ${recitable ? tapToPlay : ""}`}
+            {...(recitable ? { "data-recite": allRefs, "data-recite-item": item.id, "data-recite-title": title } : {})}
+          >
             {item.verses.map((v) => (
               <span key={v.ref}>
                 {v.arabic}
@@ -372,6 +441,8 @@ export default async function GuideBook({ params }: { params: Params }) {
             </p>
           </div>
           <BookControls />
+          <p className="-mt-2 px-1 text-[14px] text-ink-3 print:hidden">{t("recite.hint")}</p>
+          <Recitation />
           <InstallApp className="relative print:hidden" />
         </section>
 
@@ -406,6 +477,7 @@ export default async function GuideBook({ params }: { params: Params }) {
             {QURAN_ATTRIBUTION[locale]} · <a href={QURAN_ATTRIBUTION.url} className="underline underline-offset-2" rel="noopener noreferrer" target="_blank">tanzil.net</a>
           </p>
           <p>{t("sources.hadithCredit")}</p>
+          <p className="print:hidden">{t("recite.credit")}</p>
           <Link href="/sign-up" className={buttonClass("outline", "mt-2 print:hidden")}>
             {t("forAgencies")}
           </Link>

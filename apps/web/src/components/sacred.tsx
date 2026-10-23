@@ -1,20 +1,21 @@
 import { AYAH_END, arabicNumber, BASMALAH, LABBAIK, QURAN_ATTRIBUTION, RUB_EL_HIZB, type ResolvedItem } from "@hajj/sacred";
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 import type { Locale } from "@/lib/format";
 import { Khatam } from "./ui";
 
-/** Arabic, right to left, in the font that suits its source. */
+/** Arabic, right to left, in the font that suits its source. Extra attributes (e.g. data-recite) pass through. */
 export function ArabicText({
   children,
   source,
   className = "",
+  ...rest
 }: {
   children: ReactNode;
   source: "quran" | "hadith";
   className?: string;
-}) {
+} & Omit<HTMLAttributes<HTMLParagraphElement>, "children" | "className">) {
   return (
-    <p lang="ar" dir="rtl" className={`${source === "quran" ? "font-quran" : "font-naskh"} text-right ${className}`}>
+    <p lang="ar" dir="rtl" className={`${source === "quran" ? "font-quran" : "font-naskh"} text-right ${className}`} {...rest}>
       {children}
     </p>
   );
