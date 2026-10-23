@@ -137,6 +137,16 @@ export function receiptItem(): ResolvedItem {
 
 export { HADITH_BOOK_NAMES, ITEMS, STEPS, SUNNAH, SURAH_NAMES };
 
+/**
+ * Items the Quran recitation can't play (duas and hadith, and the kalimah,
+ * made of parts of ayat): these take a qari's recording, uploaded by the
+ * platform owner.
+ */
+export function needsRecording(id: string): boolean {
+  const item = byId.get(id);
+  return Boolean(item && item.arabic.type !== "quran");
+}
+
 /** An ayah's number in the whole Quran, for the ayat this package holds; null for any other. */
 export function ayahNumber(ref: string): number | null {
   return AYAH_NUMBER[ref] ?? null;

@@ -2,6 +2,7 @@ import { ayahNumber, RECITERS } from "@hajj/sacred";
 import { describeError } from "@hajj/api/errors";
 import { clientIp, limitKey } from "@/server/client-ip";
 import { allow } from "@/server/rate-limit";
+import { audioResponse } from "@/server/audio";
 import { getObject, putObject } from "@/server/storage";
 
 /**
@@ -48,26 +49,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ reci
     return new Response("Recitation unavailable", { status: 502 });
   }
 
-  const headers: Record<string, string> = {
-    "Content-Type": "audio/mpeg",
-    "Accept-Ranges": "bytes",
-    // The same ayah by the same reciter never changes.
-    "Cache-Control": "public, max-age=31536000, immutable",
-    "X-Content-Type-Options": "nosniff",
-  };
-  // Phones (Safari above all) ask for the audio in pieces and won't play without them.
-  const range = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("range") ?? "");
-  if (range && (range[1] || range[2])) {
-    const size = bytes.length;
-    let start = range[1] ? Number(range[1]) : size - Number(range[2]);
-    let end = range[1] && range[2] ? Number(range[2]) : size - 1;
-    start = Math.max(0, start);
-    end = Math.min(end, size - 1);
-    if (start > end) return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${size}` } });
-    return new Response(bytes.slice(start, end + 1), {
-      status: 206,
-      headers: { ...headers, "Content-Range": `bytes ${start}-${end}/${size}`, "Content-Length": String(end - start + 1) },
-    });
-  }
-  return new Response(new Uint8Array(bytes), { headers: { ...headers, "Content-Length": String(bytes.length) } });
+  // The same ayah by the same reciter never changes.
+  return audioResponse(request, bytes, "audio/mpeg", "public, max-age=31536000, immutable");
 }

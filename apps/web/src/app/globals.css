@@ -169,6 +169,10 @@
     line-height: 2.1;
     font-feature-settings: "calt", "liga";
   }
+  /* Anything the guide's recitation player will play when clicked (recitation.tsx). */
+  [data-recite] {
+    cursor: pointer;
+  }
   .tabular {
     font-variant-numeric: tabular-nums;
   }

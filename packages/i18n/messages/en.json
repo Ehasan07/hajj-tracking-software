@@ -699,7 +699,8 @@
       "agencies": "Agencies",
       "plans": "Plans & pricing",
       "backToApp": "Go to agency app",
-      "devices": "Devices & security"
+      "devices": "Devices & security",
+      "recordings": "Dua recitations"
     },
     "overview": {
       "title": "Your SaaS at a glance",
@@ -794,6 +795,34 @@
       "edit": "Edit",
       "agencies": "{n} agencies",
       "placeholder": "Sample price: set your real price"
+    },
+    "recordings": {
+      "title": "Dua recitations",
+      "subtitle": "A qari's recording for the kalimah, duas, salawat and sana. What you upload here, everyone hears in the guide book.",
+      "howTitle": "How to record",
+      "how": [
+        "Have a qari or scholar read the Arabic below exactly, slowly and with correct tajwid.",
+        "Record in a quiet room with a phone's voice recorder; mp3, m4a, ogg or wav, up to 9 MB.",
+        "One file per dua. A new file replaces the old one.",
+        "Use only recordings you or the reciter allow; don't upload someone else's recording without permission."
+      ],
+      "progress": "{done} of {total} have a recording",
+      "reciter": "Reciter's name",
+      "reciterHint": "Shown with the recitation in the guide",
+      "file": "Audio file",
+      "upload": "Upload",
+      "uploading": "Uploading…",
+      "replace": "Replace",
+      "remove": "Remove",
+      "confirmRemove": "Remove this recording from the guide?",
+      "none": "No recording yet",
+      "by": "{name}",
+      "errors": {
+        "UNSUPPORTED_TYPE": "This doesn't look like an audio file. Use mp3, m4a, ogg or wav.",
+        "TOO_LARGE": "The file is over 9 MB.",
+        "NO_FILE": "Choose an audio file.",
+        "generic": "The upload failed. Please try again."
+      }
     }
   },
   "subscription": {

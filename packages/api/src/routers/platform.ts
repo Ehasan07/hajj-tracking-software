@@ -1,10 +1,15 @@
 import { TRPCError } from "@trpc/server";
-import { asc, sql } from "drizzle-orm";
+import { asc, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import { BUSINESS_UNITS, parseAmount } from "@hajj/core";
 import { withActor } from "@hajj/db";
-import { plans } from "@hajj/db/schema";
+import { guideRecordings, plans } from "@hajj/db/schema";
+import { needsRecording } from "@hajj/sacred";
 import { platformProcedure, protectedProcedure, router } from "../trpc";
+
+/** Audio a recording may be: what phones and recorders produce. */
+export const RECORDING_TYPES = ["audio/mpeg", "audio/mp4", "audio/ogg", "audio/wav", "audio/webm"] as const;
+export const RECORDING_MAX_BYTES = 9 * 1024 * 1024;
 
 export interface PlatformOverview {
   agencies: number;
@@ -143,4 +148,42 @@ export const platformRouter = router({
         .catch(rethrow);
       return { id: row!.id };
     }),
+
+  /* --------------------------------------------- recordings for the guide book */
+
+  /** Every recording, newest first. */
+  recordings: platformProcedure.query(({ ctx }) => ctx.tx.select().from(guideRecordings).orderBy(desc(guideRecordings.uploadedAt))),
+
+  /** Record that an uploaded file is an item's recitation; returns the file it replaced, to delete. */
+  setRecording: platformProcedure
+    .input(
+      z.object({
+        itemId: z.string().min(1).max(80),
+        reciter: z.string().trim().min(2).max(80),
+        key: z.string().max(200),
+        contentType: z.enum(RECORDING_TYPES),
+        sizeBytes: z.number().int().positive().max(RECORDING_MAX_BYTES),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!needsRecording(input.itemId)) throw new TRPCError({ code: "BAD_REQUEST", message: "NOT_RECORDABLE" });
+      const uuid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+      if (!new RegExp(`^guide-recordings/${input.itemId}-${uuid}\\.(mp3|m4a|ogg|wav|webm)$`).test(input.key)) {
+        throw new TRPCError({ code: "BAD_REQUEST" });
+      }
+      const [row] = await ctx.tx
+        .execute<{ previous: string | null }>(
+          sql`select platform_set_recording(${input.itemId}, ${input.reciter}, ${input.key}, ${input.contentType}, ${input.sizeBytes}) as previous`,
+        )
+        .catch(rethrow);
+      return { previousKey: row?.previous ?? null };
+    }),
+
+  /** Take an item's recording off the guide; returns its file, to delete. */
+  removeRecording: platformProcedure.input(z.object({ itemId: z.string().min(1).max(80) })).mutation(async ({ ctx, input }) => {
+    const [row] = await ctx.tx
+      .execute<{ removed: string | null }>(sql`select platform_remove_recording(${input.itemId}) as removed`)
+      .catch(rethrow);
+    return { removedKey: row?.removed ?? null };
+  }),
 });

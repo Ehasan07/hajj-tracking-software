@@ -12,6 +12,10 @@ import { READING_KEY } from "./book-controls";
  * clicked (a play button, or the Arabic itself), and clicking it again stops.
  * While an ayah plays, its button and its row carry `data-playing`, and a bar
  * at the bottom says what is playing.
+ *
+ * Duas, hadith and the kalimah carry `data-recording="<item>"` instead: when
+ * the platform owner has uploaded a qari's recording of that item (listed at
+ * /api/recordings), they are switched on as `data-recite="rec:<item>"`.
  */
 
 function reciter(): ReciterId {
@@ -37,6 +41,7 @@ export function Recitation() {
   const locale = useLocale() as Locale;
   const audio = useRef<HTMLAudioElement | null>(null);
   const queue = useRef<Queue | null>(null);
+  const recordings = useRef<Record<string, { reciter: string; url: string }>>({});
   const [now, setNow] = useState<{ title: string; ref: string; reciter: string } | null>(null);
   const [error, setError] = useState(false);
   const stopRef = useRef<() => void>(() => {});
@@ -74,15 +79,17 @@ export function Recitation() {
     const play = () => {
       const q = queue.current;
       if (!q) return;
+      const ref = q.refs[q.i]!;
+      const recording = ref.startsWith("rec:") ? recordings.current[ref.slice(4)] : undefined;
       const who = reciter();
-      el.src = `/api/recitation/${who}/${q.refs[q.i]}`;
+      el.src = recording ? recording.url : `/api/recitation/${who}/${ref}`;
       el.play().catch((e: unknown) => {
         // A newer click replaced this ayah before it started; that is not a failure.
         if (!(e instanceof DOMException && e.name === "AbortError")) fail();
       });
       mark();
-      const name = RECITERS.find((r) => r.id === who)!.name[locale];
-      setNow({ title: q.title, ref: q.refs[q.i]!, reciter: name });
+      const name = recording ? recording.reciter : RECITERS.find((r) => r.id === who)!.name[locale];
+      setNow({ title: q.title, ref, reciter: name });
       if ("mediaSession" in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({ title: q.title, artist: name, album: "Hajj Tracking" });
       }
@@ -114,6 +121,23 @@ export function Recitation() {
       queue.current = { key, item, title: target.dataset.reciteTitle ?? "", refs: key.split(","), i: 0 };
       play();
     };
+
+    // Switch on the duas that have a recording.
+    fetch("/api/recordings")
+      .then((res) => (res.ok ? res.json() : {}))
+      .then((list: Record<string, { reciter: string; url: string }>) => {
+        recordings.current = list;
+        document.querySelectorAll<HTMLElement>("[data-recording]").forEach((n) => {
+          const id = n.dataset.recording!;
+          if (!list[id]) return;
+          n.dataset.recite = `rec:${id}`;
+          n.dataset.reciteItem = id;
+          n.hidden = false;
+        });
+      })
+      .catch(() => {
+        /* offline: the duas stay without a play button */
+      });
 
     stopRef.current = stop;
     document.addEventListener("click", onClick);

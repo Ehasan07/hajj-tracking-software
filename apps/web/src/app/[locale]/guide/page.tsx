@@ -7,6 +7,7 @@ import {
   BASMALAH,
   BOOK,
   getItem,
+  needsRecording,
   PRAYER_PART_NAMES,
   QURAN_ATTRIBUTION,
   STEPS,
@@ -72,12 +73,26 @@ const reciteRef = (ref: string) => ref.replace(":", "-");
  * A play button for the recitation player (recitation.tsx), which listens for
  * clicks on anything with data-recite. Shows a pause sign while it plays.
  */
-function ReciteButton({ refs, item, title, label, wide = false }: { refs: string; item: string; title: string; label: string; wide?: boolean }) {
+function ReciteButton({
+  refs,
+  item,
+  title,
+  label,
+  wide = false,
+  recording = false,
+}: {
+  refs: string;
+  item: string;
+  title: string;
+  label: string;
+  wide?: boolean;
+  /** A qari's uploaded recording: hidden until the player learns there is one (recitation.tsx). */
+  recording?: boolean;
+}) {
   return (
     <button
       type="button"
-      data-recite={refs}
-      data-recite-item={item}
+      {...(recording ? { "data-recording": item, hidden: true } : { "data-recite": refs, "data-recite-item": item })}
       data-recite-title={title}
       aria-label={label}
       title={label}
@@ -106,6 +121,9 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
   const title = pick(item.title, locale);
   const allRefs = [...(item.basmalah ? ["1-1"] : []), ...item.verses.map((v) => reciteRef(v.ref))].join(",");
   const tapToPlay = "cursor-pointer rounded-lg transition-colors hover:bg-haram-tint/40";
+  // Duas, hadith and the kalimah play a qari's recording when one has been uploaded.
+  const recorded = needsRecording(item.id);
+  const recordingAttrs = recorded ? { "data-recording": item.id, "data-recite-title": title } : {};
   return (
     <article
       id={`item-${item.id}`}
@@ -119,6 +137,7 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
       {recitable && perAyah ? (
         <ReciteButton refs={allRefs} item={item.id} title={title} wide label={item.kind === "surah" ? t("recite.listenSurah") : t("recite.listenAll")} />
       ) : null}
+      {recorded && perAyah ? <ReciteButton refs="" item={item.id} title={title} wide recording label={t("recite.listen")} /> : null}
       {item.when ? (
         <p className={`rounded-xl bg-saffron-tint/70 px-4 py-2.5 text-[14px] leading-relaxed text-saffron-ink`}>
           <b>{t("when")}: </b>
@@ -158,7 +177,7 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
                 <ArabicText
                   source="quran"
                   className={`${show.ar} ${arabicSize} min-w-0 flex-1 ${recitable ? tapToPlay : ""}`}
-                  {...(recitable ? { "data-recite": reciteRef(v.ref), "data-recite-item": item.id, "data-recite-title": title } : {})}
+                  {...(recitable ? { "data-recite": reciteRef(v.ref), "data-recite-item": item.id, "data-recite-title": title } : recordingAttrs)}
                 >
                   {v.arabic}
                   {v.part ? null : (
@@ -181,16 +200,23 @@ async function ItemCard({ item, locale, compact = false }: { item: ResolvedItem;
           ))}
         </ol>
       ) : (
-        <div className="flex flex-col gap-2.5" {...(recitable ? { "data-verse": `${item.id}|${allRefs}` } : {})}>
+        <div
+          className="-mx-2 flex flex-col gap-2.5 rounded-xl px-2 transition-colors data-[playing]:bg-haram-tint/60"
+          {...(recitable ? { "data-verse": `${item.id}|${allRefs}` } : recorded ? { "data-verse": `${item.id}|rec:${item.id}` } : {})}
+        >
           {recitable ? (
             <div className="flex items-center justify-end print:hidden">
               <ReciteButton refs={allRefs} item={item.id} title={title} wide label={t("recite.listen")} />
+            </div>
+          ) : recorded ? (
+            <div className="flex items-center justify-end has-[[hidden]]:hidden print:hidden">
+              <ReciteButton refs="" item={item.id} title={title} wide recording label={t("recite.listen")} />
             </div>
           ) : null}
           <ArabicText
             source={quran ? "quran" : "hadith"}
             className={`${show.ar} ${arabicSize} ${recitable ? tapToPlay : ""}`}
-            {...(recitable ? { "data-recite": allRefs, "data-recite-item": item.id, "data-recite-title": title } : {})}
+            {...(recitable ? { "data-recite": allRefs, "data-recite-item": item.id, "data-recite-title": title } : recordingAttrs)}
           >
             {item.verses.map((v) => (
               <span key={v.ref}>

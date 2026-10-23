@@ -284,6 +284,26 @@ describe("hajj flow", () => {
     expect(sub?.inactive).toBe(false);
   });
 
+  it("lets only platform admins put a qari's recording on a guide dua", async () => {
+    const key = (item: string) => `guide-recordings/${item}-${randomUUID()}.mp3`;
+    const input = (itemId: string) => ({ itemId, reciter: "Qari Abdullah", key: key(itemId), contentType: "audio/mpeg" as const, sizeBytes: 1000 });
+    await expect(owner().platform.setRecording(input("dua_sana"))).rejects.toThrow(/FORBIDDEN/);
+    // Quran ayat have their recitation already; unknown items have nothing to recite.
+    await expect(platform().platform.setRecording(input("surah_ikhlas"))).rejects.toThrow(/NOT_RECORDABLE/);
+    await expect(platform().platform.setRecording(input("no_such_item"))).rejects.toThrow(/NOT_RECORDABLE/);
+    await expect(platform().platform.setRecording({ ...input("dua_sana"), key: "tenants/x/../y.mp3" })).rejects.toThrow();
+
+    const first = input("dua_sana");
+    expect(await platform().platform.setRecording(first)).toEqual({ previousKey: null });
+    const second = input("dua_sana");
+    expect(await platform().platform.setRecording(second)).toEqual({ previousKey: first.key });
+    expect((await platform().platform.recordings()).find((r) => r.itemId === "dua_sana")).toMatchObject({ reciter: "Qari Abdullah", fileKey: second.key });
+    // The app role can read the list (the public guide plays it) but not write it directly.
+    await expect(db.execute(sql`insert into guide_recordings (item_id, reciter, file_key, content_type, size_bytes, uploaded_by) values ('x', 'y', 'z', 'audio/mpeg', 1, 'u')`)).rejects.toThrow();
+    await expect(owner().platform.removeRecording({ itemId: "dua_sana" })).rejects.toThrow(/FORBIDDEN/);
+    expect(await platform().platform.removeRecording({ itemId: "dua_sana" })).toEqual({ removedKey: second.key });
+  });
+
   it("shows the platform overview only to platform admins", async () => {
     expect((await owner().platform.me()).isAdmin).toBe(false);
     await expect(owner().platform.overview()).rejects.toThrow(/FORBIDDEN/);

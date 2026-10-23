@@ -87,3 +87,21 @@ export const subscriptions = pgTable(
 
 export type Plan = typeof plans.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
+
+/**
+ * A qari's recording of a guide book item that has no Quran recitation (a
+ * dua, the kalimah, the salawat…), uploaded by the platform owner. Everyone
+ * may read the list (the public guide plays them); only platform admins
+ * change it, through functions that check (see the recordings migration).
+ */
+export const guideRecordings = pgTable("guide_recordings", {
+  itemId: text().primaryKey(),
+  reciter: text().notNull(),
+  fileKey: text().notNull(),
+  contentType: text().notNull(),
+  sizeBytes: integer().notNull(),
+  uploadedBy: text().notNull(),
+  uploadedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
+export type GuideRecording = typeof guideRecordings.$inferSelect;

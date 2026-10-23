@@ -176,6 +176,20 @@
       "when": 1792553401733,
       "tag": "0024_erase_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792734317721,
+      "tag": "0025_guide_recordings",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792734319047,
+      "tag": "0026_guide_recordings_security",
+      "breakpoints": true
     }
   ]
 }
