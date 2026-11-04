@@ -18,6 +18,7 @@ import { hijriDate, nextArafah } from "@/lib/hijri";
 import { PricingCards } from "./pricing-cards";
 import { ThemeDemo } from "./theme-demo";
 import { BrandMark } from "@/components/brand-mark";
+import { HolyPhoto } from "@/components/holy-photo";
 import { InstallApp } from "@/components/pwa";
 
 /*
@@ -471,8 +472,10 @@ export async function Landing({ locale }: { locale: Locale }) {
           <InstallApp className="w-fit" />
         </div>
 
+        <div className="flex flex-col">
+          <HolyPhoto photo="kaabaDoor" locale={locale} priority captionAt="top" className="rounded-xl border border-slate-200 shadow-sm" imgClassName="aspect-[16/10]" sizes="(min-width: 1024px) 45vw, 100vw" />
         {arafah ? (
-          <aside aria-label={t("arafah.label")} className={`${CARD} flex flex-col gap-5 p-6 sm:p-7`}>
+          <aside aria-label={t("arafah.label")} className={`${CARD} relative z-10 mx-3 -mt-16 flex flex-col gap-5 p-6 sm:mx-6 sm:p-7`}>
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full bg-haram-tint px-3 py-1 text-[13px] font-bold text-haram-deep">{t("arafah.season", { year: digits(arafah.year, locale) })}</span>
               <svg viewBox="0 0 40 40" className="h-8 w-8 text-saffron-deep" aria-hidden="true">
@@ -502,6 +505,7 @@ export async function Landing({ locale }: { locale: Locale }) {
             <p className="text-[12px] leading-snug text-slate-500">{t("arafah.note")}</p>
           </aside>
         ) : null}
+        </div>
       </section>
 
       {/* ----------------------------------------------------------- journey */}
@@ -654,6 +658,46 @@ export async function Landing({ locale }: { locale: Locale }) {
           />
         </section>
       ) : null}
+
+      {/* ----------------------------------------------------- the two cities */}
+      <section aria-labelledby="places-title" className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-20 sm:px-6">
+        <h2 id="places-title" className="font-display text-3xl leading-tight text-slate-900 sm:text-4xl">
+          {t("places.title")}
+        </h2>
+        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr] lg:grid-rows-2">
+          <HolyPhoto photo="kaabaHajj" locale={locale} className="rounded-xl lg:row-span-2" imgClassName="aspect-[4/3] lg:aspect-auto" sizes="(min-width: 1024px) 60vw, 100vw" />
+          <HolyPhoto photo="greenDome" locale={locale} className="rounded-xl" imgClassName="aspect-[16/10]" sizes="(min-width: 1024px) 35vw, 100vw" />
+          <HolyPhoto photo="nabawiUmbrellas" locale={locale} className="rounded-xl" imgClassName="aspect-[16/10]" sizes="(min-width: 1024px) 35vw, 100vw" />
+        </div>
+
+        <h3 className="mt-6 font-display text-2xl text-slate-900">{t("places.days.title")}</h3>
+        <ol className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+          {(
+            [
+              ["mina", "minaPilgrims"],
+              ["arafah", "arafah"],
+              ["muzdalifah", "muzdalifah"],
+              ["jamarat", "jamarat"],
+            ] as const
+          ).map(([key, photo]) => (
+            <li key={key} className={`${CARD} flex w-[80%] shrink-0 snap-start flex-col overflow-hidden sm:w-auto`}>
+              <HolyPhoto photo={photo} locale={locale} caption={false} imgClassName="aspect-[4/3]" sizes="(min-width: 1024px) 270px, (min-width: 640px) 50vw, 80vw" />
+              <div className="flex flex-col gap-1 p-4">
+                <span className="text-[13px] font-semibold text-emerald-700">{t(`places.days.${key}.date`)}</span>
+                <b className="text-lg text-slate-900">{t(`places.days.${key}.name`)}</b>
+                <span className="text-[14px] leading-relaxed text-slate-600">{t(`places.days.${key}.text`)}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <h3 className="mt-6 font-display text-2xl text-slate-900">{t("places.visits")}</h3>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {(["haramNight", "quba", "jabalNour"] as const).map((photo) => (
+            <HolyPhoto key={photo} photo={photo} locale={locale} className="rounded-xl" imgClassName="aspect-[4/3]" sizes="(min-width: 640px) 33vw, 100vw" />
+          ))}
+        </div>
+      </section>
 
       {/* ------------------------------------------------------------- ayah */}
       <section className="mx-auto mb-16 w-full max-w-4xl px-4 sm:px-6">

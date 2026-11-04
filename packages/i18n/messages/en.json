@@ -1845,6 +1845,17 @@
     },
     "closing": {
       "title": "Let this year's Hajj start in a tidy ledger"
+    },
+    "places": {
+      "title": "On the way to Makkah and Madinah",
+      "days": {
+        "title": "The days of Hajj",
+        "mina": { "date": "8 Dhul Hijjah", "name": "Mina", "text": "In ihram, saying the talbiyah, to the city of tents." },
+        "arafah": { "date": "9 Dhul Hijjah", "name": "Arafah", "text": "The heart of Hajj: dua and dhikr until sunset." },
+        "muzdalifah": { "date": "The night of the 9th", "name": "Muzdalifah", "text": "A night under the open sky, Maghrib and Isha together." },
+        "jamarat": { "date": "10–13 Dhul Hijjah", "name": "The Jamarat", "text": "Stoning, the sacrifice, then nights at Mina." }
+      },
+      "visits": "Places pilgrims visit"
     }
   },
   "phone": {

@@ -6,7 +6,7 @@ test("public website: packages, sacred text and the inquiry form", async ({ page
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator("#packages article").first()).toBeVisible();
   await expect(page.locator('[lang="ar"]').first()).toBeVisible();
-  await expect(page.getByRole("img", { name: /কাবা/ })).toBeVisible();
+  await expect(page.getByRole("img", { name: /কাবা/ }).first()).toBeVisible();
 
   // "I'm interested" preselects the package in the form.
   await page.locator("#packages article").first().getByRole("link").click();

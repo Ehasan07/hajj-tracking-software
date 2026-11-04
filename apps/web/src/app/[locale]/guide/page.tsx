@@ -25,6 +25,13 @@ import { BookControls } from "./book-controls";
 import { Recitation } from "./recitation";
 import { BrandMark } from "@/components/brand-mark";
 import { InstallApp } from "@/components/pwa";
+import { HolyPhoto } from "@/components/holy-photo";
+import { STEP_PHOTO, type HolyPhotoKey } from "@/lib/holy-photos";
+
+/** A photograph under these chapters' titles. */
+const CHAPTER_PHOTO: Record<string, HolyPhotoKey> = { umrah: "kaabaDoor", hajj: "kaabaHajj", madinah: "greenDome" };
+/** A photograph at the foot of these lists. */
+const BLOCK_PHOTO: Record<string, HolyPhotoKey> = { madinah_visit: "quba" };
 
 type Params = Promise<{ locale: Locale }>;
 
@@ -300,6 +307,9 @@ async function Block({ block, locale }: { block: BookBlock; locale: Locale }) {
           ))}
         </ListTag>
         {block.note ? <p className="rounded-xl bg-ground px-4 py-3 text-[14px] leading-relaxed text-ink-2">{pick(block.note, locale)}</p> : null}
+        {BLOCK_PHOTO[block.id] ? (
+          <HolyPhoto photo={BLOCK_PHOTO[block.id]!} locale={locale} className="rounded-[18px] print:hidden" imgClassName="aspect-[16/9] sm:aspect-[5/2]" sizes="(min-width: 1152px) 1050px, 100vw" />
+        ) : null}
       </section>
     );
   }
@@ -376,6 +386,9 @@ async function Block({ block, locale }: { block: BookBlock; locale: Locale }) {
       <ol className="flex flex-col gap-8">
         {steps.map((step) => (
           <li key={step.id} data-group className="flex flex-col gap-4 rounded-[28px] bg-haram-tint/40 p-4 sm:p-6">
+            {STEP_PHOTO[step.id] ? (
+              <HolyPhoto photo={STEP_PHOTO[step.id]!} locale={locale} className="rounded-[20px] print:hidden" imgClassName="aspect-[16/9] sm:aspect-[3/1]" sizes="(min-width: 1152px) 1050px, 100vw" />
+            ) : null}
             <div data-search={searchText(step.title.bn, step.title.en, step.body.bn, step.body.en)} className="flex flex-col gap-1.5">
               <span className="w-fit rounded-full bg-saffron px-3 py-0.5 text-[13px] font-bold text-ink">{pick(step.label, locale)}</span>
               <h4 className="font-display text-[24px] leading-snug">{pick(step.title, locale)}</h4>
@@ -491,6 +504,9 @@ export default async function GuideBook({ params }: { params: Params }) {
               <h2 className="font-display text-4xl leading-tight sm:text-5xl">{pick(chapter.title, locale)}</h2>
               <p className={`${body} max-w-3xl text-ink-2`}>{pick(chapter.summary, locale)}</p>
             </div>
+            {CHAPTER_PHOTO[chapter.id] ? (
+              <HolyPhoto photo={CHAPTER_PHOTO[chapter.id]!} locale={locale} className="rounded-[24px] print:hidden" imgClassName="aspect-[16/9] sm:aspect-[21/9]" sizes="(min-width: 1152px) 1100px, 100vw" />
+            ) : null}
             {chapter.blocks.map((block) => (
               <Block key={block.id} block={block} locale={locale} />
             ))}

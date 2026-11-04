@@ -1,4 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
+import { HolyPhoto } from "@/components/holy-photo";
+import { STEP_PHOTO } from "@/lib/holy-photos";
 import { getTranslations } from "next-intl/server";
 import type { SiteSection, ThemeColors } from "@hajj/core";
 import { getItem, STEPS, type ResolvedItem } from "@hajj/sacred";
@@ -345,7 +347,8 @@ export async function AgencySite({
         <SectionTitle eyebrow={t("steps.eyebrow")} title={t("steps.title")} />
         <div className="grid gap-8 lg:grid-cols-2">
           {(["umrah", "hajj"] as const).map((phase) => (
-            <div key={phase} className="flex flex-col gap-5 rounded-[60px_60px_24px_24px] bg-paper px-6 pt-10 pb-8 sm:px-10">
+            <div key={phase} className="flex flex-col gap-5 overflow-hidden rounded-[60px_60px_24px_24px] bg-paper px-6 pb-8 sm:px-10">
+              <HolyPhoto photo={phase === "umrah" ? "kaabaDoor" : "kaabaHajj"} locale={locale} caption={false} className="-mx-6 sm:-mx-10" imgClassName="aspect-[16/9]" sizes="(min-width: 1024px) 45vw, 100vw" />
               <h3 className="text-center font-display text-3xl text-haram">{t(`steps.${phase}`)}</h3>
               {agency.showDraftMeanings && STEPS.some((st) => st.phase === phase && !site.approved.has(`step:${st.id}`)) ? (
                 <div className="flex justify-center">
@@ -370,6 +373,9 @@ export async function AgencySite({
                         <span className="text-[13px] font-semibold text-saffron-deep">{step.label[locale]}</span>
                         <b className="text-lg">{step.title[locale]}</b>
                         {body ? <span className="text-[15px] leading-relaxed text-ink-2">{body}</span> : null}
+                        {STEP_PHOTO[step.id] ? (
+                          <HolyPhoto photo={STEP_PHOTO[step.id]!} locale={locale} className="mt-2 rounded-2xl" imgClassName="aspect-[16/9]" sizes="(min-width: 1024px) 38vw, 90vw" />
+                        ) : null}
                       </span>
                     </li>
                   );

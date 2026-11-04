@@ -76,8 +76,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Hashed build files, fonts and icons never change under the same name: phone first.
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/")) {
+  // Hashed build files, fonts, icons and photos never change under the same name: phone first.
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname.startsWith("/images/")) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(VERSION);
