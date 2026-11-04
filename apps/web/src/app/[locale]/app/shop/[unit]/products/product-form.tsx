@@ -79,7 +79,8 @@ export function ProductForm({
           price: s("price") || "0",
           cost: s("cost") || undefined,
           trackStock,
-          usesBatches: unit === "medicine" && trackStock && f.get("usesBatches") === "on",
+          // A disabled checkbox (editing) isn't sent with the form, so keep what the product has.
+          usesBatches: unit === "medicine" && trackStock && (initial?.id ? Boolean(initial.usesBatches) : f.get("usesBatches") === "on"),
           reorderLevel: s("reorderLevel") ? Number(s("reorderLevel")) : undefined,
           genericName: s("genericName") || undefined,
           strength: s("strength") || undefined,

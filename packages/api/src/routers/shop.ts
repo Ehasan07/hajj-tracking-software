@@ -239,9 +239,12 @@ export const shopRouter = router({
       active: input.active,
     };
     if (input.id) {
+      // Batch tracking is chosen when the product is made and never changes:
+      // its stock already lives in batches (or doesn't).
+      const { usesBatches: _fixed, ...changes } = values;
       const [row] = await ctx.tx
         .update(products)
-        .set(values)
+        .set(changes)
         .where(and(eq(products.id, input.id), eq(products.unit, input.unit)))
         .returning({ id: products.id });
       if (!row) throw new TRPCError({ code: "NOT_FOUND" });
