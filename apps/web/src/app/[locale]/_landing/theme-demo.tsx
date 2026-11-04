@@ -19,14 +19,14 @@ export function ThemeDemo() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div style={vars} className="overflow-hidden rounded-[18px] border border-line bg-paper shadow-[0_40px_70px_-45px_rgb(18_48_46/0.55)]">
-        <div className="flex items-center gap-2 border-b border-line bg-ground px-4 py-2.5">
+      <div style={vars} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-2.5">
           <span className="flex gap-1.5" aria-hidden="true">
-            <i className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-            <i className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-            <i className="h-2.5 w-2.5 rounded-full bg-line-strong" />
+            <i className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+            <i className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+            <i className="h-2.5 w-2.5 rounded-full bg-slate-300" />
           </span>
-          <span className="ml-2 truncate rounded-md bg-paper px-3 py-1 text-[12px] text-ink-3">hajj.takatracker.com/site/al-madina</span>
+          <span className="ml-2 truncate rounded-md border border-slate-200 bg-white px-3 py-1 text-[12px] text-slate-500">hajj.takatracker.com/site/al-madina</span>
         </div>
         <div className="flex items-center justify-between px-5 py-3">
           <span className="flex items-center gap-2">
@@ -44,7 +44,7 @@ export function ThemeDemo() {
             <p className="font-display text-[26px] leading-tight">{t("headline")}</p>
             <p className="text-[12px] leading-relaxed text-ink-2">{t("body")}</p>
           </div>
-          <div className="aspect-[4/3] rounded-[60px_60px_10px_10px] transition-colors duration-500" style={{ background: "var(--d-night)" }}>
+          <div className="aspect-[4/3] rounded-[60px_60px_8px_8px] transition-colors duration-500" style={{ background: "var(--d-night)" }}>
             <div className="flex h-full items-end justify-center pb-4">
               <span className="block h-12 w-10 rounded-sm bg-[#1d1d1b] shadow-[inset_0_4px_0_#d6a43a]" aria-hidden="true" />
             </div>
@@ -54,7 +54,7 @@ export function ThemeDemo() {
           {["economy", "standard", "premium"].map((p, i) => (
             <div
               key={p}
-              className="flex flex-col items-center gap-1 rounded-[40px_40px_8px_8px] px-2 pt-4 pb-3 text-center transition-colors duration-500"
+              className="flex flex-col items-center gap-1 rounded-sm px-2 pt-3 pb-3 text-center transition-colors duration-500"
               style={i === 1 ? { background: "var(--d-night)", color: "#fff" } : { background: "var(--d-tint)" }}
             >
               <span className="text-[11px] font-semibold">{t(`packages.${p}`)}</span>
@@ -70,7 +70,7 @@ export function ThemeDemo() {
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-[14px] font-semibold text-ink-2">{t("pick")}</legend>
+        <legend className="mb-1 text-[14px] font-semibold text-slate-700">{t("pick")}</legend>
         <div className="flex flex-wrap gap-2">
           {THEME_KEYS.map((k) => (
             <button
@@ -78,11 +78,11 @@ export function ThemeDemo() {
               type="button"
               aria-pressed={key === k}
               onClick={() => setKey(k)}
-              className={`flex items-center gap-2 rounded-full border-[1.5px] py-1.5 pr-3.5 pl-1.5 text-[13px] font-semibold transition-colors ${
-                key === k ? "border-ink bg-paper" : "border-line bg-paper/60 text-ink-2 hover:border-line-strong"
+              className={`flex items-center gap-2 rounded-sm border py-1.5 pr-3 pl-1.5 text-[13px] font-semibold shadow-sm transition-colors ${
+                key === k ? "border-slate-900 bg-white text-slate-900" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
               }`}
             >
-              <span className="h-6 w-6 rounded-full" style={{ background: THEMES[k].primary }} aria-hidden="true" />
+              <span className="h-6 w-6 rounded-md" style={{ background: THEMES[k].primary }} aria-hidden="true" />
               {THEMES[k][locale]}
             </button>
           ))}

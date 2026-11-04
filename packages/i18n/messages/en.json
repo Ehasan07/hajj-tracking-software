@@ -1639,7 +1639,8 @@
       "businesses": "Other businesses",
       "website": "Website",
       "pricing": "Pricing",
-      "book": "Guide book"
+      "book": "Guide book",
+      "security": "Security"
     },
     "signIn": "Sign in",
     "start": "Start free",
@@ -1647,41 +1648,84 @@
       "title": "A Hajj agency's whole office, in one ledger",
       "body": "Inquiries, pilgrims' papers, instalments and receipts, hotels in Makkah and Madinah, the zamzam and medicine shops, staff salaries. All in one place, in Bangla, in taka and riyal.",
       "cta": "Use it free for {days} days",
-      "note": "No card needed. Just your agency's name to start."
+      "note": "No card needed. Just your agency's name to start.",
+      "how": "See how it works",
+      "facts": {
+        "noCard": "No card needed",
+        "bangla": "Bangla and English",
+        "money": "Taka and riyal",
+        "phone": "Works like an app on phones"
+      }
     },
     "arafah": {
       "label": "Countdown to the Day of Arafah",
       "until": "Hajj {year}: the Day of Arafah is",
       "days": "days away",
-      "note": "Moon sighting can move it by a day or two"
+      "note": "Moon sighting can move it by a day or two",
+      "season": "Hajj {year} · Day of Arafah",
+      "checks": {
+        "passport": "Passport validity",
+        "visa": "PRP and visa",
+        "flight": "Flights and hotels"
+      }
     },
     "journey": {
-      "title": "One pilgrim's journey, from the first call to the flight home",
-      "body": "Everything the office has to write down at each step, the software keeps in order. Each picture on the right is a piece of a real page in the software.",
+      "title": "A pilgrim's journey: from the first call to coming home",
+      "body": "Everything the office does for a pilgrim, from the first inquiry to the flight home, in one set of books. Each card beside the text is drawn like the software's own pages, with sample data.",
       "steps": {
         "inquiry": {
-          "title": "The first question",
-          "body": "Someone calls or walks in: name, phone, which package they're interested in. It reminds you on the day to call back. Questions from your website land here too."
+          "title": "Inquiries and follow-up",
+          "body": "Someone called or walked in? Note their name, phone and the package they want. On the day you promised to call back, the software reminds you.",
+          "points": [
+            "Questions from your website's form land in the same list",
+            "Turn an inquiry into a registered pilgrim in one click",
+            "Who said what, and when, stays in the notes"
+          ]
         },
         "passport": {
-          "title": "Registration and passport",
-          "body": "Reading the two lines at the bottom of the passport fills in the name, number and expiry. Each pilgrim gets their own ID, found in a moment."
+          "title": "Register from the passport's two lines",
+          "body": "Give the two lines at the bottom of the passport (the MRZ) and the name, passport number, date of birth and expiry fill themselves. No typing, no typos.",
+          "points": [
+            "Every pilgrim gets an ID, like HJ-26-000123",
+            "Warns early if the passport won't have 6 months left at Hajj",
+            "Catches the same passport entered twice"
+          ]
         },
         "receipt": {
-          "title": "Instalments and receipts",
-          "body": "However many instalments, what's paid and what's due is always in front of you. Every receipt has the amount in words and a QR code that proves it's genuine."
+          "title": "Installments and receipts",
+          "body": "Pilgrims pay in as many parts as they like. Each payment makes a receipt with the amount in words, and what's paid and what's due is always in front of you.",
+          "points": [
+            "Scanning a receipt's QR shows whether it's genuine",
+            "bKash, Nagad, Rocket, bank or cash",
+            "A wrong receipt can be voided, never deleted"
+          ]
         },
         "hotel": {
-          "title": "Hotels in Makkah and Madinah",
-          "body": "Which pilgrim is in which bed of which room, for how many nights, at what cost in riyal. Nobody can be put in two places on the same night."
+          "title": "Makkah and Madinah rooms and beds",
+          "body": "Which hotel, which room, the nightly rate in riyal, and which pilgrim is in which bed, at a glance. The cost for the nights is worked out too.",
+          "points": [
+            "A pilgrim can't be put in two rooms on the same night",
+            "A full room takes no one else",
+            "The pilgrim's own page shows where they'll stay"
+          ]
         },
         "journey": {
-          "title": "On the journey",
-          "body": "Duas and ayat in Arabic with Bangla pronunciation and meaning. The steps of Hajj and Umrah in plain words. Meanings are marked as drafts until a scholar checks them."
+          "title": "Duas and the guide, with Bangla pronunciation",
+          "body": "What to recite at each step of Umrah and Hajj, in Arabic with Bangla pronunciation and meaning. Pilgrims read it on their phones, even without internet.",
+          "points": [
+            "Quran verbatim from Tanzil, and recited by a qari",
+            "Hadith duas from the sahih collections, with sources",
+            "Meanings say 'draft' until a scholar has checked them"
+          ]
         },
         "books": {
           "title": "The day's books",
-          "body": "At midnight the day's statement makes itself: what came in and went out, business by business. The same at month and year end. Nothing is ever erased; a mistake is fixed with a reversing entry."
+          "body": "At midnight the day's books close themselves: what each business took in and spent, and the balance carried forward. Month and year statements are ready too.",
+          "points": [
+            "Hajj, Zamzam and the medicine shop apart, but in one statement",
+            "Nothing is deleted from the books; a mistake gets a reversing entry",
+            "Only managers can date an entry in the past"
+          ]
         }
       }
     },
@@ -1745,36 +1789,38 @@
       }
     },
     "security": {
-      "title": "Pilgrims' details, kept safe",
-      "body": "Passports, phone numbers and money are sensitive. The rules for keeping them are strict from the start.",
+      "title": "Pilgrims' data, kept in trust",
+      "body": "Passports, phone numbers and money records are sensitive. So the rules are built into the software, not left to anyone's good intentions.",
       "points": {
         "passport": {
-          "title": "Passports stay private",
-          "body": "Passport numbers and scans are stored encrypted. Even searching never leaves the real number readable in the database."
+          "title": "Passports encrypted",
+          "body": "Passport and NID numbers, scans and papers are all stored encrypted. Every time someone views a passport, it's recorded.",
+          "tag": "AES-256-GCM"
         },
         "separate": {
-          "title": "Every agency is walled off",
-          "body": "No agency can see anything of another's. The wall is inside the database, not just hidden on the page."
+          "title": "Each agency behind its own wall",
+          "body": "No agency can see another's data. The wall is in the database's own rules, not just hidden on the page.",
+          "tag": "Row-Level Security"
         },
         "device": {
-          "title": "An emailed code for new devices",
-          "body": "Signing in from an unfamiliar phone or computer needs a 6-digit code sent by email, and you're told when a new device is added."
-        },
-        "lock": {
-          "title": "Locked after wrong passwords",
-          "body": "Five wrong passwords in a row pause sign-in for 15 minutes. Weak or common passwords aren't accepted."
+          "title": "OTP lock on new devices",
+          "body": "Signing in from an unknown phone or computer needs a 6-digit code from email. Five wrong passwords lock sign-in for 15 minutes.",
+          "tag": "OTP"
         },
         "audit": {
-          "title": "Every change is on record",
-          "body": "Who changed what, and when, is written down. Nothing can be erased from the money books."
+          "title": "Who changed what, all recorded",
+          "body": "Every change is kept in the audit log with its time and person. Nothing can be deleted from the money books.",
+          "tag": "Audit log"
         },
         "backup": {
-          "title": "Backed up every night",
-          "body": "The whole database and all files are backed up every night."
+          "title": "Backups every night",
+          "body": "The whole database and all files are backed up every night and kept for 14 days.",
+          "tag": "3 am · 14 days"
         },
         "qr": {
           "title": "Fake receipts get caught",
-          "body": "Scanning a receipt's QR code checks it against our books and shows whether it's genuine."
+          "body": "Scanning any receipt's QR checks it against our books and shows whether it's genuine.",
+          "tag": "QR check"
         }
       }
     },
@@ -1787,7 +1833,15 @@
       "pilgrims": "{n} pilgrims a year",
       "staff": "{n} staff logins",
       "sms": "{n} SMS a month",
-      "cta": "Start free"
+      "cta": "Start free",
+      "billing": "How to pay",
+      "monthlyTab": "Monthly",
+      "yearlyTab": "Yearly",
+      "upTo": "up to {pct}% less",
+      "perYear": "a year",
+      "monthlyEquivalent": "Works out to {price} a month",
+      "save": "{pct}% less",
+      "included": "Your own website and the guide book on every plan"
     },
     "closing": {
       "title": "Let this year's Hajj start in a tidy ledger"
